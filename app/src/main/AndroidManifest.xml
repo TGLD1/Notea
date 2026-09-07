@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".NoteaApplication"
+        android:allowBackup="true"
+        android:label="Notea"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <!-- Aucune Activity pour l'instant — écrans Compose à venir -->
+
+    </application>
+
+</manifest>
