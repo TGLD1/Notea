@@ -32,26 +32,48 @@ déjà activé dans `app/build.gradle.kts` pour fonctionner sur Android 7/7.1
 (API 24-25), sinon crash au runtime sur ces versions précises. Poids ajouté :
 négligeable (~100 Ko), donc pas de souci pour le budget < 50 Mo.
 
-## Avant de pouvoir compiler (`./gradlew build`)
-Il manque uniquement le **wrapper Gradle binaire** (`gradle/wrapper/gradle-wrapper.jar`,
-`gradlew`, `gradlew.bat`) — je ne peux pas générer ce `.jar`, c'est un fichier
-téléchargé, pas du texte. Copie ces 3 éléments depuis un de tes projets FASTEK
-existants (ils sont identiques d'un projet Kotlin à l'autre), ou lance
-`gradle wrapper` si tu as Gradle installé en local.
+## Compilation via GitHub Actions (comme tes autres apps FASTEK)
+Pas de build Gradle local, pas de wrapper à committer. Le workflow
+`.github/workflows/build.yml` se déclenche à chaque push et :
+1. installe JDK 17
+2. installe Gradle 8.9 directement (action `gradle/actions/setup-gradle`)
+3. lance `gradle assembleDebug`
+4. publie l'APK en artifact téléchargeable depuis l'onglet **Actions** du repo GitHub
 
-Sans ça, **le premier commit git est possible** (rien n'empêche de committer du
-code qui ne compile pas encore), mais le premier `./gradlew build` ne marchera
-qu'une fois le wrapper ajouté.
+Versions alignées sur Faxcek/TGLD Assistant : **Gradle 8.9, AGP 8.5.2,
+Kotlin 2.0.21, JDK 17**. Avec Kotlin 2.0+, le compilateur Compose passe par le
+plugin `org.jetbrains.kotlin.plugin.compose` (plus besoin de
+`composeOptions.kotlinCompilerExtensionVersion`).
+
+Après le push, va dans l'onglet **Actions** du repo → le run le plus récent →
+section **Artifacts** en bas de page → télécharge `notea-debug-apk` (zip
+contenant l'APK).
+
+*Build release signé (comme Faxcek) : à mettre en place plus tard, avec les
+mêmes secrets GitHub (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`,
+`KEY_PASSWORD`) — pas nécessaire pour un premier test.*
+
+## État du premier build testable
+- ✅ Icône placeholder ajoutée (`res/drawable/ic_launcher.xml`) — sans ça,
+  le build échouait à la liaison des ressources (référence à une icône
+  inexistante). À remplacer par le vrai logo Notea plus tard.
+- ✅ `MainActivity` minimale + Compose activé (BOM, Material3, activity-compose)
+  — juste un écran "Notea — build OK ✓", pour valider que tout le pipeline
+  (Gradle + Kotlin + Compose) fonctionne avant d'investir dans les vrais écrans.
+- ✅ `<activity>` déclarée dans le manifeste avec l'intent-filter LAUNCHER —
+  sans ça l'app se serait installée mais sans aucune icône dans le tiroir
+  d'applications, rien à lancer.
 
 ## Ce qui n'est PAS encore fait
-- Écrans Compose (onboarding, dashboard, etc.) — les ViewModels sont prêts à être branchés
+- Vrais écrans Compose (Onboarding, Dashboard, etc.) — `MainActivity` n'affiche
+  qu'un texte de test pour l'instant, les ViewModels sont prêts à être branchés
 - WorkManager (rappels planning)
 - Branche PRIVÉ (3 trimestres) — le moteur est structuré pour l'accueillir
   facilement (mêmes fonctions matière/période, seule `moyenneAnnuellePublic`
   est spécifique au public), mais pas encore écrite
-- Icône de l'app (`ic_launcher` référencée dans le manifeste, pas encore créée)
-- `gradle-wrapper.jar` + `gradlew`/`gradlew.bat` — à copier depuis un projet FASTEK existant
+- Vrai logo (l'icône actuelle est un simple placeholder bleu/blanc)
 
 ## Prochaine étape suggérée
-Les écrans Compose Onboarding puis Dashboard, en s'appuyant sur
-`OnboardingViewModel` et `DashboardViewModel` (déjà prêts, via `NoteaViewModelFactory`).
+Une fois l'APK de test installé et vérifié sur ton téléphone : les écrans
+Compose Onboarding puis Dashboard, en s'appuyant sur `OnboardingViewModel` et
+`DashboardViewModel` (déjà prêts, via `NoteaViewModelFactory`).
