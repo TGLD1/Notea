@@ -3,41 +3,56 @@ package com.fastek.notea.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fastek.notea.NoteaApplication
+import com.fastek.notea.ui.onboarding.OnboardingScreen
+import com.fastek.notea.ui.onboarding.OnboardingViewModel
 
-/**
- * Point d'entrée temporaire — sert uniquement à valider que le pipeline de build
- * (Gradle + Kotlin + Compose) produit un APK installable. Sera remplacée par la
- * vraie navigation (Onboarding -> Dashboard) à l'étape suivante.
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val app = application as NoteaApplication
         setContent {
-            NoteaPlaceholder()
+            NoteaApp(app)
         }
     }
 }
 
 @Composable
-private fun NoteaPlaceholder() {
+private fun NoteaApp(app: NoteaApplication) {
+    val factory = remember { NoteaViewModelFactory(app.repository) }
+    var profilExiste by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        profilExiste = app.repository.getProfil() != null
+    }
+
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Notea — build OK ✓")
-                Text("Prochaine étape : les vrais écrans")
+            when (profilExiste) {
+                null -> Text("Chargement...")
+                false -> {
+                    val onboardingViewModel: OnboardingViewModel = viewModel(factory = factory)
+                    val etat by onboardingViewModel.uiState.collectAsState()
+                    if (etat.profilCreeAvecId != null) {
+                        profilExiste = true
+                    } else {
+                        OnboardingScreen(viewModel = onboardingViewModel)
+                    }
+                }
+                true -> Text("Profil créé — Dashboard à venir")
             }
         }
     }
