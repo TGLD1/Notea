@@ -10,6 +10,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -17,10 +22,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.fastek.notea.data.local.entity.TypeEtablissement
+import com.fastek.notea.domain.reference.NiveauxReference
 
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel) {
@@ -52,13 +61,25 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
         item {
-            OutlinedTextField(
-                value = etat.classe,
-                onValueChange = viewModel::onClasseChange,
-                label = { Text("Classe") },
-                modifier = Modifier.fillMaxWidth()
+            SelecteurDeroulant(
+                label = "Classe",
+                options = NiveauxReference.NIVEAUX,
+                selection = etat.niveau,
+                onSelection = viewModel::onNiveauChange
             )
+        }
+
+        if (NiveauxReference.necessiteSerie(etat.niveau)) {
+            item {
+                SelecteurDeroulant(
+                    label = "Série",
+                    options = NiveauxReference.SERIES,
+                    selection = etat.serie ?: "",
+                    onSelection = viewModel::onSerieChange
+                )
+            }
         }
 
         item {
@@ -96,9 +117,11 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
                 Text(choix.nom, modifier = Modifier.weight(1f))
                 if (choix.selectionnee) {
                     OutlinedTextField(
-                        value = choix.coefficient.toString(),
-                        onValueChange = { valeur ->
-                            valeur.toIntOrNull()?.let { viewModel.onCoefficientChange(choix.nom, it) }
+                        value = choix.coefficient,
+                        onValueChange = { nouveau ->
+                            if (nouveau.isEmpty() || (nouveau.length <= 2 && nouveau.all(Char::isDigit))) {
+                                viewModel.onCoefficientChange(choix.nom, nouveau)
+                            }
                         },
                         label = { Text("Coef") },
                         modifier = Modifier.width(80.dp)
@@ -120,6 +143,47 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (etat.enCours) "Création..." else "Commencer")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelecteurDeroulant(
+    label: String,
+    options: List<String>,
+    selection: String,
+    onSelection: (String) -> Unit
+) {
+    var etendu by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = etendu,
+        onExpandedChange = { etendu = it }
+    ) {
+        OutlinedTextField(
+            value = selection,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = etendu) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = etendu,
+            onDismissRequest = { etendu = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelection(option)
+                        etendu = false
+                    }
+                )
             }
         }
     }
