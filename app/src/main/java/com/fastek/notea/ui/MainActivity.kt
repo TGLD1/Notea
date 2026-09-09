@@ -17,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fastek.notea.NoteaApplication
+import com.fastek.notea.ui.dashboard.DashboardScreen
+import com.fastek.notea.ui.dashboard.DashboardViewModel
 import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
 
@@ -52,7 +54,10 @@ private fun NoteaApp(app: NoteaApplication) {
                         OnboardingScreen(viewModel = onboardingViewModel)
                     }
                 }
-                true -> Text("Profil créé — Dashboard à venir")
+                true -> {
+                    val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
+                    DashboardScreen(viewModel = dashboardViewModel)
+                }
             }
         }
     }
