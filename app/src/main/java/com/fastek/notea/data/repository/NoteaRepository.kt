@@ -35,6 +35,7 @@ class NoteaRepository(
 
     // --- Matiere ---
     fun observerMatieres(eleveId: Long): Flow<List<Matiere>> = matiereDao.observerMatieres(eleveId)
+    suspend fun getMatiere(matiereId: Long): Matiere? = matiereDao.getMatiere(matiereId)
     suspend fun ajouterMatiere(matiere: Matiere): Long = matiereDao.inserer(matiere)
     suspend fun mettreAJourMatiere(matiere: Matiere) = matiereDao.mettreAJour(matiere)
     suspend fun supprimerMatiere(matiere: Matiere) = matiereDao.supprimer(matiere)
