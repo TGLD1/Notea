@@ -21,4 +21,10 @@ interface PeriodeDao {
 
     @Query("SELECT * FROM periode WHERE eleveId = :eleveId AND numero = :numero LIMIT 1")
     suspend fun getPeriode(eleveId: Long, numero: Int): Periode?
+
+    @Query("UPDATE periode SET objectifCible = :objectif WHERE id = :periodeId")
+    suspend fun mettreAJourObjectif(periodeId: Long, objectif: Double)
+
+    @Query("UPDATE periode SET noteConduite = :note WHERE id = :periodeId")
+    suspend fun mettreAJourConduite(periodeId: Long, note: Double)
 }

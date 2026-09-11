@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.ui.dashboard.DashboardViewModel
 import com.fastek.notea.ui.matieres.MatieresViewModel
+import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
 
 class NoteaViewModelFactory(
@@ -19,6 +20,8 @@ class NoteaViewModelFactory(
             DashboardViewModel(repository) as T
         modelClass.isAssignableFrom(MatieresViewModel::class.java) ->
             MatieresViewModel(repository) as T
+        modelClass.isAssignableFrom(ObjectifsViewModel::class.java) ->
+            ObjectifsViewModel(repository) as T
         else -> throw IllegalArgumentException("ViewModel inconnu : ${modelClass.name}")
     }
 }

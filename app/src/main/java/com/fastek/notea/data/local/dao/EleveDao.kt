@@ -22,4 +22,7 @@ interface EleveDao {
 
     @Query("SELECT * FROM eleve LIMIT 1")
     suspend fun getProfil(): Eleve?
+
+    @Query("UPDATE eleve SET objectifAnnuel = :objectif WHERE id = :eleveId")
+    suspend fun mettreAJourObjectifAnnuel(eleveId: Long, objectif: Double)
 }

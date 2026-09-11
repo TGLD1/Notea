@@ -37,6 +37,8 @@ import com.fastek.notea.ui.matieres.MatieresViewModel
 import com.fastek.notea.ui.notes.NotesScreen
 import com.fastek.notea.ui.notes.NotesViewModel
 import com.fastek.notea.ui.notes.NotesViewModelFactory
+import com.fastek.notea.ui.objectifs.ObjectifsScreen
+import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
 
@@ -82,7 +84,8 @@ private data class OngletBas(val route: String, val label: String)
 
 private val ONGLETS = listOf(
     OngletBas("dashboard", "Dashboard"),
-    OngletBas("matieres", "Matières")
+    OngletBas("matieres", "Matières"),
+    OngletBas("objectifs", "Objectifs")
 )
 
 @Composable
@@ -128,6 +131,10 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                 MatieresScreen(viewModel = vm) { matiereId, periodeId ->
                     navController.navigate("notes/$matiereId/$periodeId")
                 }
+            }
+            composable("objectifs") {
+                val vm: ObjectifsViewModel = viewModel(factory = factory)
+                ObjectifsScreen(viewModel = vm)
             }
             composable(
                 route = "notes/{matiereId}/{periodeId}",

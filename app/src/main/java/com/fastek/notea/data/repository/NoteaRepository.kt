@@ -32,6 +32,8 @@ class NoteaRepository(
     suspend fun getProfil(): Eleve? = eleveDao.getProfil()
     suspend fun creerProfil(eleve: Eleve): Long = eleveDao.inserer(eleve)
     suspend fun mettreAJourProfil(eleve: Eleve) = eleveDao.mettreAJour(eleve)
+    suspend fun mettreAJourObjectifAnnuel(eleveId: Long, objectif: Double) =
+        eleveDao.mettreAJourObjectifAnnuel(eleveId, objectif)
 
     // --- Matiere ---
     fun observerMatieres(eleveId: Long): Flow<List<Matiere>> = matiereDao.observerMatieres(eleveId)
@@ -43,10 +45,10 @@ class NoteaRepository(
     // --- Periode ---
     fun observerPeriodes(eleveId: Long): Flow<List<Periode>> = periodeDao.observerPeriodes(eleveId)
     suspend fun creerPeriode(periode: Periode): Long = periodeDao.inserer(periode)
-    suspend fun enregistrerConduite(periode: Periode, note: Double) =
-        periodeDao.mettreAJour(periode.copy(noteConduite = note))
-    suspend fun definirObjectifPeriode(periode: Periode, objectif: Double) =
-        periodeDao.mettreAJour(periode.copy(objectifCible = objectif))
+    suspend fun enregistrerConduite(periodeId: Long, note: Double) =
+        periodeDao.mettreAJourConduite(periodeId, note)
+    suspend fun definirObjectifPeriode(periodeId: Long, objectif: Double) =
+        periodeDao.mettreAJourObjectif(periodeId, objectif)
 
     // --- Note ---
     fun observerNotes(matiereId: Long, periodeId: Long): Flow<List<Note>> =
