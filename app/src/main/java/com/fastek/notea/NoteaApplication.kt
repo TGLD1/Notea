@@ -9,6 +9,10 @@ class NoteaApplication : Application() {
 
     val database: NoteaDatabase by lazy {
         Room.databaseBuilder(this, NoteaDatabase::class.java, NoteaDatabase.NOM_BASE)
+            // Base encore en évolution active (pas de vrais utilisateurs) : on efface et
+            // recrée plutôt que d'écrire une vraie migration à chaque petit changement de
+            // schéma. À retirer avant la sortie publique, une fois le schéma stabilisé.
+            .fallbackToDestructiveMigration()
             .build()
     }
 
@@ -17,7 +21,8 @@ class NoteaApplication : Application() {
             eleveDao = database.eleveDao(),
             matiereDao = database.matiereDao(),
             noteDao = database.noteDao(),
-            periodeDao = database.periodeDao()
+            periodeDao = database.periodeDao(),
+            evenementDao = database.evenementDao()
         )
     }
 }

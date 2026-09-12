@@ -1,10 +1,12 @@
 package com.fastek.notea.data.repository
 
 import com.fastek.notea.data.local.dao.EleveDao
+import com.fastek.notea.data.local.dao.EvenementDao
 import com.fastek.notea.data.local.dao.MatiereDao
 import com.fastek.notea.data.local.dao.NoteDao
 import com.fastek.notea.data.local.dao.PeriodeDao
 import com.fastek.notea.data.local.entity.Eleve
+import com.fastek.notea.data.local.entity.Evenement
 import com.fastek.notea.data.local.entity.Matiere
 import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 /**
  * Point d'accès unique aux données. Combine les DAO Room et [MoyenneCalculator]
@@ -25,7 +28,8 @@ class NoteaRepository(
     private val eleveDao: EleveDao,
     private val matiereDao: MatiereDao,
     private val noteDao: NoteDao,
-    private val periodeDao: PeriodeDao
+    private val periodeDao: PeriodeDao,
+    private val evenementDao: EvenementDao
 ) {
     // --- Eleve ---
     fun observerProfil(): Flow<Eleve?> = eleveDao.observerProfil()
@@ -56,6 +60,15 @@ class NoteaRepository(
     suspend fun ajouterNote(note: Note): Long = noteDao.inserer(note)
     suspend fun mettreAJourNote(note: Note) = noteDao.mettreAJour(note)
     suspend fun supprimerNote(note: Note) = noteDao.supprimer(note)
+
+    // --- Evenement ---
+    fun observerEvenements(eleveId: Long): Flow<List<Evenement>> = evenementDao.observerEvenements(eleveId)
+    suspend fun ajouterEvenement(evenement: Evenement): Long = evenementDao.inserer(evenement)
+    suspend fun mettreAJourEvenement(evenement: Evenement) = evenementDao.mettreAJour(evenement)
+    suspend fun supprimerEvenement(evenement: Evenement) = evenementDao.supprimer(evenement)
+    suspend fun supprimerEvenementParId(id: Long) = evenementDao.supprimerParId(id)
+    suspend fun getEvenementsAvenirNonNotifies(eleveId: Long, debut: LocalDate, fin: LocalDate): List<Evenement> =
+        evenementDao.getEvenementsAvenirNonNotifies(eleveId, debut, fin)
 
     // --- Données combinées (moyennes calculées en direct) ---
 

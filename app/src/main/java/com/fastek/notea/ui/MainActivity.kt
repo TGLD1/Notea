@@ -46,6 +46,8 @@ import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
 import com.fastek.notea.ui.parametres.TextScreen
 import com.fastek.notea.ui.parametres.TextesStatiques
+import com.fastek.notea.ui.planning.PlanningScreen
+import com.fastek.notea.ui.planning.PlanningViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,6 +92,7 @@ private data class OngletBas(val route: String, val label: String)
 private val ONGLETS = listOf(
     OngletBas("dashboard", "Dashboard"),
     OngletBas("matieres", "Matières"),
+    OngletBas("planning", "Planning"),
     OngletBas("objectifs", "Objectifs"),
     OngletBas("parametres", "Paramètres")
 )
@@ -137,6 +140,10 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                 MatieresScreen(viewModel = vm) { matiereId, periodeId ->
                     navController.navigate("notes/$matiereId/$periodeId")
                 }
+            }
+            composable("planning") {
+                val vm: PlanningViewModel = viewModel(factory = factory)
+                PlanningScreen(viewModel = vm)
             }
             composable("objectifs") {
                 val vm: ObjectifsViewModel = viewModel(factory = factory)

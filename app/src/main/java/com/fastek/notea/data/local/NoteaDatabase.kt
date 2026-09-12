@@ -4,17 +4,19 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.fastek.notea.data.local.dao.EleveDao
+import com.fastek.notea.data.local.dao.EvenementDao
 import com.fastek.notea.data.local.dao.MatiereDao
 import com.fastek.notea.data.local.dao.NoteDao
 import com.fastek.notea.data.local.dao.PeriodeDao
 import com.fastek.notea.data.local.entity.Eleve
+import com.fastek.notea.data.local.entity.Evenement
 import com.fastek.notea.data.local.entity.Matiere
 import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
 
 @Database(
-    entities = [Eleve::class, Matiere::class, Note::class, Periode::class],
-    version = 1,
+    entities = [Eleve::class, Matiere::class, Note::class, Periode::class, Evenement::class],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -23,6 +25,7 @@ abstract class NoteaDatabase : RoomDatabase() {
     abstract fun matiereDao(): MatiereDao
     abstract fun noteDao(): NoteDao
     abstract fun periodeDao(): PeriodeDao
+    abstract fun evenementDao(): EvenementDao
 
     companion object {
         const val NOM_BASE = "notea.db"
