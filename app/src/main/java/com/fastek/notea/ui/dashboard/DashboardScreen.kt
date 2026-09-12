@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,11 +50,30 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             .padding(16.dp)
     ) {
         Text("Bonjour ${etat.prenom}", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = etat.periodeNumero?.let { "Semestre $it" } ?: "Aucune période créée",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+
+        if (etat.periodesDisponibles.size > 1) {
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                etat.periodesDisponibles.forEach { numero ->
+                    val selectionne = numero == etat.periodeNumero
+                    if (selectionne) {
+                        Button(onClick = { viewModel.selectionnerPeriode(numero) }) {
+                            Text("Semestre $numero")
+                        }
+                    } else {
+                        OutlinedButton(onClick = { viewModel.selectionnerPeriode(numero) }) {
+                            Text("Semestre $numero")
+                        }
+                    }
+                    Spacer(Modifier.width(8.dp))
+                }
+            }
+        } else {
+            Text(
+                text = etat.periodeNumero?.let { "Semestre $it" } ?: "Aucune période créée",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
 

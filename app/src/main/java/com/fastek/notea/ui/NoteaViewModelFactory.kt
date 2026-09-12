@@ -7,6 +7,7 @@ import com.fastek.notea.ui.dashboard.DashboardViewModel
 import com.fastek.notea.ui.matieres.MatieresViewModel
 import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
+import com.fastek.notea.ui.parametres.ProfilViewModel
 
 class NoteaViewModelFactory(
     private val repository: NoteaRepository
@@ -22,6 +23,8 @@ class NoteaViewModelFactory(
             MatieresViewModel(repository) as T
         modelClass.isAssignableFrom(ObjectifsViewModel::class.java) ->
             ObjectifsViewModel(repository) as T
+        modelClass.isAssignableFrom(ProfilViewModel::class.java) ->
+            ProfilViewModel(repository) as T
         else -> throw IllegalArgumentException("ViewModel inconnu : ${modelClass.name}")
     }
 }

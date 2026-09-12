@@ -41,6 +41,11 @@ import com.fastek.notea.ui.objectifs.ObjectifsScreen
 import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
+import com.fastek.notea.ui.parametres.ParametresScreen
+import com.fastek.notea.ui.parametres.ProfilScreen
+import com.fastek.notea.ui.parametres.ProfilViewModel
+import com.fastek.notea.ui.parametres.TextScreen
+import com.fastek.notea.ui.parametres.TextesStatiques
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +90,8 @@ private data class OngletBas(val route: String, val label: String)
 private val ONGLETS = listOf(
     OngletBas("dashboard", "Dashboard"),
     OngletBas("matieres", "Matières"),
-    OngletBas("objectifs", "Objectifs")
+    OngletBas("objectifs", "Objectifs"),
+    OngletBas("parametres", "Paramètres")
 )
 
 @Composable
@@ -135,6 +141,25 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
             composable("objectifs") {
                 val vm: ObjectifsViewModel = viewModel(factory = factory)
                 ObjectifsScreen(viewModel = vm)
+            }
+            composable("parametres") {
+                ParametresScreen { route -> navController.navigate(route) }
+            }
+            composable("profil") {
+                val vm: ProfilViewModel = viewModel(factory = factory)
+                ProfilScreen(viewModel = vm)
+            }
+            composable("apropos-app") {
+                TextScreen("À propos de l'application", TextesStatiques.A_PROPOS_APP)
+            }
+            composable("apropos-dev") {
+                TextScreen("À propos du développeur", TextesStatiques.A_PROPOS_DEV)
+            }
+            composable("confidentialite") {
+                TextScreen("Politique de confidentialité", TextesStatiques.CONFIDENTIALITE)
+            }
+            composable("cgu") {
+                TextScreen("Conditions d'utilisation", TextesStatiques.CGU)
             }
             composable(
                 route = "notes/{matiereId}/{periodeId}",

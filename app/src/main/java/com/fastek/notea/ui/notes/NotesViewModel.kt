@@ -23,7 +23,10 @@ data class NotesUiState(
     val nouvelleValeur: String = "",
     val nouveauType: TypeNote = TypeNote.DEVOIR,
     val erreur: String? = null
-)
+) {
+    val devoirsAtteints: Boolean
+        get() = notes.count { it.type == TypeNote.DEVOIR } >= NotesViewModel.MAX_DEVOIRS_PAR_PERIODE
+}
 
 private data class SaisieState(
     val valeur: String = "",
@@ -78,12 +81,20 @@ class NotesViewModel(
             _saisie.update { it.copy(erreur = "Note invalide (0 à 20)") }
             return
         }
+        val type = _saisie.value.type
+        if (type == TypeNote.DEVOIR) {
+            val nombreDevoirs = uiState.value.notes.count { it.type == TypeNote.DEVOIR }
+            if (nombreDevoirs >= MAX_DEVOIRS_PAR_PERIODE) {
+                _saisie.update { it.copy(erreur = "Maximum $MAX_DEVOIRS_PAR_PERIODE devoirs par semestre (comme sur le bulletin officiel)") }
+                return
+            }
+        }
         viewModelScope.launch {
             repository.ajouterNote(
                 Note(
                     matiereId = matiereId,
                     periodeId = periodeId,
-                    type = _saisie.value.type,
+                    type = type,
                     valeur = valeur,
                     date = LocalDate.now()
                 )
@@ -94,6 +105,10 @@ class NotesViewModel(
 
     fun supprimerNote(note: Note) {
         viewModelScope.launch { repository.supprimerNote(note) }
+    }
+
+    companion object {
+        const val MAX_DEVOIRS_PAR_PERIODE = 2
     }
 }
 

@@ -44,7 +44,8 @@ fun NotesScreen(viewModel: NotesViewModel) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
                 selected = etat.nouveauType == TypeNote.DEVOIR,
-                onClick = { viewModel.onTypeChange(TypeNote.DEVOIR) }
+                onClick = { viewModel.onTypeChange(TypeNote.DEVOIR) },
+                enabled = !etat.devoirsAtteints
             )
             Text("Devoir")
             Spacer(Modifier.width(16.dp))
@@ -53,6 +54,13 @@ fun NotesScreen(viewModel: NotesViewModel) {
                 onClick = { viewModel.onTypeChange(TypeNote.INTERROGATION) }
             )
             Text("Interrogation")
+        }
+        if (etat.devoirsAtteints) {
+            Text(
+                "Limite de 2 devoirs atteinte pour ce semestre.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Row(
