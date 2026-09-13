@@ -16,7 +16,7 @@ import com.fastek.notea.data.local.entity.Periode
 
 @Database(
     entities = [Eleve::class, Matiere::class, Note::class, Periode::class, Evenement::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

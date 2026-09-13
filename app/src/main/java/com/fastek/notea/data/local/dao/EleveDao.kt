@@ -25,4 +25,13 @@ interface EleveDao {
 
     @Query("UPDATE eleve SET objectifAnnuel = :objectif WHERE id = :eleveId")
     suspend fun mettreAJourObjectifAnnuel(eleveId: Long, objectif: Double)
+
+    @Query("UPDATE eleve SET nom = :nom WHERE id = :eleveId")
+    suspend fun mettreAJourNom(eleveId: Long, nom: String)
+
+    @Query("UPDATE eleve SET prenom = :prenom WHERE id = :eleveId")
+    suspend fun mettreAJourPrenom(eleveId: Long, prenom: String)
+
+    @Query("UPDATE eleve SET matricule = :matricule WHERE id = :eleveId")
+    suspend fun mettreAJourMatricule(eleveId: Long, matricule: String)
 }

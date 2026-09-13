@@ -18,5 +18,6 @@ data class Eleve(
     val classe: String,
     val typeEtablissement: TypeEtablissement,
     val anneeScolaire: String,
-    val objectifAnnuel: Double = 12.0
+    val objectifAnnuel: Double = 12.0,
+    val matricule: String = ""
 )

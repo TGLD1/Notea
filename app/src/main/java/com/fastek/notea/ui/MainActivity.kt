@@ -1,10 +1,14 @@
 package com.fastek.notea.ui
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
@@ -72,8 +76,15 @@ private fun NoteaApp(app: NoteaApplication) {
     val factory = remember { NoteaViewModelFactory(app.repository) }
     var profilExiste by remember { mutableStateOf<Boolean?>(null) }
 
+    val lanceurPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* accordée ou non, les notifications restent un simple plus, pas bloquant */ }
+
     LaunchedEffect(Unit) {
         profilExiste = app.repository.getProfil() != null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            lanceurPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     MaterialTheme {
