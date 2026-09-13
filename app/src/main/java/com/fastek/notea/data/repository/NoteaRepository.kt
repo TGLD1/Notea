@@ -38,6 +38,10 @@ class NoteaRepository(
     suspend fun mettreAJourProfil(eleve: Eleve) = eleveDao.mettreAJour(eleve)
     suspend fun mettreAJourObjectifAnnuel(eleveId: Long, objectif: Double) =
         eleveDao.mettreAJourObjectifAnnuel(eleveId, objectif)
+    suspend fun mettreAJourNom(eleveId: Long, nom: String) = eleveDao.mettreAJourNom(eleveId, nom)
+    suspend fun mettreAJourPrenom(eleveId: Long, prenom: String) = eleveDao.mettreAJourPrenom(eleveId, prenom)
+    suspend fun mettreAJourMatricule(eleveId: Long, matricule: String) =
+        eleveDao.mettreAJourMatricule(eleveId, matricule)
 
     // --- Matiere ---
     fun observerMatieres(eleveId: Long): Flow<List<Matiere>> = matiereDao.observerMatieres(eleveId)
