@@ -1,5 +1,7 @@
 package com.fastek.notea.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -182,7 +185,21 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                 ObjectifsScreen(viewModel = vm)
             }
             composable("parametres") {
-                ParametresScreen { route -> navController.navigate(route) }
+                val context = LocalContext.current
+                ParametresScreen { route ->
+                    if (route == "signaler-probleme") {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:tgldivin@gmail.com")
+                            putExtra(Intent.EXTRA_SUBJECT, "Problème avec Notea")
+                        }
+                        context.startActivity(intent)
+                    } else {
+                        navController.navigate(route)
+                    }
+                }
+            }
+            composable("don") {
+                TextScreen("Faire un don à FASTEK", TextesStatiques.DON)
             }
             composable("profil") {
                 val vm: ProfilViewModel = viewModel(factory = factory)

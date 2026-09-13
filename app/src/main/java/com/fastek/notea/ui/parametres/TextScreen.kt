@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/** Écran texte générique — utilisé pour À propos, Politique de confidentialité, CGU. */
+/** Écran texte générique — utilisé pour À propos, Politique de confidentialité, CGU, Don. */
 @Composable
 fun TextScreen(titre: String, contenu: String) {
     Column(
@@ -44,6 +44,11 @@ object TextesStatiques {
         "Si tu utilises la sauvegarde Google Drive (fonctionnalité à venir), tes données " +
         "seront alors envoyées vers ton propre compte Google Drive personnel — jamais vers " +
         "un serveur FASTEK."
+
+    const val DON = "Notea est gratuite et 100% hors ligne. Si l'application t'a été utile et " +
+        "que tu veux soutenir FASTEK, tu peux envoyer un don via Mobile Money :\n\n" +
+        "[Numéro à venir]\n\n" +
+        "Merci pour ton soutien !"
 
     const val CGU = "En utilisant Notea, tu acceptes que :\n\n" +
         "• L'application est fournie « en l'état », sans garantie de résultat scolaire.\n\n" +
