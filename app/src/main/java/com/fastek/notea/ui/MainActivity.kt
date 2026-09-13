@@ -5,12 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -89,19 +94,46 @@ private fun NoteaApp(app: NoteaApplication) {
 
 private data class OngletBas(val route: String, val label: String)
 
+/** Onglets principaux seulement — Objectifs/Paramètres passent par le menu ⋮ du haut. */
 private val ONGLETS = listOf(
-    OngletBas("dashboard", "Dashboard"),
+    OngletBas("dashboard", "Accueil"),
     OngletBas("matieres", "Matières"),
-    OngletBas("planning", "Planning"),
-    OngletBas("objectifs", "Objectifs"),
-    OngletBas("parametres", "Paramètres")
+    OngletBas("planning", "Planning")
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaRepository) {
     val navController = rememberNavController()
+    var menuOuvert by remember { mutableStateOf(false) }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Notea") },
+                actions = {
+                    TextButton(onClick = { menuOuvert = true }) {
+                        Text("⋮", style = MaterialTheme.typography.titleLarge)
+                    }
+                    DropdownMenu(expanded = menuOuvert, onDismissRequest = { menuOuvert = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Objectifs") },
+                            onClick = {
+                                menuOuvert = false
+                                navController.navigate("objectifs")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Paramètres") },
+                            onClick = {
+                                menuOuvert = false
+                                navController.navigate("parametres")
+                            }
+                        )
+                    }
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 val backStackEntry by navController.currentBackStackEntryAsState()
