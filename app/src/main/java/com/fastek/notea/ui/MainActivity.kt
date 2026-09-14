@@ -60,6 +60,8 @@ import com.fastek.notea.ui.parametres.TextScreen
 import com.fastek.notea.ui.parametres.TextesStatiques
 import com.fastek.notea.ui.planning.PlanningScreen
 import com.fastek.notea.ui.planning.PlanningViewModel
+import com.fastek.notea.ui.statistiques.StatistiquesScreen
+import com.fastek.notea.ui.statistiques.StatistiquesViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,7 +110,7 @@ private fun NoteaApp(app: NoteaApplication) {
 
 private data class OngletBas(val route: String, val label: String)
 
-/** Onglets principaux seulement — Objectifs/Paramètres passent par le menu ⋮ du haut. */
+/** Onglets principaux seulement — Objectifs/Statistiques/Paramètres passent par le menu ⋮ du haut. */
 private val ONGLETS = listOf(
     OngletBas("dashboard", "Accueil"),
     OngletBas("matieres", "Matières"),
@@ -135,6 +137,13 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                             onClick = {
                                 menuOuvert = false
                                 navController.navigate("objectifs")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Statistiques") },
+                            onClick = {
+                                menuOuvert = false
+                                navController.navigate("statistiques")
                             }
                         )
                         DropdownMenuItem(
@@ -194,6 +203,10 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
             composable("objectifs") {
                 val vm: ObjectifsViewModel = viewModel(factory = factory)
                 ObjectifsScreen(viewModel = vm)
+            }
+            composable("statistiques") {
+                val vm: StatistiquesViewModel = viewModel(factory = factory)
+                StatistiquesScreen(viewModel = vm)
             }
             composable("parametres") {
                 val context = LocalContext.current

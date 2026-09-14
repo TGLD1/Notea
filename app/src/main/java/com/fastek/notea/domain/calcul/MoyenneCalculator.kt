@@ -1,7 +1,9 @@
 package com.fastek.notea.domain.calcul
 
+import com.fastek.notea.data.local.entity.Matiere
 import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.TypeNote
+import java.time.LocalDate
 
 /**
  * Moteur de calcul des moyennes — système scolaire béninois, établissement PUBLIC (2 semestres).
@@ -92,5 +94,22 @@ object MoyenneCalculator {
         moyenne >= objectif -> StatutObjectif.ATTEINT
         moyenne >= objectif - 2 -> StatutObjectif.PROCHE
         else -> StatutObjectif.LOIN
+    }
+
+    /**
+     * Reconstruit la moyenne générale telle qu'elle aurait été à une date donnée, en ne
+     * comptant que les notes déjà saisies à cette date (pas de stockage d'historique séparé
+     * nécessaire — chaque note a déjà sa propre date).
+     */
+    fun moyenneGeneraleADate(
+        matieresAvecNotes: List<Pair<Matiere, List<Note>>>,
+        date: LocalDate,
+        noteConduite: Double?
+    ): Double? {
+        val moyennesPonderees = matieresAvecNotes.mapNotNull { (matiere, notes) ->
+            val notesJusquaDate = notes.filter { !it.date.isAfter(date) }
+            moyenneMatiere(notesJusquaDate)?.let { MoyennePonderee(it, matiere.coefficient) }
+        }
+        return moyenneGeneralePeriode(moyennesPonderees, noteConduite)
     }
 }
