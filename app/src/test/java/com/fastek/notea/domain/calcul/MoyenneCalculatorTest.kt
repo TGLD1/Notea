@@ -45,8 +45,19 @@ class MoyenneCalculatorTest {
             MoyenneCalculator.MoyennePonderee(moyenne = 3.25, coefficient = 2),
             MoyenneCalculator.MoyennePonderee(moyenne = 2.6667, coefficient = 3)
         )
-        val moyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(moyennes, noteConduite = null)
+        val moyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(moyennes)
         assertEquals(2.9, moyenneGenerale!!, 0.01)
+    }
+
+    @Test
+    fun `conduite est une matiere coefficient 1`() {
+        val moyennes = listOf(
+            MoyenneCalculator.MoyennePonderee(14.0, 2),
+            MoyenneCalculator.MoyennePonderee(12.0, 1),
+            MoyenneCalculator.MoyennePonderee(16.0, 1)
+        )
+        val moyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(moyennes)
+        assertEquals(14.0, moyenneGenerale!!, 0.0001)
     }
 
     @Test

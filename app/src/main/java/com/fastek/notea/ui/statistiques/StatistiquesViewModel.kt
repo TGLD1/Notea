@@ -83,7 +83,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             val jourDate = aujourdHui.minusDays((29 - i).toLong())
             PointGraphique(
                 jour = i,
-                moyenne = MoyenneCalculator.moyenneGeneraleADate(matieresAvecNotes, jourDate, periode.noteConduite)
+                moyenne = MoyenneCalculator.moyenneGeneraleADate(matieresAvecNotes, jourDate)
             )
         }
 
@@ -125,7 +125,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             MoyenneCalculator.moyenneMatiere(notesAUtiliser)
                 ?.let { MoyenneCalculator.MoyennePonderee(it, matiere.coefficient) }
         }
-        val nouvelleMoyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(moyennesPonderees, periode.noteConduite)
+        val nouvelleMoyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(moyennesPonderees)
 
         return etat.copy(
             nouvelleMoyenneMatiere = nouvelleMoyenneMatiere,

@@ -47,7 +47,7 @@ fun ObjectifsScreen(viewModel: ObjectifsViewModel) {
         Spacer(Modifier.height(16.dp))
 
         etat.periodes.forEach { periode ->
-            Text("Semestre ${periode.numero}", style = MaterialTheme.typography.titleMedium)
+            Text("Période ${periode.numero}", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -65,7 +65,7 @@ fun ObjectifsScreen(viewModel: ObjectifsViewModel) {
                 )
             }
             Text(
-                "Conduite : laisse vide tant que le conseil des professeurs ne l'a pas attribuée.",
+                "Conduite : note unique attribuée par le conseil des professeurs en fin de période.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

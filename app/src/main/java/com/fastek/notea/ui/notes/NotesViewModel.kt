@@ -18,6 +18,7 @@ import java.time.LocalDate
 
 data class NotesUiState(
     val matiereNom: String = "",
+    val isConduite: Boolean = false,
     val notes: List<Note> = emptyList(),
     val moyenne: Double? = null,
     val nouvelleValeur: String = "",
@@ -57,6 +58,7 @@ class NotesViewModel(
         val notesTriees = notes.sortedByDescending { it.date }
         NotesUiState(
             matiereNom = nom,
+            isConduite = nom == "Conduite",
             notes = notesTriees,
             moyenne = MoyenneCalculator.moyenneMatiere(notes),
             nouvelleValeur = saisie.valeur,
@@ -81,7 +83,13 @@ class NotesViewModel(
             _saisie.update { it.copy(erreur = "Note invalide (0 à 20)") }
             return
         }
-        val type = _saisie.value.type
+        val isConduite = _matiereNom.value == "Conduite"
+        if (isConduite && uiState.value.notes.isNotEmpty()) {
+            _saisie.update { it.copy(erreur = "Conduite ne peut avoir qu'une seule note par période.") }
+            return
+        }
+
+        val type = if (isConduite) TypeNote.INTERROGATION else _saisie.value.type
         if (type == TypeNote.DEVOIR) {
             val nombreDevoirs = uiState.value.notes.count { it.type == TypeNote.DEVOIR }
             if (nombreDevoirs >= MAX_DEVOIRS_PAR_PERIODE) {

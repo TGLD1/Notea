@@ -24,6 +24,12 @@ interface NoteDao {
     @Query("SELECT * FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId")
     fun observerNotes(matiereId: Long, periodeId: Long): Flow<List<Note>>
 
-    @Query("SELECT * FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId")
+    @Query("SELECT * FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId ORDER BY date, id")
     suspend fun getNotes(matiereId: Long, periodeId: Long): List<Note>
+
+    @Query("SELECT * FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId ORDER BY id DESC LIMIT 1")
+    suspend fun getDerniereNote(matiereId: Long, periodeId: Long): Note?
+
+    @Query("DELETE FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId")
+    suspend fun supprimerToutesPourMatierePeriode(matiereId: Long, periodeId: Long)
 }

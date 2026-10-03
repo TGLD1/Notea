@@ -100,12 +100,21 @@ class OnboardingViewModel(private val repository: NoteaRepository) : ViewModel()
                     )
                 }
 
-                etat.matieres.filter { it.selectionnee }.forEach { choix ->
+                // Conduite est une matière normale, toujours créée automatiquement avec coef 1.
+                repository.ajouterMatiere(
+                    Matiere(
+                        eleveId = eleveId,
+                        nom = "Conduite",
+                        coefficient = 1
+                    )
+                )
+
+                etat.matieres.filter { it.selectionnee && it.nom != "Conduite" }.forEach { choix ->
                     repository.ajouterMatiere(
                         Matiere(
                             eleveId = eleveId,
                             nom = choix.nom,
-                            coefficient = choix.coefficient.toIntOrNull() ?: 1
+                            coefficient = choix.coefficient.toIntOrNull()?.takeIf { it > 0 } ?: 1
                         )
                     )
                 }

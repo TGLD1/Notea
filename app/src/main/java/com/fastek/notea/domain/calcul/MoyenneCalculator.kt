@@ -19,8 +19,8 @@ import java.time.LocalDate
  *   devoirs 3,4 -> (2.75 + 3 + 4) / 3 = 3.25
  *
  * Moyenne générale d'une période :
- *   Σ(moyenne matière × coefficient) / Σ coefficients, + note de conduite (coefficient 1)
- *   dès qu'elle est disponible (attribuée en fin de période par le conseil des professeurs).
+ *   Σ(moyenne matière × coefficient) / Σ coefficients.
+ *   Conduite est déjà incluse comme matière coefficient 1 lorsqu'elle est notée.
  *
  * Moyenne annuelle (public) :
  *   (2 × moyenne S2 + moyenne S1) / 3   — le 2e semestre pèse double (poids 2 + poids 1 = 3).
@@ -57,25 +57,17 @@ object MoyenneCalculator {
     data class MoyennePonderee(val moyenne: Double, val coefficient: Int)
 
     /**
-     * Moyenne générale d'une période (semestre).
-     *
-     * @param moyennesMatieres moyenne + coefficient de chaque matière ayant au moins une note
-     * @param noteConduite note de conduite /20 (coefficient 1) ; null si pas encore attribuée
-     *   par le conseil des professeurs — dans ce cas elle est simplement absente du calcul.
+     * Moyenne générale d'une période.
+     * Conduite est une matière ordinaire et doit donc être présente dans la liste avec
+     * son coefficient 1 lorsqu'une note lui a été attribuée.
      */
     fun moyenneGeneralePeriode(
-        moyennesMatieres: List<MoyennePonderee>,
-        noteConduite: Double? = null
+        moyennesMatieres: List<MoyennePonderee>
     ): Double? {
         if (moyennesMatieres.isEmpty()) return null
 
-        var sommePonderee = moyennesMatieres.sumOf { it.moyenne * it.coefficient }
-        var sommeCoefficients = moyennesMatieres.sumOf { it.coefficient }
-
-        if (noteConduite != null) {
-            sommePonderee += noteConduite
-            sommeCoefficients += 1
-        }
+        val sommePonderee = moyennesMatieres.sumOf { it.moyenne * it.coefficient }
+        val sommeCoefficients = moyennesMatieres.sumOf { it.coefficient }
 
         return if (sommeCoefficients > 0) sommePonderee / sommeCoefficients else null
     }
@@ -103,13 +95,12 @@ object MoyenneCalculator {
      */
     fun moyenneGeneraleADate(
         matieresAvecNotes: List<Pair<Matiere, List<Note>>>,
-        date: LocalDate,
-        noteConduite: Double?
+        date: LocalDate
     ): Double? {
         val moyennesPonderees = matieresAvecNotes.mapNotNull { (matiere, notes) ->
             val notesJusquaDate = notes.filter { !it.date.isAfter(date) }
             moyenneMatiere(notesJusquaDate)?.let { MoyennePonderee(it, matiere.coefficient) }
         }
-        return moyenneGeneralePeriode(moyennesPonderees, noteConduite)
+        return moyenneGeneralePeriode(moyennesPonderees)
     }
 }

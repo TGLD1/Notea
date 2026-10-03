@@ -45,25 +45,34 @@ class ObjectifsViewModel(private val repository: NoteaRepository) : ViewModel() 
             if (profil == null) {
                 flowOf(ObjectifsUiState(chargement = false))
             } else {
-                combine(
-                    repository.observerPeriodes(profil.id),
-                    _brouillon
-                ) { periodes, brouillon ->
-                    ObjectifsUiState(
-                        chargement = false,
-                        eleveId = profil.id,
-                        objectifAnnuel = brouillon.objectifAnnuel ?: profil.objectifAnnuel.toString(),
-                        periodes = periodes.sortedBy { it.numero }.map { periode ->
-                            PeriodeEditable(
-                                id = periode.id,
-                                numero = periode.numero,
-                                objectif = brouillon.objectifsPeriode[periode.id]
-                                    ?: periode.objectifCible.toString(),
-                                conduite = brouillon.conduites[periode.id]
-                                    ?: periode.noteConduite?.toString() ?: ""
-                            )
-                        }
-                    )
+                repository.observerPeriodes(profil.id).flatMapLatest { periodes ->
+                    val periodesTriees = periodes.sortedBy { it.numero }
+                    val conduites = periodesTriees.map { periode ->
+                        repository.observerConduite(profil.id, periode.id)
+                    }
+                    val conduitesFlow = if (conduites.isEmpty()) {
+                        flowOf(emptyList<Double?>())
+                    } else {
+                        combine(conduites) { valeurs -> valeurs.toList() }
+                    }
+
+                    combine(conduitesFlow, _brouillon) { valeursConduite, brouillon ->
+                        ObjectifsUiState(
+                            chargement = false,
+                            eleveId = profil.id,
+                            objectifAnnuel = brouillon.objectifAnnuel ?: profil.objectifAnnuel.toString(),
+                            periodes = periodesTriees.mapIndexed { index, periode ->
+                                PeriodeEditable(
+                                    id = periode.id,
+                                    numero = periode.numero,
+                                    objectif = brouillon.objectifsPeriode[periode.id]
+                                        ?: periode.objectifCible.toString(),
+                                    conduite = brouillon.conduites[periode.id]
+                                        ?: valeursConduite.getOrNull(index)?.toString().orEmpty()
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }

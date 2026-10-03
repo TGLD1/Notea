@@ -25,6 +25,4 @@ interface PeriodeDao {
     @Query("UPDATE periode SET objectifCible = :objectif WHERE id = :periodeId")
     suspend fun mettreAJourObjectif(periodeId: Long, objectif: Double)
 
-    @Query("UPDATE periode SET noteConduite = :note WHERE id = :periodeId")
-    suspend fun mettreAJourConduite(periodeId: Long, note: Double)
 }

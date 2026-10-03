@@ -53,14 +53,44 @@ class NoteaRepository(
     // --- Periode ---
     fun observerPeriodes(eleveId: Long): Flow<List<Periode>> = periodeDao.observerPeriodes(eleveId)
     suspend fun creerPeriode(periode: Periode): Long = periodeDao.inserer(periode)
-    suspend fun enregistrerConduite(periodeId: Long, note: Double) =
-        periodeDao.mettreAJourConduite(periodeId, note)
+    /**
+     * Enregistre la note unique de Conduite pour une période. Conduite reste une matière
+     * normale (coefficient 1), mais sa note est unique et remplace la précédente.
+     */
+    suspend fun enregistrerConduite(periodeId: Long, note: Double) {
+        val profil = getProfil() ?: return
+        val conduite = matiereDao.observerMatieres(profil.id).first().firstOrNull { it.nom == "Conduite" }
+            ?: return
+        noteDao.supprimerToutesPourMatierePeriode(conduite.id, periodeId)
+        noteDao.inserer(
+            Note(
+                matiereId = conduite.id,
+                periodeId = periodeId,
+                type = com.fastek.notea.data.local.entity.TypeNote.INTERROGATION,
+                valeur = note,
+                date = LocalDate.now()
+            )
+        )
+    }
     suspend fun definirObjectifPeriode(periodeId: Long, objectif: Double) =
         periodeDao.mettreAJourObjectif(periodeId, objectif)
 
     // --- Note ---
     fun observerNotes(matiereId: Long, periodeId: Long): Flow<List<Note>> =
         noteDao.observerNotes(matiereId, periodeId)
+
+    /** Note unique de Conduite, stockée comme une note normale de la matière Conduite. */
+    fun observerConduite(eleveId: Long, periodeId: Long): Flow<Double?> =
+        observerMatieres(eleveId).flatMapLatest { matieres ->
+            val conduite = matieres.firstOrNull { it.nom == "Conduite" }
+            if (conduite == null) {
+                flowOf(null)
+            } else {
+                observerNotes(conduite.id, periodeId).map { notes ->
+                    notes.maxByOrNull { it.id }?.valeur
+                }
+            }
+        }
     suspend fun ajouterNote(note: Note): Long = noteDao.inserer(note)
     suspend fun mettreAJourNote(note: Note) = noteDao.mettreAJour(note)
     suspend fun supprimerNote(note: Note) = noteDao.supprimer(note)
@@ -107,13 +137,13 @@ class NoteaRepository(
             }
         }
 
-    /** Moyenne générale d'une période, dérivée des moyennes par matière + la conduite. */
+    /** Moyenne générale d'une période, dérivée uniquement des matières (Conduite comprise). */
     fun observerMoyenneGeneralePeriode(eleveId: Long, periode: Periode): Flow<Double?> =
         observerMatieresAvecMoyenne(eleveId, periode.id, periode.objectifCible).map { liste ->
             val moyennesPonderees = liste.mapNotNull { item ->
                 item.moyenne?.let { MoyenneCalculator.MoyennePonderee(it, item.matiere.coefficient) }
             }
-            MoyenneCalculator.moyenneGeneralePeriode(moyennesPonderees, periode.noteConduite)
+            MoyenneCalculator.moyenneGeneralePeriode(moyennesPonderees)
         }
 
     /**

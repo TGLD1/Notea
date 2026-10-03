@@ -41,26 +41,34 @@ fun NotesScreen(viewModel: NotesViewModel) {
 
         Spacer(Modifier.height(16.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            RadioButton(
-                selected = etat.nouveauType == TypeNote.DEVOIR,
-                onClick = { viewModel.onTypeChange(TypeNote.DEVOIR) },
-                enabled = !etat.devoirsAtteints
-            )
-            Text("Devoir")
-            Spacer(Modifier.width(16.dp))
-            RadioButton(
-                selected = etat.nouveauType == TypeNote.INTERROGATION,
-                onClick = { viewModel.onTypeChange(TypeNote.INTERROGATION) }
-            )
-            Text("Interrogation")
-        }
-        if (etat.devoirsAtteints) {
+        if (etat.isConduite) {
             Text(
-                "Limite de 2 devoirs atteinte pour ce semestre.",
+                "Note unique attribuée par le conseil des professeurs en fin de période.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    selected = etat.nouveauType == TypeNote.DEVOIR,
+                    onClick = { viewModel.onTypeChange(TypeNote.DEVOIR) },
+                    enabled = !etat.devoirsAtteints
+                )
+                Text("Devoir")
+                Spacer(Modifier.width(16.dp))
+                RadioButton(
+                    selected = etat.nouveauType == TypeNote.INTERROGATION,
+                    onClick = { viewModel.onTypeChange(TypeNote.INTERROGATION) }
+                )
+                Text("Interrogation")
+            }
+            if (etat.devoirsAtteints) {
+                Text(
+                    "Limite de 2 devoirs atteinte pour cette période.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
         Row(
