@@ -17,7 +17,8 @@ private val OPTIONS = listOf(
     "apropos-app" to "À propos de l'application",
     "apropos-dev" to "À propos du développeur",
     "confidentialite" to "Politique de confidentialité",
-    "cgu" to "Conditions d'utilisation"
+    "cgu" to "Conditions d'utilisation",
+    "journal" to "Journal de diagnostic"
 )
 
 @Composable

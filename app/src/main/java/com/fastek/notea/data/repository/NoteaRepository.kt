@@ -12,6 +12,7 @@ import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
 import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
+import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.domain.bulletin.BulletinData
 import com.fastek.notea.domain.bulletin.LigneBulletin
 import com.fastek.notea.domain.calcul.MoyenneCalculator
@@ -38,7 +39,7 @@ class NoteaRepository(
     // --- Eleve ---
     fun observerProfil(): Flow<Eleve?> = eleveDao.observerProfil()
     suspend fun getProfil(): Eleve? = eleveDao.getProfil()
-    suspend fun creerProfil(eleve: Eleve): Long = eleveDao.inserer(eleve)
+    suspend fun creerProfil(eleve: Eleve): Long = Journal.suivre("profil.creation") { eleveDao.inserer(eleve) }
     suspend fun mettreAJourProfil(eleve: Eleve) = eleveDao.mettreAJour(eleve)
     suspend fun mettreAJourObjectifAnnuel(eleveId: Long, objectif: Double) =
         eleveDao.mettreAJourObjectifAnnuel(eleveId, objectif)
@@ -95,13 +96,14 @@ class NoteaRepository(
                 }
             }
         }
-    suspend fun ajouterNote(note: Note): Long = noteDao.inserer(note)
+    suspend fun ajouterNote(note: Note): Long = Journal.suivre("note.ajout") { noteDao.inserer(note) }
     suspend fun mettreAJourNote(note: Note) = noteDao.mettreAJour(note)
-    suspend fun supprimerNote(note: Note) = noteDao.supprimer(note)
+    suspend fun supprimerNote(note: Note) = Journal.suivre("note.suppression") { noteDao.supprimer(note) }
 
     // --- Evenement ---
     fun observerEvenements(eleveId: Long): Flow<List<Evenement>> = evenementDao.observerEvenements(eleveId)
-    suspend fun ajouterEvenement(evenement: Evenement): Long = evenementDao.inserer(evenement)
+    suspend fun ajouterEvenement(evenement: Evenement): Long =
+        Journal.suivre("evenement.ajout") { evenementDao.inserer(evenement) }
     suspend fun mettreAJourEvenement(evenement: Evenement) = evenementDao.mettreAJour(evenement)
     suspend fun supprimerEvenement(evenement: Evenement) = evenementDao.supprimer(evenement)
     suspend fun supprimerEvenementParId(id: Long) = evenementDao.supprimerParId(id)

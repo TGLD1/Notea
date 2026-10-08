@@ -14,10 +14,12 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.fastek.notea.NoteaApplication
 import com.fastek.notea.data.local.entity.Evenement
+import com.fastek.notea.diagnostic.Journal
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Vérifie chaque jour à 18h les événements dans les 48h à venir pas encore notifiés,
@@ -30,19 +32,29 @@ class RappelWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val app = applicationContext as NoteaApplication
-        val repository = app.repository
-        val eleve = repository.getProfil()
+        try {
+            val app = applicationContext as NoteaApplication
+            val repository = app.repository
+            val eleve = repository.getProfil()
+            var nbEvenements = 0
 
-        if (eleve != null) {
-            val aujourdHui = LocalDate.now()
-            val dansDeuxJours = aujourdHui.plusDays(2)
-            val evenements = repository.getEvenementsAvenirNonNotifies(eleve.id, aujourdHui, dansDeuxJours)
+            if (eleve != null) {
+                val aujourdHui = LocalDate.now()
+                val dansDeuxJours = aujourdHui.plusDays(2)
+                val evenements = repository.getEvenementsAvenirNonNotifies(eleve.id, aujourdHui, dansDeuxJours)
+                nbEvenements = evenements.size
 
-            if (evenements.isNotEmpty()) {
-                afficherNotification(evenements)
-                evenements.forEach { repository.mettreAJourEvenement(it.copy(notifie = true)) }
+                if (evenements.isNotEmpty()) {
+                    afficherNotification(evenements)
+                    evenements.forEach { repository.mettreAJourEvenement(it.copy(notifie = true)) }
+                }
             }
+            Journal.ok("notification.rappel", "$nbEvenements événement(s) notifié(s)")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Une erreur ne doit pas casser la chaîne : on la journalise et on replanifie quand même.
+            Journal.erreur("notification.rappel", e)
         }
 
         planifierProchainRappel(applicationContext)

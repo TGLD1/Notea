@@ -54,6 +54,7 @@ import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
 import com.fastek.notea.ui.parametres.BulletinScreen
+import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
@@ -222,6 +223,9 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                         navController.navigate(route)
                     }
                 }
+            }
+            composable("journal") {
+                JournalScreen()
             }
             composable("bulletin") {
                 BulletinScreen(repository)

@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.room.Room
 import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
+import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.notification.RappelWorker
 
 class NoteaApplication : Application() {
@@ -29,8 +30,10 @@ class NoteaApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        creerCanalNotification()
-        RappelWorker.planifierProchainRappel(this)
+        Journal.init(this)
+        Journal.ok("app.demarrage")
+        Journal.suivre("notification.canal") { creerCanalNotification() }
+        Journal.suivre("notification.planification") { RappelWorker.planifierProchainRappel(this) }
     }
 
     private fun creerCanalNotification() {

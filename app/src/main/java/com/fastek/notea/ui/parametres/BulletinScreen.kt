@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.repository.NoteaRepository
+import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.domain.bulletin.BulletinData
 import com.fastek.notea.domain.bulletin.BulletinPdfGenerator
 import kotlinx.coroutines.Dispatchers
@@ -99,6 +100,7 @@ fun BulletinScreen(repository: NoteaRepository) {
                             val data = repository.construireBulletin(numero)
                             if (data == null) {
                                 message = "Impossible de préparer le bulletin."
+                                Journal.erreur("bulletin.pdf", null, "données introuvables, période $numero")
                             } else {
                                 val fichier = withContext(Dispatchers.IO) {
                                     val dossier = File(context.cacheDir, "bulletins").apply { mkdirs() }
@@ -107,9 +109,11 @@ fun BulletinScreen(repository: NoteaRepository) {
                                     f
                                 }
                                 partager(context, fichier)
+                                Journal.ok("bulletin.pdf", "période $numero")
                             }
                         } catch (e: Exception) {
                             message = "Erreur lors de la création du PDF : ${e.message}"
+                            Journal.erreur("bulletin.pdf", e, "période $numero")
                         } finally {
                             enCours = false
                         }
