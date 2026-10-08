@@ -47,6 +47,16 @@ class NoteaRepository(
     suspend fun mettreAJourPrenom(eleveId: Long, prenom: String) = eleveDao.mettreAJourPrenom(eleveId, prenom)
     suspend fun mettreAJourMatricule(eleveId: Long, matricule: String) =
         eleveDao.mettreAJourMatricule(eleveId, matricule)
+    suspend fun mettreAJourDateNaissance(eleveId: Long, valeur: String) =
+        eleveDao.mettreAJourDateNaissance(eleveId, valeur)
+    suspend fun mettreAJourLieuNaissance(eleveId: Long, valeur: String) =
+        eleveDao.mettreAJourLieuNaissance(eleveId, valeur)
+    suspend fun mettreAJourEffectif(eleveId: Long, valeur: String) =
+        eleveDao.mettreAJourEffectif(eleveId, valeur)
+    suspend fun mettreAJourAptitudeEps(eleveId: Long, valeur: String) =
+        eleveDao.mettreAJourAptitudeEps(eleveId, valeur)
+    suspend fun mettreAJourRedoublant(eleveId: Long, valeur: String) =
+        eleveDao.mettreAJourRedoublant(eleveId, valeur)
 
     // --- Matiere ---
     fun observerMatieres(eleveId: Long): Flow<List<Matiere>> = matiereDao.observerMatieres(eleveId)
@@ -228,7 +238,12 @@ class NoteaRepository(
             totalMoyCoef = notees.sumOf { it.moyenneCoef ?: 0.0 },
             moyennePeriode1 = moyennePeriode1,
             moyenneAnnuelle = moyenneAnnuelle,
-            finAnnee = numeroPeriode == eleve.typeEtablissement.nombrePeriodes
+            finAnnee = numeroPeriode == eleve.typeEtablissement.nombrePeriodes,
+            dateNaissance = eleve.dateNaissance,
+            lieuNaissance = eleve.lieuNaissance,
+            effectif = eleve.effectif,
+            aptitudeEps = eleve.aptitudeEps,
+            redoublant = eleve.redoublant
         )
     }
 }

@@ -19,5 +19,11 @@ data class Eleve(
     val typeEtablissement: TypeEtablissement,
     val anneeScolaire: String,
     val objectifAnnuel: Double = 12.0,
-    val matricule: String = ""
+    val matricule: String = "",
+    // Facultatifs : servent uniquement à remplir l'en-tête du bulletin PDF.
+    val dateNaissance: String = "",
+    val lieuNaissance: String = "",
+    val effectif: String = "",
+    val aptitudeEps: String = "",
+    val redoublant: String = ""
 )

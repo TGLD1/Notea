@@ -14,7 +14,8 @@ class NoteaApplication : Application() {
 
     val database: NoteaDatabase by lazy {
         Room.databaseBuilder(this, NoteaDatabase::class.java, NoteaDatabase.NOM_BASE)
-            .fallbackToDestructiveMigration()
+            .addMigrations(NoteaDatabase.MIGRATION_3_4)
+            .fallbackToDestructiveMigrationFrom(1, 2)
             .build()
     }
 

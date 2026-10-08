@@ -13,6 +13,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.fastek.notea.NoteaApplication
+import com.fastek.notea.R
 import com.fastek.notea.data.local.entity.Evenement
 import com.fastek.notea.diagnostic.Journal
 import java.time.Duration
@@ -71,7 +72,7 @@ class RappelWorker(
         val notification = NotificationCompat.Builder(applicationContext, CANAL_ID)
             .setContentTitle("Notea — Rappel")
             .setContentText(texte)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // icône système temporaire
+            .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()

@@ -19,7 +19,12 @@ data class ProfilUiState(
     val classe: String = "",
     val typeEtablissement: TypeEtablissement = TypeEtablissement.PUBLIC,
     val anneeScolaire: String = "",
-    val objectifAnnuel: Double = 12.0
+    val objectifAnnuel: Double = 12.0,
+    val dateNaissance: String = "",
+    val lieuNaissance: String = "",
+    val effectif: String = "",
+    val aptitudeEps: String = "",
+    val redoublant: String = ""
 )
 
 class ProfilViewModel(private val repository: NoteaRepository) : ViewModel() {
@@ -38,7 +43,12 @@ class ProfilViewModel(private val repository: NoteaRepository) : ViewModel() {
                     classe = eleve.classe,
                     typeEtablissement = eleve.typeEtablissement,
                     anneeScolaire = eleve.anneeScolaire,
-                    objectifAnnuel = eleve.objectifAnnuel
+                    objectifAnnuel = eleve.objectifAnnuel,
+                    dateNaissance = eleve.dateNaissance,
+                    lieuNaissance = eleve.lieuNaissance,
+                    effectif = eleve.effectif,
+                    aptitudeEps = eleve.aptitudeEps,
+                    redoublant = eleve.redoublant
                 )
             }
         }
@@ -54,5 +64,25 @@ class ProfilViewModel(private val repository: NoteaRepository) : ViewModel() {
 
     fun onMatriculeChange(eleveId: Long, valeur: String) {
         viewModelScope.launch { repository.mettreAJourMatricule(eleveId, valeur) }
+    }
+
+    fun onDateNaissanceChange(eleveId: Long, valeur: String) {
+        viewModelScope.launch { repository.mettreAJourDateNaissance(eleveId, valeur) }
+    }
+
+    fun onLieuNaissanceChange(eleveId: Long, valeur: String) {
+        viewModelScope.launch { repository.mettreAJourLieuNaissance(eleveId, valeur) }
+    }
+
+    fun onEffectifChange(eleveId: Long, valeur: String) {
+        viewModelScope.launch { repository.mettreAJourEffectif(eleveId, valeur) }
+    }
+
+    fun onAptitudeEpsChange(eleveId: Long, valeur: String) {
+        viewModelScope.launch { repository.mettreAJourAptitudeEps(eleveId, valeur) }
+    }
+
+    fun onRedoublantChange(eleveId: Long, valeur: String) {
+        viewModelScope.launch { repository.mettreAJourRedoublant(eleveId, valeur) }
     }
 }

@@ -34,4 +34,19 @@ interface EleveDao {
 
     @Query("UPDATE eleve SET matricule = :matricule WHERE id = :eleveId")
     suspend fun mettreAJourMatricule(eleveId: Long, matricule: String)
+
+    @Query("UPDATE eleve SET dateNaissance = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourDateNaissance(eleveId: Long, valeur: String)
+
+    @Query("UPDATE eleve SET lieuNaissance = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourLieuNaissance(eleveId: Long, valeur: String)
+
+    @Query("UPDATE eleve SET effectif = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourEffectif(eleveId: Long, valeur: String)
+
+    @Query("UPDATE eleve SET aptitudeEps = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourAptitudeEps(eleveId: Long, valeur: String)
+
+    @Query("UPDATE eleve SET redoublant = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourRedoublant(eleveId: Long, valeur: String)
 }

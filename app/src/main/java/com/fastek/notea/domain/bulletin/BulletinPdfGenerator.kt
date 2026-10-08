@@ -86,13 +86,20 @@ object BulletinPdfGenerator {
         ligneInfo(r, MARGE, "Prénoms", data.prenom)
         ligneInfo(r, moitie, "Matricule", data.matricule.ifBlank { POINTILLES })
         r.y += 16f
-        ligneInfo(r, MARGE, "Né(e) le / à", POINTILLES)
-        ligneInfo(r, moitie, "Effectif", "........")
+        ligneInfo(r, MARGE, "Né(e) le / à", naissance(data))
+        ligneInfo(r, moitie, "Effectif", data.effectif.ifBlank { "........" })
         r.y += 16f
-        ligneInfo(r, MARGE, "Aptitude EPS", "........")
-        ligneInfo(r, moitie, "Redoublant / Abandon", "...... / ......")
+        ligneInfo(r, MARGE, "Aptitude EPS", data.aptitudeEps.ifBlank { "........" })
+        ligneInfo(r, moitie, "Redoublant / Abandon", "${data.redoublant.ifBlank { "......" }} / ......")
         r.y += 24f
     }
+
+    private fun naissance(d: BulletinData): String =
+        if (d.dateNaissance.isBlank() && d.lieuNaissance.isBlank()) {
+            POINTILLES
+        } else {
+            "${d.dateNaissance.ifBlank { "......" }} à ${d.lieuNaissance.ifBlank { "......" }}"
+        }
 
     private fun ligneInfo(r: Rendu, x: Float, libelle: String, valeur: String) {
         val p = peinture(10f, couleur = GRIS_TEXTE)

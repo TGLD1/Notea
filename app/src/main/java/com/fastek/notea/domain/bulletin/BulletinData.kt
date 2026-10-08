@@ -37,7 +37,13 @@ data class BulletinData(
     /** Renseignée uniquement sur le bulletin du semestre 2 (public), si S1 et S2 existent. */
     val moyenneAnnuelle: Double?,
     /** Dernier bulletin de l'année : décision du conseil + appréciation générale. */
-    val finAnnee: Boolean
+    val finAnnee: Boolean,
+    // En-tête facultatif, vide tant que l'élève ne l'a pas renseigné dans son profil.
+    val dateNaissance: String = "",
+    val lieuNaissance: String = "",
+    val effectif: String = "",
+    val aptitudeEps: String = "",
+    val redoublant: String = ""
 ) {
     val libellePeriode: String
         get() = if (typeEtablissement == TypeEtablissement.PUBLIC) "Semestre" else "Trimestre"

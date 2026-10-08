@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -21,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+
+private val FORMAT_DATE_ECRAN = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 @Composable
 fun PlanningScreen(viewModel: PlanningViewModel) {
@@ -47,14 +56,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
         )
         Spacer(Modifier.height(8.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = etat.dateTexte,
-                onValueChange = viewModel::onDateTexteChange,
-                label = { Text("Date (JJ/MM/AAAA)") },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        ChampDate(dateTexte = etat.dateTexte, onDateChange = viewModel::onDateTexteChange)
         Spacer(Modifier.height(8.dp))
 
         SelecteurMatiereOptionnel(
@@ -104,6 +106,46 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
                     )
                 }
             }
+        }
+    }
+}
+
+/** Champ date en lecture seule : le bouton « Choisir » ouvre un calendrier (plus de saisie à la main). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChampDate(dateTexte: String, onDateChange: (String) -> Unit) {
+    var ouvert by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = dateTexte,
+        onValueChange = {},
+        readOnly = true,
+        label = { Text("Date") },
+        trailingIcon = { TextButton(onClick = { ouvert = true }) { Text("Choisir") } },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    if (ouvert) {
+        val departMillis = try {
+            LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        } catch (e: Exception) {
+            null
+        }
+        val etatCalendrier = rememberDatePickerState(initialSelectedDateMillis = departMillis)
+        DatePickerDialog(
+            onDismissRequest = { ouvert = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    etatCalendrier.selectedDateMillis?.let { millis ->
+                        val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onDateChange(date.format(FORMAT_DATE_ECRAN))
+                    }
+                    ouvert = false
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = { ouvert = false }) { Text("Annuler") } }
+        ) {
+            DatePicker(state = etatCalendrier)
         }
     }
 }

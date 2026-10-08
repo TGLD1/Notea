@@ -79,13 +79,15 @@ Le 2e semestre pèse double (poids 2 + poids 1 = diviseur 3).
 | **Planning/Événements** | Liste triée par date, ajout (titre, date JJ/MM/AAAA, matière optionnelle), notification à 18h pour les événements à 48h (WorkManager, auto-replanifié chaque jour) |
 | **Objectifs** | Objectif annuel + objectif par semestre |
 | **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (reconstruit à partir des dates des notes, pas de table d'historique séparée ; dessiné en Canvas natif, sans librairie externe) + simulateur "si j'ai X au prochain devoir/interro, ma moyenne devient Y" |
+| **Bulletin PDF** | (Paramètres) Choix du semestre, génération d'un PDF A4 au format du bulletin officiel (API native `PdfDocument`, aucune dépendance), partage via le menu Android (WhatsApp, e-mail, Drive, impression). Rang, moyenne de classe, appréciations, décision du conseil laissés vides à remplir à la main |
+| **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local (`Journal.kt`), partage et remise à zéro. Aucune donnée personnelle journalisée |
 | **Paramètres** | Profil éditable (nom, prénom, matricule), objectif/classe en lecture seule, Don à FASTEK (Moov Money), Signaler un problème (email pré-rempli), À propos de l'app, Comment sont calculées les moyennes, À propos du développeur, Politique de confidentialité, CGU |
 
 Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en haut menant vers Objectifs et Paramètres.
 
 ---
 
-## 4. État d'avancement (au 22/09)
+## 4. État d'avancement (au 08/10)
 
 ✅ Fait et confirmé fonctionnel sur téléphone :
 - Pipeline CI GitHub Actions (build APK à chaque push)
@@ -96,13 +98,48 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Refonte Conduite → matière normale, coefficients éditables après coup
 - Page d'explication du calcul des moyennes
 
-🔜 Reste à faire :
-- Bulletin PDF (format officiel)
-- Sauvegarde Google Drive (OAuth2)
-- Branche établissement privé (3 trimestres)
-- Vrai logo/icône (actuellement un placeholder bleu)
+🟡 Écrit le 08/10, pas encore validé par un build ni sur appareil :
+- Bulletin PDF (`domain/bulletin/`, `ui/parametres/BulletinScreen.kt`, FileProvider)
+- Journal de diagnostic (`diagnostic/Journal.kt`, `ui/parametres/JournalScreen.kt`)
+- Correctif de compilation `nomPeriode` (Semestre/Trimestre, via `TypeEtablissement.nomPeriode`)
+- Migration Room 3→4, champs facultatifs du profil pour l'en-tête du bulletin, calendrier dans le Planning, icône de notification
 
-⚠️ Point technique : base de données encore en `fallbackToDestructiveMigration()` (efface les données à chaque changement de schéma) — à remplacer par de vraies migrations avant la sortie publique.
+⚠️ Point technique : base de données en version 4 ; migration 3→4 en place. Les bases v1 et v2 (versions de test) sont encore réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration.
+
+---
+
+## 4 bis. Fonctionnalités restantes (définies le 08/10)
+
+Légende : **[demandé]** = demandé par Divin ; **[proposition]** = suggéré, à confirmer.
+
+### Phase 1 — Valider l'existant (avant toute nouvelle fonctionnalité)
+1. **Build CI vert** après les correctifs `nomPeriode` + journal. *Fini quand* : l'APK `notea-debug-apk` se télécharge.
+2. **Test du bulletin PDF** sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM) : tableau lisible, chiffres identiques au bulletin réel (CEG Pahou, 2nde C), partage WhatsApp, plusieurs pages si beaucoup de matières.
+3. **Page Don** : vérifier que le numéro Moov Money s'affiche (le texte `TextesStatiques.DON` du zip du 08/10 affichait encore « [Numéro à venir] »).
+4. **Tests unitaires** [proposition] : moyenne annuelle S1/S2, `construireBulletin`, limite de 2 devoirs.
+
+### Phase 2 — Fiabilité des données
+5. **Vraies migrations Room** [demandé] : ✅ migration 3→4 écrite le 08/10 (les données des versions 3 sont conservées ; seules les bases v1/v2 de test sont réinitialisées). Reste : `exportSchema = true` + tests de migration, et une nouvelle migration à chaque changement de schéma (notamment pour le point 8, établissement privé, s'il touche aux tables).
+6. **Sauvegarde / restauration** [demandé : Google Drive] :
+   - Étape 1 [proposition] : export/import d'un fichier JSON local (marche hors ligne, sans compte Google).
+   - Étape 2 : sauvegarde sur Google Drive de l'élève (OAuth2). Demande une configuration dans la console Google Cloud (empreinte SHA-1 de la clé de signature).
+7. **Journal → FastekLog** [proposition] : envoyer aussi le journal à FastekLog (contrat connu : authority `com.fastek.log.provider`). Demande le fichier `FastekLogClient.kt` de Faspress et une signature commune des deux apps (mêmes secrets GitHub `FASTEK_KEYSTORE_*`).
+
+### Phase 3 — Fonctionnalités élève
+8. **Établissement privé (3 trimestres)** [demandé] : la formule de la moyenne annuelle du privé reste à confirmer (idéalement sur un vrai bulletin d'école privée) ; ensuite `moyenneAnnuellePrive`, bulletin trimestriel, sélecteur « Trimestre » (déjà prêt côté libellé).
+9. **Don par paiement en ligne** [demandé] : MTN MoMo, Moov Money et carte bancaire via un agrégateur (KkiaPay envisagé, SDK Android). Prérequis : compte marchand activé + clé publique de test fournie par Divin. À faire en même temps : mettre à jour la politique de confidentialité (paiement géré par le prestataire, Notea ne collecte rien) et vérifier les règles de Google Play sur les dons/paiements. C'est la seule fonction qui demandera internet, uniquement au moment du don.
+10. **Bulletin PDF — compléments** [proposition] : ✅ champs optionnels du profil (date et lieu de naissance, effectif, aptitude EPS, redoublant) qui pré-remplissent l'en-tête (08/10). Reste : appréciation saisissable par matière ; photo de l'élève.
+11. **Planning** [proposition] : ✅ sélecteur de date (calendrier) à la place du texte libre (08/10). Reste : modification d'un événement existant ; n'afficher que les événements à venir.
+12. **Notifications** : ✅ icône de notification dédiée (cloche) à la place de l'icône système (08/10). Reste : heure du rappel réglable [proposition].
+13. **Identité visuelle** [demandé] : vrai logo/icône (logo officiel FASTEK), icône adaptative Android, thème aux couleurs vives.
+
+### Phase 4 — Sortie publique
+14. **Build release signé** : secrets GitHub `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, règles R8/ProGuard, `versionCode`/`versionName`, poids < 50 Mo, test sur Android 7 (API 24).
+15. **Textes légaux** : faire valider par Divin le brouillon de la politique de confidentialité et des CGU ; prévoir une adresse web publique pour la politique si la publication sur le Play Store l'exige.
+16. **Test terrain** avec de vrais lycéens (public d'abord), puis correction des retours.
+
+### Plus tard
+17. **Version École (V2)** : voir section 6 (projet séparé, MVP hors ligne envisagé en premier).
 
 ---
 
