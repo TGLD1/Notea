@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 data class MatieresUiState(
     val chargement: Boolean = true,
     val eleveId: Long? = null,
+    val nomPeriode: String = "Semestre",
     val periodeId: Long? = null,
     val periodeNumero: Int? = null,
     val periodesDisponibles: List<Int> = emptyList(),
@@ -43,6 +44,7 @@ class MatieresViewModel(repository: NoteaRepository) : ViewModel() {
                                 MatieresUiState(
                                     chargement = false,
                                     eleveId = profil.id,
+                                    nomPeriode = profil.typeEtablissement.nomPeriode,
                                     periodesDisponibles = periodes.map { it.numero }
                                 )
                             )
@@ -55,6 +57,7 @@ class MatieresViewModel(repository: NoteaRepository) : ViewModel() {
                                 MatieresUiState(
                                     chargement = false,
                                     eleveId = profil.id,
+                                    nomPeriode = profil.typeEtablissement.nomPeriode,
                                     periodeId = periodeCourante.id,
                                     periodeNumero = periodeCourante.numero,
                                     periodesDisponibles = periodes.map { it.numero },

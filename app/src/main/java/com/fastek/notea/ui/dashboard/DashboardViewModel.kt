@@ -16,6 +16,7 @@ data class DashboardUiState(
     val chargement: Boolean = true,
     val profilExiste: Boolean = false,
     val prenom: String = "",
+    val nomPeriode: String = "Semestre",
     val periodeNumero: Int? = null,
     val periodesDisponibles: List<Int> = emptyList(),
     val moyenneGenerale: Double? = null,
@@ -48,6 +49,7 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
                                     chargement = false,
                                     profilExiste = true,
                                     prenom = profil.prenom,
+                                    nomPeriode = profil.typeEtablissement.nomPeriode,
                                     periodesDisponibles = periodes.map { it.numero }
                                 )
                             )
@@ -64,6 +66,7 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
                                     chargement = false,
                                     profilExiste = true,
                                     prenom = profil.prenom,
+                                    nomPeriode = profil.typeEtablissement.nomPeriode,
                                     periodeNumero = periodeCourante.numero,
                                     periodesDisponibles = periodes.map { it.numero },
                                     moyenneGenerale = moyenneGenerale,

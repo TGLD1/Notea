@@ -31,6 +31,7 @@ fun MatieresScreen(
     onMatiereClick: (matiereId: Long, periodeId: Long) -> Unit = { _, _ -> }
 ) {
     val etat by viewModel.uiState.collectAsState()
+    val nomPeriode = etat.nomPeriode
 
     if (etat.chargement) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -20,4 +20,11 @@ enum class TypeEtablissement {
             PUBLIC -> 2
             PRIVE -> 3
         }
+
+    /** Nom d'une période pour l'affichage : « Semestre » (public) ou « Trimestre » (privé). */
+    val nomPeriode: String
+        get() = when (this) {
+            PUBLIC -> "Semestre"
+            PRIVE -> "Trimestre"
+        }
 }
