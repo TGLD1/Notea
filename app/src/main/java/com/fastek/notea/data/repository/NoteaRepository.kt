@@ -10,6 +10,10 @@ import com.fastek.notea.data.local.entity.Evenement
 import com.fastek.notea.data.local.entity.Matiere
 import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
+import com.fastek.notea.data.local.entity.TypeEtablissement
+import com.fastek.notea.data.local.entity.TypeNote
+import com.fastek.notea.domain.bulletin.BulletinData
+import com.fastek.notea.domain.bulletin.LigneBulletin
 import com.fastek.notea.domain.calcul.MoyenneCalculator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -160,5 +164,69 @@ class NoteaRepository(
         val moyenneS2 = observerMoyenneGeneralePeriode(eleveId, periode2).first() ?: return null
 
         return MoyenneCalculator.moyenneAnnuellePublic(moyenneS1, moyenneS2)
+    }
+
+    /**
+     * Instantané des données du bulletin d'une période (pour la génération du PDF).
+     * Les matières sans note sont affichées mais ne comptent pas dans la moyenne générale,
+     * comme dans le reste de l'app. Retourne null si le profil ou la période n'existe pas.
+     */
+    suspend fun construireBulletin(numeroPeriode: Int): BulletinData? {
+        val eleve = getProfil() ?: return null
+        val periode = periodeDao.getPeriode(eleve.id, numeroPeriode) ?: return null
+        val matieres = matiereDao.observerMatieres(eleve.id).first()
+
+        val lignes = matieres.map { matiere ->
+            val notes = noteDao.getNotes(matiere.id, periode.id)
+            val interros = notes.filter { it.type == TypeNote.INTERROGATION }.map { it.valeur }
+            val devoirs = notes.filter { it.type == TypeNote.DEVOIR }.map { it.valeur }
+            LigneBulletin(
+                matiere = matiere.nom,
+                coefficient = matiere.coefficient,
+                estConduite = matiere.nom == "Conduite",
+                moyenneInterro = interros.takeIf { it.isNotEmpty() }?.average(),
+                devoir1 = devoirs.getOrNull(0),
+                devoir2 = devoirs.getOrNull(1),
+                moyenne = MoyenneCalculator.moyenneMatiere(notes)
+            )
+        }
+
+        val notees = lignes.filter { it.moyenne != null }
+        val moyenneGenerale = MoyenneCalculator.moyenneGeneralePeriode(
+            notees.map { MoyenneCalculator.MoyennePonderee(it.moyenne!!, it.coefficient) }
+        )
+
+        val estPublic = eleve.typeEtablissement == TypeEtablissement.PUBLIC
+        var moyennePeriode1: Double? = null
+        var moyenneAnnuelle: Double? = null
+        if (estPublic && numeroPeriode == 2) {
+            val periode1 = periodeDao.getPeriode(eleve.id, 1)
+            val s1: Double? = if (periode1 != null) {
+                observerMoyenneGeneralePeriode(eleve.id, periode1).first()
+            } else {
+                null
+            }
+            moyennePeriode1 = s1
+            if (s1 != null && moyenneGenerale != null) {
+                moyenneAnnuelle = MoyenneCalculator.moyenneAnnuellePublic(s1, moyenneGenerale)
+            }
+        }
+
+        return BulletinData(
+            nom = eleve.nom,
+            prenom = eleve.prenom,
+            matricule = eleve.matricule,
+            classe = eleve.classe,
+            anneeScolaire = eleve.anneeScolaire,
+            typeEtablissement = eleve.typeEtablissement,
+            numeroPeriode = numeroPeriode,
+            lignes = lignes,
+            moyenneGenerale = moyenneGenerale,
+            totalCoefficients = notees.sumOf { it.coefficient },
+            totalMoyCoef = notees.sumOf { it.moyenneCoef ?: 0.0 },
+            moyennePeriode1 = moyennePeriode1,
+            moyenneAnnuelle = moyenneAnnuelle,
+            finAnnee = numeroPeriode == eleve.typeEtablissement.nombrePeriodes
+        )
     }
 }

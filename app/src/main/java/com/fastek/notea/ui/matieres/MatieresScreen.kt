@@ -46,11 +46,11 @@ fun MatieresScreen(
                     etat.periodesDisponibles.forEach { numero ->
                         if (numero == etat.periodeNumero) {
                             Button(onClick = { viewModel.selectionnerPeriode(numero) }) {
-                                Text("Semestre $numero")
+                                Text("$nomPeriode $numero")
                             }
                         } else {
                             OutlinedButton(onClick = { viewModel.selectionnerPeriode(numero) }) {
-                                Text("Semestre $numero")
+                                Text("$nomPeriode $numero")
                             }
                         }
                         Spacer(Modifier.width(8.dp))

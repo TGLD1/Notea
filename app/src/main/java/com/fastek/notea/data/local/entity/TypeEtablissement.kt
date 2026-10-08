@@ -7,8 +7,8 @@ package com.fastek.notea.data.local.entity
  *  - PUBLIC : 2 semestres
  *  - PRIVE  : 3 trimestres
  *
- * (La branche PRIVE n'est pas encore câblée dans le moteur de calcul —
- * priorité donnée au PUBLIC dans un premier temps, même logique à terme.)
+ * PUBLIC : 2 semestres.
+ * PRIVE : 3 trimestres.
  */
 enum class TypeEtablissement {
     PUBLIC,

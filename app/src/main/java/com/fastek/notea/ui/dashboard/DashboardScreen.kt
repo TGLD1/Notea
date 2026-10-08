@@ -57,11 +57,11 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                     val selectionne = numero == etat.periodeNumero
                     if (selectionne) {
                         Button(onClick = { viewModel.selectionnerPeriode(numero) }) {
-                            Text("Semestre $numero")
+                            Text("$nomPeriode $numero")
                         }
                     } else {
                         OutlinedButton(onClick = { viewModel.selectionnerPeriode(numero) }) {
-                            Text("Semestre $numero")
+                            Text("$nomPeriode $numero")
                         }
                     }
                     Spacer(Modifier.width(8.dp))
@@ -69,7 +69,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             }
         } else {
             Text(
-                text = etat.periodeNumero?.let { "Semestre $it" } ?: "Aucune période créée",
+                text = etat.periodeNumero?.let { "$nomPeriode $it" } ?: "Aucune période créée",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

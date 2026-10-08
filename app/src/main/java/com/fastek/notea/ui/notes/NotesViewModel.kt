@@ -93,7 +93,7 @@ class NotesViewModel(
         if (type == TypeNote.DEVOIR) {
             val nombreDevoirs = uiState.value.notes.count { it.type == TypeNote.DEVOIR }
             if (nombreDevoirs >= MAX_DEVOIRS_PAR_PERIODE) {
-                _saisie.update { it.copy(erreur = "Maximum $MAX_DEVOIRS_PAR_PERIODE devoirs par semestre (comme sur le bulletin officiel)") }
+                _saisie.update { it.copy(erreur = "Maximum $MAX_DEVOIRS_PAR_PERIODE devoirs par période (comme sur le bulletin officiel)") }
                 return
             }
         }

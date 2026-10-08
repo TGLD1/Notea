@@ -53,6 +53,7 @@ import com.fastek.notea.ui.objectifs.ObjectifsScreen
 import com.fastek.notea.ui.objectifs.ObjectifsViewModel
 import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
+import com.fastek.notea.ui.parametres.BulletinScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
@@ -221,6 +222,9 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
                         navController.navigate(route)
                     }
                 }
+            }
+            composable("bulletin") {
+                BulletinScreen(repository)
             }
             composable("don") {
                 TextScreen("Faire un don à FASTEK", TextesStatiques.DON)

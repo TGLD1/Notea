@@ -7,7 +7,8 @@ import java.time.LocalDate
 
 /**
  * Moteur de calcul des moyennes — système scolaire béninois, établissement PUBLIC (2 semestres).
- * La branche PRIVE (3 trimestres) suit le même principe mais n'est pas encore câblée.
+ * PUBLIC : 2 semestres.
+ * PRIVE : 3 trimestres.
  *
  * Règle par matière et par période :
  *   1. M_intero = moyenne simple de toutes les notes d'interrogation de la matière.

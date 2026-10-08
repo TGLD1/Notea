@@ -77,3 +77,9 @@ mêmes secrets GitHub (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`,
 Une fois l'APK de test installé et vérifié sur ton téléphone : les écrans
 Compose Onboarding puis Dashboard, en s'appuyant sur `OnboardingViewModel` et
 `DashboardViewModel` (déjà prêts, via `NoteaViewModelFactory`).
+
+## Bulletin PDF (ajouté après v0.1)
+- `domain/bulletin/BulletinData.kt` + `BulletinPdfGenerator.kt` : PDF A4 via `android.graphics.pdf.PdfDocument` (aucune dépendance ajoutée).
+- `NoteaRepository.construireBulletin(numeroPeriode)` : instantané des notes/moyennes de la période (+ moyenne annuelle sur le bulletin S2 public).
+- `ui/parametres/BulletinScreen.kt` : choix du semestre, génération dans le cache, partage via `FileProvider` (manifest + `res/xml/file_paths.xml`).
+- Accès : Paramètres → « Générer le bulletin PDF ». Rang, moyenne de classe, appréciations, décision du conseil : laissés vides à remplir à la main.
