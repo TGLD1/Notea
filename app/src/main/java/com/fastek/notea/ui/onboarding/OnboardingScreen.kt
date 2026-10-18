@@ -1,5 +1,8 @@
 package com.fastek.notea.ui.onboarding
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,8 +35,15 @@ import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.domain.reference.NiveauxReference
 
 @Composable
-fun OnboardingScreen(viewModel: OnboardingViewModel) {
+fun OnboardingScreen(
+    viewModel: OnboardingViewModel,
+    erreurRestauration: String? = null,
+    onRestaurer: (Uri) -> Unit = {}
+) {
     val etat by viewModel.uiState.collectAsState()
+    val lanceurImport = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) onRestaurer(uri) }
 
     LazyColumn(
         modifier = Modifier
@@ -42,6 +53,12 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
     ) {
         item {
             Text("Bienvenue sur Notea", style = MaterialTheme.typography.headlineSmall)
+        }
+        item {
+            TextButton(onClick = { lanceurImport.launch(arrayOf("*/*")) }) {
+                Text("J'ai déjà une sauvegarde Notea")
+            }
+            erreurRestauration?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }
 
         item {

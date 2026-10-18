@@ -65,7 +65,10 @@ class PlanningViewModel(private val repository: NoteaRepository) : ViewModel() {
                     PlanningUiState(
                         chargement = false,
                         eleveId = profil.id,
-                        evenements = evenements.sortedBy { it.date }.map { ev ->
+                        evenements = evenements
+                            .filter { !it.date.isBefore(LocalDate.now()) }
+                            .sortedBy { it.date }
+                            .map { ev ->
                             EvenementUi(
                                 id = ev.id,
                                 titre = ev.titre,

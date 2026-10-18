@@ -30,4 +30,10 @@ interface EvenementDao {
     /** Utilisé par le rappel WorkManager : événements dans la fenêtre [debut, fin] pas encore notifiés. */
     @Query("SELECT * FROM evenement WHERE eleveId = :eleveId AND date BETWEEN :debut AND :fin AND notifie = 0")
     suspend fun getEvenementsAvenirNonNotifies(eleveId: Long, debut: LocalDate, fin: LocalDate): List<Evenement>
+
+    @Query("SELECT * FROM evenement")
+    suspend fun getTous(): List<Evenement>
+
+    @Insert
+    suspend fun insererTous(evenements: List<Evenement>)
 }

@@ -25,4 +25,10 @@ interface MatiereDao {
 
     @Query("SELECT * FROM matiere WHERE id = :matiereId")
     suspend fun getMatiere(matiereId: Long): Matiere?
+
+    @Query("SELECT * FROM matiere")
+    suspend fun getToutes(): List<Matiere>
+
+    @Insert
+    suspend fun insererToutes(matieres: List<Matiere>)
 }

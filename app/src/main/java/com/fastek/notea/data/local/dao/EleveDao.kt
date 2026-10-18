@@ -49,4 +49,15 @@ interface EleveDao {
 
     @Query("UPDATE eleve SET redoublant = :valeur WHERE id = :eleveId")
     suspend fun mettreAJourRedoublant(eleveId: Long, valeur: String)
+
+    // --- Sauvegarde / restauration ---
+    @Query("SELECT * FROM eleve")
+    suspend fun getTous(): List<Eleve>
+
+    @Insert
+    suspend fun insererTous(eleves: List<Eleve>)
+
+    /** Supprime tout : les matières, périodes, notes et événements partent en cascade. */
+    @Query("DELETE FROM eleve")
+    suspend fun toutSupprimer()
 }

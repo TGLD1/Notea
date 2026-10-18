@@ -25,4 +25,9 @@ interface PeriodeDao {
     @Query("UPDATE periode SET objectifCible = :objectif WHERE id = :periodeId")
     suspend fun mettreAJourObjectif(periodeId: Long, objectif: Double)
 
+    @Query("SELECT * FROM periode")
+    suspend fun getToutes(): List<Periode>
+
+    @Insert
+    suspend fun insererToutes(periodes: List<Periode>)
 }

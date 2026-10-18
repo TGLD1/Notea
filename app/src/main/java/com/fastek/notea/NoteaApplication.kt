@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.room.Room
+import com.fastek.notea.data.backup.SauvegardeManager
 import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.diagnostic.Journal
@@ -18,6 +19,8 @@ class NoteaApplication : Application() {
             .fallbackToDestructiveMigrationFrom(1, 2)
             .build()
     }
+
+    val sauvegarde: SauvegardeManager by lazy { SauvegardeManager(database) }
 
     val repository: NoteaRepository by lazy {
         NoteaRepository(

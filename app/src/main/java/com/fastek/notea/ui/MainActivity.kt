@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,7 +41,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.launch
 import com.fastek.notea.NoteaApplication
+import com.fastek.notea.data.backup.SauvegardeManager
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.ui.dashboard.DashboardScreen
 import com.fastek.notea.ui.dashboard.DashboardViewModel
@@ -58,6 +61,8 @@ import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
+import com.fastek.notea.ui.parametres.SauvegardeScreen
+import com.fastek.notea.ui.parametres.restaurerDepuisFichier
 import com.fastek.notea.ui.parametres.TextScreen
 import com.fastek.notea.ui.parametres.TextesStatiques
 import com.fastek.notea.ui.planning.PlanningScreen
@@ -101,10 +106,26 @@ private fun NoteaApp(app: NoteaApplication) {
                     if (etat.profilCreeAvecId != null) {
                         profilExiste = true
                     } else {
-                        OnboardingScreen(viewModel = onboardingViewModel)
+                        val scope = rememberCoroutineScope()
+                        val context = LocalContext.current
+                        var erreurRestauration by remember { mutableStateOf<String?>(null) }
+                        OnboardingScreen(
+                            viewModel = onboardingViewModel,
+                            erreurRestauration = erreurRestauration,
+                            onRestaurer = { uri ->
+                                scope.launch {
+                                    val resultat = restaurerDepuisFichier(context, app.sauvegarde, uri)
+                                    if (resultat == null) {
+                                        profilExiste = true
+                                    } else {
+                                        erreurRestauration = resultat
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
-                true -> NoteaNavHost(factory, app.repository)
+                true -> NoteaNavHost(factory, app.repository, app.sauvegarde)
             }
         }
     }
@@ -121,7 +142,11 @@ private val ONGLETS = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaRepository) {
+private fun NoteaNavHost(
+    factory: NoteaViewModelFactory,
+    repository: NoteaRepository,
+    sauvegarde: SauvegardeManager
+) {
     val navController = rememberNavController()
     var menuOuvert by remember { mutableStateOf(false) }
 
@@ -229,6 +254,9 @@ private fun NoteaNavHost(factory: NoteaViewModelFactory, repository: NoteaReposi
             }
             composable("bulletin") {
                 BulletinScreen(repository)
+            }
+            composable("sauvegarde") {
+                SauvegardeScreen(sauvegarde)
             }
             composable("don") {
                 TextScreen("Faire un don à FASTEK", TextesStatiques.DON)

@@ -32,4 +32,10 @@ interface NoteDao {
 
     @Query("DELETE FROM note WHERE matiereId = :matiereId AND periodeId = :periodeId")
     suspend fun supprimerToutesPourMatierePeriode(matiereId: Long, periodeId: Long)
+
+    @Query("SELECT * FROM note")
+    suspend fun getToutes(): List<Note>
+
+    @Insert
+    suspend fun insererToutes(notes: List<Note>)
 }

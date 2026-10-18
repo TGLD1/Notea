@@ -41,13 +41,14 @@ object TextesStatiques {
         "personnelle (notes, nom, classe, etc.) n'est collectée, transmise ou partagée avec " +
         "FASTEK ou un tiers. Toutes les informations restent stockées uniquement sur ton " +
         "téléphone, dans la mémoire de l'application.\n\n" +
-        "Si tu utilises la sauvegarde Google Drive (fonctionnalité à venir), tes données " +
-        "seront alors envoyées vers ton propre compte Google Drive personnel — jamais vers " +
-        "un serveur FASTEK."
+        "Si tu exportes une sauvegarde, elle est enregistrée dans un fichier que tu choisis toi-même " +
+        "(téléphone, Drive, WhatsApp…) : FASTEK n'y a jamais accès.\n\n" +
+        "Le don en ligne, lorsqu'il sera disponible, sera traité par le prestataire de paiement : " +
+        "Notea ne collecte ni ne conserve aucune information de paiement."
 
-    const val DON = "Notea est gratuite et 100% hors ligne. Si l'application t'a été utile et " +
-        "que tu veux soutenir FASTEK, tu peux envoyer un don via Mobile Money :\n\n" +
-        "[Numéro à venir]\n\n" +
+    const val DON = "Notea est gratuite et 100% hors ligne. Si l'application t'est utile et " +
+        "que tu veux soutenir FASTEK, le don en ligne (Mobile Money et carte bancaire) sera " +
+        "bientôt disponible dans cet écran.\n\n" +
         "Merci pour ton soutien !"
 
     const val CGU = "En utilisant Notea, tu acceptes que :\n\n" +
