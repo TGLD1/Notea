@@ -2,6 +2,7 @@ package com.fastek.notea.domain.bulletin
 
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
@@ -11,30 +12,31 @@ import java.util.Locale
 
 /**
  * Génère le bulletin PDF d'une période avec l'API native [PdfDocument] (aucune dépendance
- * ajoutée, donc aucun poids en plus). Format A4 portrait.
- *
- * Colonnes inspirées du bulletin officiel : Disciplines, Coef, Moy. interro., Devoir 1,
- * Devoir 2, Moy/20, Moy Coef, Rang, Appréciation. Rang, appréciation, moyenne/rang de classe
+ * ajoutée). Mise en page calquée sur le bulletin officiel : bandeau titre, cadre d'identité,
+ * tableau des disciplines, bilan (+ sanction, ou décision du conseil en fin d'année) et
+ * cadre d'appréciation. Rang, moyenne de classe, plus forte/faible moyenne et appréciations
  * ne sont pas calculables (app mono-élève) : ils restent vides, à remplir à la main.
  */
 object BulletinPdfGenerator {
 
     private const val LARGEUR_PAGE = 595
     private const val HAUTEUR_PAGE = 842
-    private const val MARGE = 36f
-    private const val HAUTEUR_LIGNE = 22f
-    private const val BAS_UTILISABLE = 780f
-    private const val BLEU = 0xFF1565C0.toInt()
-    private const val GRIS_CLAIR = 0xFFF1F3F6.toInt()
-    private const val GRIS_TEXTE = 0xFF6B7280.toInt()
-    private const val POINTILLES = "........................"
+    private const val MARGE = 30f
+    private const val LARGEUR = 535f
+    private const val BAS_UTILISABLE = 790f
+    private const val HAUTEUR_TITRES = 24f
+    private const val HAUTEUR_LIGNE = 26f
+    private const val MARINE = 0xFF1E2235.toInt()
+    private const val BORDURE = 0xFF4B5563.toInt()
+    private const val GRIS_CLAIR = 0xFFEEF0F5.toInt()
+    private const val GRIS_TEXTE = 0xFF4B5563.toInt()
+    private const val POINTS = "........"
 
     private val TITRES = listOf(
-        "Disciplines", "Coef", "M. interro", "Devoir 1", "Devoir 2",
-        "Moy/20", "Moy Coef", "Rang", "Appréciation"
+        "Disciplines", "Coef", "Moy. interro.", "Devoir 1", "Devoir 2",
+        "Moy/20", "Moy Coef.", "Rang", "Appréciation"
     )
-    private val LARGEURS = listOf(135f, 30f, 50f, 45f, 45f, 45f, 50f, 35f, 88f)
-    private val LARGEUR_TABLEAU = LARGEURS.sum()
+    private val LARGEURS = listOf(120f, 30f, 55f, 45f, 45f, 45f, 50f, 40f, 105f)
 
     fun generer(data: BulletinData, fichier: File) {
         val document = PdfDocument()
@@ -43,21 +45,14 @@ object BulletinPdfGenerator {
             rendu.nouvellePage()
             dessinerEntete(rendu, data)
             dessinerTitresTableau(rendu)
-            data.lignes.forEachIndexed { index, ligne ->
+            data.lignes.forEach { ligne ->
                 rendu.assurerPlace(HAUTEUR_LIGNE) { dessinerTitresTableau(rendu) }
-                dessinerLigneMatiere(rendu, ligne, index % 2 == 1)
+                dessinerLigneMatiere(rendu, ligne)
             }
-            dessinerLigne(
-                rendu,
-                listOf(
-                    "TOTAL", data.totalCoefficients.toString(), "", "", "",
-                    "", format(data.totalMoyCoef.takeIf { data.totalCoefficients > 0 }), "", ""
-                ),
-                gras = true, fond = GRIS_CLAIR
-            )
-            rendu.y += 16f
-            dessinerResultats(rendu, data)
-            dessinerSignatures(rendu)
+            dessinerTotal(rendu, data)
+            rendu.y += 14f
+            dessinerBilan(rendu, data)
+            dessinerAppreciation(rendu)
             rendu.terminerPage()
             FileOutputStream(fichier).use { document.writeTo(it) }
         } finally {
@@ -65,178 +60,285 @@ object BulletinPdfGenerator {
         }
     }
 
-    // ---------------------------------------------------------------- dessin
+    // ------------------------------------------------------------- en-tête
 
-    private fun dessinerEntete(r: Rendu, data: BulletinData) {
-        val titre = peinture(18f, gras = true, couleur = BLEU)
-        r.canvas.drawText("BULLETIN DE NOTES", MARGE, r.y + 16f, titre)
-        val sousTitre = peinture(11f, couleur = GRIS_TEXTE)
-        r.canvas.drawText(
-            "${data.libellePeriode} ${data.numeroPeriode} — Année scolaire ${data.anneeScolaire}",
-            MARGE, r.y + 34f, sousTitre
-        )
-        r.y += 46f
-        trait(r, BLEU, 1.5f)
-        r.y += 14f
+    private fun dessinerEntete(r: Rendu, d: BulletinData) {
+        val c = r.canvas
+        fond(c, MARGE, r.y, LARGEUR, 22f, MARINE)
+        centre(c, "BULLETIN DE NOTES", MARGE, LARGEUR, r.y + 15f, peinture(11f, gras = true, couleur = Color.WHITE))
+        r.y += 22f
 
-        val moitie = MARGE + LARGEUR_TABLEAU / 2f + 10f
-        ligneInfo(r, MARGE, "Nom", data.nom.uppercase(Locale.FRANCE))
-        ligneInfo(r, moitie, "Classe", data.classe)
-        r.y += 16f
-        ligneInfo(r, MARGE, "Prénoms", data.prenom)
-        ligneInfo(r, moitie, "Matricule", data.matricule.ifBlank { POINTILLES })
-        r.y += 16f
-        ligneInfo(r, MARGE, "Né(e) le / à", naissance(data))
-        ligneInfo(r, moitie, "Effectif", data.effectif.ifBlank { "........" })
-        r.y += 16f
-        ligneInfo(r, MARGE, "Aptitude EPS", data.aptitudeEps.ifBlank { "........" })
-        ligneInfo(r, moitie, "Redoublant / Abandon", "${data.redoublant.ifBlank { "......" }} / ......")
-        r.y += 24f
+        val base = r.y + 19f
+        c.drawText("Établissement :", MARGE, base, peinture(9f, gras = true))
+        ligneTiretee(c, MARGE + 82f, MARGE + LARGEUR, base + 1f)
+        r.y += 30f
+
+        val h = 26f
+        val top = r.y
+        val xMid = MARGE + 265f
+        val xPhoto = xMid + 190f
+        val libelle = if (d.libellePeriode == "Semestre") "Sem. :" else "Trim. :"
+
+        cadre(c, MARGE, top, LARGEUR, 4 * h)
+        trait(c, xMid, top, xMid, top + 4 * h)
+        trait(c, xPhoto, top, xPhoto, top + 3 * h)
+        for (i in 1..3) trait(c, MARGE, top + i * h, xMid, top + i * h)
+        trait(c, xMid, top + h, xPhoto, top + h)
+        trait(c, xMid, top + 2 * h, xPhoto, top + 2 * h)
+        trait(c, xMid, top + 3 * h, MARGE + LARGEUR, top + 3 * h)
+
+        fun ligneBase(ligne: Int) = top + ligne * h + 17f
+        val xl = MARGE + 6f
+        val xv = MARGE + 100f
+        info(c, xl, xv, ligneBase(0), "Matricule :", d.matricule.ifBlank { POINTS }, 160f)
+        info(c, xl, xv, ligneBase(1), "Nom :", d.nom.uppercase(Locale.FRANCE), 160f)
+        info(c, xl, xv, ligneBase(2), "Prénoms :", d.prenom, 160f)
+        info(c, xl, xv, ligneBase(3), "Date et lieu naiss. :", naissance(d), 160f)
+
+        info(c, xMid + 6f, xMid + 88f, ligneBase(0), "Année scolaire :", d.anneeScolaire, 98f)
+        info(c, xMid + 6f, xMid + 46f, ligneBase(1), "Classe :", d.classe, 60f)
+        info(c, xMid + 112f, xMid + 140f, ligneBase(1), "Eff. :", d.effectif.ifBlank { POINTS }, 46f)
+        info(c, xMid + 6f, xMid + 46f, ligneBase(2), libelle, d.numeroPeriode.toString(), 60f)
+        info(c, xMid + 112f, xMid + 140f, ligneBase(2), "EPS :", d.aptitudeEps.ifBlank { POINTS }, 46f)
+
+        val redoublant = d.redoublant.trim()
+        ligneOuiNon(c, xMid + 6f, top + 3 * h + 11f, "Redoublant :", redoublant.equals("oui", true), redoublant.equals("non", true))
+        ligneOuiNon(c, xMid + 6f, top + 3 * h + 23f, "Abandon :", false, false)
+
+        cadre(c, xPhoto + 8f, top + 6f, 64f, 3 * h - 12f, GRIS_TEXTE, 0.6f)
+        centre(c, "Photo", xPhoto + 8f, 64f, top + 3 * h / 2f + 3f, peinture(7f, couleur = GRIS_TEXTE))
+
+        r.y = top + 4 * h + 12f
     }
 
     private fun naissance(d: BulletinData): String =
         if (d.dateNaissance.isBlank() && d.lieuNaissance.isBlank()) {
-            POINTILLES
+            POINTS
         } else {
             "${d.dateNaissance.ifBlank { "......" }} à ${d.lieuNaissance.ifBlank { "......" }}"
         }
 
-    private fun ligneInfo(r: Rendu, x: Float, libelle: String, valeur: String) {
-        val p = peinture(10f, couleur = GRIS_TEXTE)
-        r.canvas.drawText("$libelle :", x, r.y, p)
-        val decalage = p.measureText("$libelle : ") + 2f
-        r.canvas.drawText(valeur, x + decalage, r.y, peinture(10.5f, gras = true))
+    private fun info(c: Canvas, xLibelle: Float, xValeur: Float, base: Float, libelle: String, valeur: String, largeurMax: Float) {
+        c.drawText(libelle, xLibelle, base, peinture(8f, gras = true, couleur = GRIS_TEXTE))
+        val p = peinture(9.5f)
+        c.drawText(tronquer(valeur, p, largeurMax), xValeur, base, p)
     }
 
-    private fun trait(r: Rendu, couleur: Int, epaisseur: Float) {
-        val p = Paint().apply {
-            color = couleur
-            strokeWidth = epaisseur
-            style = Paint.Style.STROKE
-        }
-        r.canvas.drawLine(MARGE, r.y, MARGE + LARGEUR_TABLEAU, r.y, p)
+    private fun ligneOuiNon(c: Canvas, x: Float, base: Float, libelle: String, oui: Boolean, non: Boolean) {
+        c.drawText(libelle, x, base, peinture(8f, gras = true, couleur = GRIS_TEXTE))
+        val p = peinture(8.5f)
+        c.drawText("Oui", x + 84f, base, p)
+        caseACocher(c, x + 102f, base, oui)
+        c.drawText("Non", x + 124f, base, p)
+        caseACocher(c, x + 142f, base, non)
     }
+
+    private fun caseACocher(c: Canvas, x: Float, base: Float, cochee: Boolean) {
+        cadre(c, x, base - 8f, 8f, 8f, BORDURE, 0.8f)
+        if (cochee) {
+            trait(c, x + 1.5f, base - 6.5f, x + 6.5f, base - 1.5f, Color.BLACK, 1.2f)
+            trait(c, x + 6.5f, base - 6.5f, x + 1.5f, base - 1.5f, Color.BLACK, 1.2f)
+        }
+    }
+
+    // ------------------------------------------------------------- tableau
 
     private fun dessinerTitresTableau(r: Rendu) {
-        dessinerLigne(r, TITRES, gras = true, fond = BLEU, couleurTexte = Color.WHITE, taille = 8.5f)
+        r.assurerPlace(HAUTEUR_TITRES)
+        val c = r.canvas
+        fond(c, MARGE, r.y, LARGEUR, HAUTEUR_TITRES, MARINE)
+        val p = peinture(8f, gras = true, couleur = Color.WHITE)
+        var x = MARGE
+        TITRES.forEachIndexed { i, titre ->
+            centre(c, titre, x, LARGEURS[i], r.y + 15f, p)
+            x += LARGEURS[i]
+        }
+        r.y += HAUTEUR_TITRES
     }
 
-    private fun dessinerLigneMatiere(r: Rendu, l: LigneBulletin, alterner: Boolean) {
+    private fun dessinerLigneMatiere(r: Rendu, l: LigneBulletin) {
+        val c = r.canvas
+        val haut = r.y
+        val bas = haut + HAUTEUR_LIGNE
+        cadre(c, MARGE, haut, LARGEUR, HAUTEUR_LIGNE, BORDURE, 0.7f)
+
         val cellules = listOf(
-            l.matiere,
+            l.matiere.uppercase(Locale.FRANCE),
             l.coefficient.toString(),
-            if (l.estConduite) "" else format(l.moyenneInterro),
-            if (l.estConduite) "" else format(l.devoir1),
-            if (l.estConduite) "" else format(l.devoir2),
-            format(l.moyenne).ifEmpty { "—" },
-            format(l.moyenneCoef).ifEmpty { "—" },
+            if (l.estConduite) "" else formatNote(l.moyenneInterro),
+            if (l.estConduite) "" else formatNote(l.devoir1),
+            if (l.estConduite) "" else formatNote(l.devoir2),
+            format2(l.moyenne).ifEmpty { "—" },
+            format2(l.moyenneCoef).ifEmpty { "—" },
             "",
             ""
         )
-        dessinerLigne(r, cellules, gras = false, fond = if (alterner) GRIS_CLAIR else null)
-    }
-
-    /** Dessine une ligne de tableau : première colonne alignée à gauche, les autres centrées. */
-    private fun dessinerLigne(
-        r: Rendu,
-        cellules: List<String>,
-        gras: Boolean,
-        fond: Int?,
-        couleurTexte: Int = Color.BLACK,
-        taille: Float = 9f
-    ) {
-        r.assurerPlace(HAUTEUR_LIGNE)
-        val haut = r.y
-        val bas = haut + HAUTEUR_LIGNE
-        if (fond != null) {
-            val pf = Paint().apply { color = fond; style = Paint.Style.FILL }
-            r.canvas.drawRect(MARGE, haut, MARGE + LARGEUR_TABLEAU, bas, pf)
-        }
-        val bordure = Paint().apply {
-            color = 0xFF9CA3AF.toInt()
-            strokeWidth = 0.6f
-            style = Paint.Style.STROKE
-        }
-        r.canvas.drawRect(MARGE, haut, MARGE + LARGEUR_TABLEAU, bas, bordure)
-
-        val texte = peinture(taille, gras = gras, couleur = couleurTexte)
+        val texte = peinture(9f)
+        val gras = peinture(8.5f, gras = true)
+        val base = haut + HAUTEUR_LIGNE / 2f + 3f
         var x = MARGE
         cellules.forEachIndexed { i, contenu ->
             val largeur = LARGEURS[i]
-            if (i > 0) r.canvas.drawLine(x, haut, x, bas, bordure)
-            val affiche = tronquer(contenu, texte, largeur - 8f)
-            val base = haut + HAUTEUR_LIGNE / 2f + taille / 3f
+            // Conduite : les colonnes interro / devoirs sont fusionnées (vides).
+            val fusionnee = l.estConduite && (i == 3 || i == 4)
+            if (i > 0 && !fusionnee) trait(c, x, haut, x, bas, BORDURE, 0.7f)
             if (i == 0) {
-                r.canvas.drawText(affiche, x + 4f, base, texte)
+                c.drawText(tronquer(contenu, gras, largeur - 8f), x + 5f, base, gras)
             } else {
-                r.canvas.drawText(affiche, x + (largeur - texte.measureText(affiche)) / 2f, base, texte)
+                centre(c, contenu, x, largeur, base, texte)
             }
             x += largeur
         }
         r.y = bas
     }
 
-    private fun dessinerResultats(r: Rendu, data: BulletinData) {
-        r.assurerPlace(120f)
-        val gros = peinture(13f, gras = true, couleur = BLEU)
-        val normal = peinture(10.5f)
-        val moyenne = format(data.moyenneGenerale).ifEmpty { "—" }
-        r.canvas.drawText(
-            "Moyenne générale du ${data.libellePeriode.lowercase(Locale.FRANCE)} ${data.numeroPeriode} : $moyenne / 20",
-            MARGE, r.y + 12f, gros
-        )
-        r.y += 28f
+    private fun dessinerTotal(r: Rendu, data: BulletinData) {
+        r.assurerPlace(22f)
+        val c = r.canvas
+        val haut = r.y
+        fond(c, MARGE, haut, LARGEUR, 22f, GRIS_CLAIR)
+        cadre(c, MARGE, haut, LARGEUR, 22f, BORDURE, 0.7f)
+        val p = peinture(9f, gras = true)
+        val base = haut + 15f
+        c.drawText("TOTAL", MARGE + 5f, base, p)
+        centre(c, data.totalCoefficients.toString(), MARGE + LARGEURS[0], LARGEURS[1], base, p)
+        val xMoyCoef = MARGE + LARGEURS.take(6).sum()
+        centre(c, format2(data.totalMoyCoef.takeIf { data.totalCoefficients > 0 }), xMoyCoef, LARGEURS[6], base, p)
+        r.y = haut + 22f
+    }
 
-        if (data.moyenneAnnuelle != null) {
-            data.moyennesPrecedentes.forEachIndexed { index, moyenne ->
-                r.canvas.drawText(
-                    "Moyenne du ${data.libellePeriode.lowercase(Locale.FRANCE)} ${index + 1} : ${format(moyenne)} / 20",
-                    MARGE, r.y, normal
-                )
-                r.y += 16f
+    // --------------------------------------------------------------- bilan
+
+    private fun dessinerBilan(r: Rendu, d: BulletinData) {
+        val libelle = d.libellePeriode
+        val gauche = mutableListOf<Pair<String, String>>()
+        if (d.finAnnee) {
+            d.moyennesPrecedentes.forEachIndexed { i, m -> gauche += "Moy. $libelle ${i + 1}" to valeurOuPoints(m) }
+        }
+        gauche += "Moy. $libelle ${d.numeroPeriode}" to valeurOuPoints(d.moyenneGenerale)
+        gauche += "Plus forte Moy." to POINTS
+        gauche += "Plus faible Moy." to POINTS
+        if (d.finAnnee) gauche += "Moy. Annuelle" to valeurOuPoints(d.moyenneAnnuelle)
+
+        val droite = mutableListOf<Pair<String, String>>()
+        repeat(if (d.finAnnee) d.numeroPeriode else 1) { droite += "Rang" to POINTS }
+        droite += "Moy. Classe" to POINTS
+        if (d.finAnnee) droite += "Rang Annuel" to POINTS
+
+        val largeur = if (d.finAnnee) LARGEUR else 300f
+        val hauteurCorps = maxOf(gauche.size, droite.size) * 18f + 12f
+        r.assurerPlace(22f + hauteurCorps + (if (d.finAnnee) 30f else 0f))
+
+        val c = r.canvas
+        val haut = r.y
+        fond(c, MARGE, haut, largeur, 22f, MARINE)
+        centre(c, "BILAN", MARGE, largeur, haut + 15f, peinture(10.5f, gras = true, couleur = Color.WHITE))
+        cadre(c, MARGE, haut + 22f, largeur, hauteurCorps)
+
+        val libellePaint = peinture(8.5f, gras = true, couleur = GRIS_TEXTE)
+        val valeurPaint = peinture(10f, gras = true)
+        val xDroite = MARGE + largeur * 0.58f
+        val xValeurDroite = xDroite + (if (d.finAnnee) 85f else 72f)
+        gauche.forEachIndexed { i, (nom, valeur) ->
+            val base = haut + 22f + 17f + i * 18f
+            c.drawText("$nom :", MARGE + 10f, base, libellePaint)
+            c.drawText(valeur, MARGE + 118f, base, valeurPaint)
+            if (nom == "Moy. Annuelle" && d.moyenneAnnuelle != null) {
+                c.drawText(d.formuleAnnuelle, MARGE + 160f, base, peinture(7f, couleur = GRIS_TEXTE))
             }
-            r.canvas.drawText(
-                "Moyenne annuelle : ${format(data.moyenneAnnuelle)} / 20  ${data.formuleAnnuelle}",
-                MARGE, r.y, peinture(11f, gras = true)
-            )
-            r.y += 20f
+        }
+        droite.forEachIndexed { i, (nom, valeur) ->
+            val base = haut + 22f + 17f + i * 18f
+            c.drawText("$nom :", xDroite, base, libellePaint)
+            c.drawText(valeur, xValeurDroite, base, valeurPaint)
         }
 
-        r.canvas.drawText("Moyenne de la classe : $POINTILLES", MARGE, r.y, normal)
-        r.canvas.drawText("Rang : ........ / ........", MARGE + 300f, r.y, normal)
-        r.y += 16f
-        r.canvas.drawText("Plus forte moyenne : ........", MARGE, r.y, normal)
-        r.canvas.drawText("Plus faible moyenne : ........", MARGE + 300f, r.y, normal)
-        r.y += 22f
+        if (!d.finAnnee) {
+            val xSanction = MARGE + 310f
+            fond(c, xSanction, haut, 225f, 22f, MARINE)
+            centre(c, "SANCTION", xSanction, 225f, haut + 15f, peinture(10.5f, gras = true, couleur = Color.WHITE))
+            cadre(c, xSanction, haut + 22f, 225f, hauteurCorps)
+        }
+        r.y = haut + 22f + hauteurCorps
 
-        if (data.finAnnee) {
-            r.canvas.drawText("Décision du conseil (Passe / Redouble) : $POINTILLES", MARGE, r.y, normal)
-            r.y += 18f
-            r.canvas.drawText("Appréciation générale : $POINTILLES$POINTILLES", MARGE, r.y, normal)
-            r.y += 22f
+        if (d.finAnnee) {
+            r.y += 8f
+            val top = r.y
+            fond(c, MARGE, top, LARGEUR, 22f, MARINE)
+            c.drawText("DÉCISION DU CONSEIL", MARGE + 12f, top + 15f, peinture(10.5f, gras = true, couleur = Color.WHITE))
+            val blanc = peinture(9f, gras = true, couleur = Color.WHITE)
+            val xPasse = MARGE + LARGEUR - 175f
+            c.drawText("Passe", xPasse, top + 15f, blanc)
+            cadre(c, xPasse + 34f, top + 7f, 8f, 8f, Color.WHITE, 0.9f)
+            c.drawText("Redouble", xPasse + 60f, top + 15f, blanc)
+            cadre(c, xPasse + 108f, top + 7f, 8f, 8f, Color.WHITE, 0.9f)
+            r.y = top + 22f
         }
     }
 
-    private fun dessinerSignatures(r: Rendu) {
-        r.assurerPlace(70f)
-        r.y += 10f
-        val p = peinture(10f, couleur = GRIS_TEXTE)
-        r.canvas.drawText("Signature de l'élève / du parent", MARGE, r.y, p)
-        val droite = "Cachet et signature de l'établissement"
-        r.canvas.drawText(droite, MARGE + LARGEUR_TABLEAU - p.measureText(droite), r.y, p)
-        r.y += 50f
+    private fun dessinerAppreciation(r: Rendu) {
+        r.y += 12f
+        r.assurerPlace(130f)
+        val c = r.canvas
+        val haut = r.y
+        cadre(c, MARGE, haut, LARGEUR, 128f)
+        c.drawText("Appréciation", MARGE + 12f, haut + 20f, peinture(11f, gras = true))
+        ligneTiretee(c, MARGE + 12f, MARGE + 290f, haut + 44f)
+        ligneTiretee(c, MARGE + 12f, MARGE + 290f, haut + 62f)
+
+        val gris = peinture(8.5f, couleur = GRIS_TEXTE)
+        centre(c, "Cachet et signature de l'établissement", MARGE + 300f, 225f, haut + 20f, gris)
+        centre(c, "Le Directeur", MARGE + 300f, 225f, haut + 116f, peinture(9.5f, gras = true, italique = true))
+        c.drawText("Signature de l'élève / du parent", MARGE + 12f, haut + 116f, gris)
+        r.y = haut + 128f
     }
 
     // --------------------------------------------------------------- outils
 
-    private fun peinture(taille: Float, gras: Boolean = false, couleur: Int = Color.BLACK) =
+    private fun peinture(taille: Float, gras: Boolean = false, italique: Boolean = false, couleur: Int = Color.BLACK) =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             textSize = taille
             color = couleur
-            typeface = if (gras) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+            val style = when {
+                gras && italique -> Typeface.BOLD_ITALIC
+                gras -> Typeface.BOLD
+                italique -> Typeface.ITALIC
+                else -> Typeface.NORMAL
+            }
+            typeface = Typeface.create(Typeface.DEFAULT, style)
         }
 
-    /** Raccourcit le texte avec « … » s'il dépasse la largeur disponible. */
+    private fun fond(c: Canvas, x: Float, y: Float, largeur: Float, hauteur: Float, couleur: Int) {
+        val p = Paint().apply { color = couleur; style = Paint.Style.FILL }
+        c.drawRect(x, y, x + largeur, y + hauteur, p)
+    }
+
+    private fun cadre(c: Canvas, x: Float, y: Float, largeur: Float, hauteur: Float, couleur: Int = BORDURE, epaisseur: Float = 0.9f) {
+        val p = Paint().apply { color = couleur; strokeWidth = epaisseur; style = Paint.Style.STROKE }
+        c.drawRect(x, y, x + largeur, y + hauteur, p)
+    }
+
+    private fun trait(c: Canvas, x1: Float, y1: Float, x2: Float, y2: Float, couleur: Int = BORDURE, epaisseur: Float = 0.8f) {
+        val p = Paint().apply { color = couleur; strokeWidth = epaisseur; style = Paint.Style.STROKE }
+        c.drawLine(x1, y1, x2, y2, p)
+    }
+
+    private fun ligneTiretee(c: Canvas, x1: Float, x2: Float, y: Float) {
+        val p = Paint().apply {
+            color = GRIS_TEXTE
+            strokeWidth = 0.7f
+            style = Paint.Style.STROKE
+            pathEffect = DashPathEffect(floatArrayOf(2f, 3f), 0f)
+        }
+        c.drawLine(x1, y, x2, y, p)
+    }
+
+    /** Texte centré dans une cellule de [largeur] commençant en [x], tronqué si trop long. */
+    private fun centre(c: Canvas, texte: String, x: Float, largeur: Float, base: Float, p: Paint) {
+        val affiche = tronquer(texte, p, largeur - 6f)
+        c.drawText(affiche, x + (largeur - p.measureText(affiche)) / 2f, base, p)
+    }
+
     private fun tronquer(texte: String, p: Paint, largeurMax: Float): String {
         if (p.measureText(texte) <= largeurMax) return texte
         val ellipse = "…"
@@ -245,9 +347,15 @@ object BulletinPdfGenerator {
         return texte.take(n).trimEnd() + ellipse
     }
 
-    /** Nombre au format français, 2 décimales (virgule) ; chaîne vide si absent. */
-    private fun format(valeur: Double?): String =
-        if (valeur == null) "" else String.format(Locale.FRANCE, "%.2f", valeur)
+    /** Note sans zéros inutiles (15 ; 13.75 ; 1.5), comme sur le bulletin officiel. */
+    private fun formatNote(valeur: Double?): String =
+        if (valeur == null) "" else String.format(Locale.US, "%.2f", valeur).trimEnd('0').trimEnd('.')
+
+    /** Moyenne sur 2 décimales ; chaîne vide si absente. */
+    private fun format2(valeur: Double?): String =
+        if (valeur == null) "" else String.format(Locale.US, "%.2f", valeur)
+
+    private fun valeurOuPoints(valeur: Double?): String = format2(valeur).ifEmpty { POINTS }
 
     /** État de dessin : document, page courante, position verticale, numérotation. */
     private class Rendu(private val document: PdfDocument) {
@@ -284,7 +392,7 @@ object BulletinPdfGenerator {
                 "Généré par Notea (FASTEK) — calculs indicatifs ; se référer au bulletin officiel de l'établissement.",
                 MARGE, HAUTEUR_PAGE - 24f, pied
             )
-            canvas.drawText("Page $numero", MARGE + LARGEUR_TABLEAU - 32f, HAUTEUR_PAGE - 24f, pied)
+            canvas.drawText("Page $numero", MARGE + LARGEUR - 32f, HAUTEUR_PAGE - 24f, pied)
             document.finishPage(p)
             page = null
         }

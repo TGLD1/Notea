@@ -14,7 +14,8 @@ data class LigneBulletin(
     /** Moyenne de la matière sur 20 — null tant qu'aucune note n'est saisie. */
     val moyenne: Double?
 ) {
-    val moyenneCoef: Double? get() = moyenne?.let { it * coefficient }
+    /** Comme sur le bulletin officiel : la moyenne arrondie à 2 décimales × le coefficient. */
+    val moyenneCoef: Double? get() = moyenne?.let { Math.round(it * 100.0) / 100.0 * coefficient }
 }
 
 /** Tout ce qu'il faut pour dessiner le bulletin PDF d'une période. */
