@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.room.Room
+import co.opensi.kkiapay.uikit.Kkiapay
+import co.opensi.kkiapay.uikit.SdkConfig
 import com.fastek.notea.data.backup.SauvegardeManager
 import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
@@ -36,6 +38,20 @@ class NoteaApplication : Application() {
         super.onCreate()
         Journal.init(this)
         Journal.ok("app.demarrage")
+        if (BuildConfig.KKIAPAY_PUBLIC_KEY.isNotBlank()) {
+            // Une panne du SDK de paiement ne doit jamais empêcher l'application de démarrer.
+            try {
+                Journal.suivre("don.initialisation") {
+                    Kkiapay.init(
+                        applicationContext,
+                        BuildConfig.KKIAPAY_PUBLIC_KEY,
+                        SdkConfig(themeColor = R.color.kkiapay_theme, enableSandbox = BuildConfig.KKIAPAY_SANDBOX)
+                    )
+                }
+            } catch (e: Exception) {
+                // déjà journalisé par Journal.suivre
+            }
+        }
         Journal.suivre("notification.canal") { creerCanalNotification() }
         Journal.suivre("notification.planification") { RappelWorker.planifierProchainRappel(this) }
     }

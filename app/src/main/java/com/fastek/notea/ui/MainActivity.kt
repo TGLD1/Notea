@@ -7,7 +7,11 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import android.content.Intent
 import androidx.activity.compose.setContent
+import co.opensi.kkiapay.uikit.Kkiapay
+import com.fastek.notea.BuildConfig
+import com.fastek.notea.diagnostic.Journal
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -61,6 +65,8 @@ import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
+import com.fastek.notea.ui.parametres.DonScreen
+import com.fastek.notea.ui.parametres.EtatDon
 import com.fastek.notea.ui.parametres.RappelScreen
 import com.fastek.notea.ui.parametres.SauvegardeScreen
 import com.fastek.notea.ui.parametres.restaurerDepuisFichier
@@ -72,8 +78,45 @@ import com.fastek.notea.ui.statistiques.StatistiquesScreen
 import com.fastek.notea.ui.statistiques.StatistiquesViewModel
 
 class MainActivity : ComponentActivity() {
+
+    /** Ouvre la fenêtre de paiement KkiaPay pour le don. */
+    private fun lancerDon(montant: Int) {
+        EtatDon.message = null
+        try {
+            Kkiapay.get().requestPayment(this, montant.toString(), "Don à FASTEK pour Notea", "Donateur Notea")
+        } catch (e: Exception) {
+            Journal.erreur("don.lancement", e)
+            EtatDon.reussi = false
+            EtatDon.message = "Impossible d'ouvrir le paiement. Vérifie ta connexion internet."
+        }
+    }
+
+    @Deprecated("Requis par le SDK KkiaPay pour récupérer le résultat du paiement")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (BuildConfig.KKIAPAY_PUBLIC_KEY.isNotBlank()) {
+            try {
+                Kkiapay.get().handleActivityResult(requestCode, resultCode, data)
+            } catch (e: Exception) {
+                Journal.erreur("don.resultat", e)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (BuildConfig.KKIAPAY_PUBLIC_KEY.isNotBlank()) {
+            Kkiapay.get().setListener { status, transactionId ->
+                val succes = status.name == "SUCCESS"
+                Journal.ok("don.statut.${status.name}")
+                EtatDon.reussi = succes
+                EtatDon.message = if (succes) {
+                    "Merci pour ton don ! Référence : $transactionId"
+                } else {
+                    "Le paiement n'a pas abouti. Aucun montant n'a été débité."
+                }
+            }
+        }
         val app = application as NoteaApplication
         setContent {
             NoteaApp(app)
@@ -126,7 +169,7 @@ private fun NoteaApp(app: NoteaApplication) {
                         )
                     }
                 }
-                true -> NoteaNavHost(factory, app.repository, app.sauvegarde)
+                true -> NoteaNavHost(factory, app.repository, app.sauvegarde, onDon = { montant -> lancerDon(montant) })
             }
         }
     }
@@ -146,7 +189,8 @@ private val ONGLETS = listOf(
 private fun NoteaNavHost(
     factory: NoteaViewModelFactory,
     repository: NoteaRepository,
-    sauvegarde: SauvegardeManager
+    sauvegarde: SauvegardeManager,
+    onDon: (Int) -> Unit
 ) {
     val navController = rememberNavController()
     var menuOuvert by remember { mutableStateOf(false) }
@@ -263,7 +307,7 @@ private fun NoteaNavHost(
                 SauvegardeScreen(sauvegarde)
             }
             composable("don") {
-                TextScreen("Faire un don à FASTEK", TextesStatiques.DON)
+                DonScreen(onDon = onDon)
             }
             composable("profil") {
                 val vm: ProfilViewModel = viewModel(factory = factory)

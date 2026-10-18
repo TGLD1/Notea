@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Uniquement pour le don en ligne (KkiaPay) : le reste de l'application fonctionne hors ligne. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".NoteaApplication"

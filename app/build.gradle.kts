@@ -15,6 +15,17 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+
+        // Clé API PUBLIQUE KkiaPay : injectée à la compilation (secret GitHub KKIAPAY_PUBLIC_KEY
+        // ou propriété Gradle kkiapayPublicKey) — jamais écrite dans le code. La clé privée et
+        // le secret ne doivent JAMAIS figurer dans l'application ni dans le dépôt.
+        val cleKkiapay = (project.findProperty("kkiapayPublicKey") as String?)
+            ?: System.getenv("KKIAPAY_PUBLIC_KEY")
+            ?: ""
+        // Mode test par défaut (aucun vrai débit) ; KKIAPAY_SANDBOX=false pour les paiements réels.
+        val sandboxKkiapay = System.getenv("KKIAPAY_SANDBOX")?.takeIf { it.isNotBlank() } ?: "true"
+        buildConfigField("String", "KKIAPAY_PUBLIC_KEY", "\"$cleKkiapay\"")
+        buildConfigField("boolean", "KKIAPAY_SANDBOX", sandboxKkiapay)
     }
 
     buildTypes {
@@ -36,6 +47,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     // Avec Kotlin 2.0+, le compilateur Compose est géré par le plugin
     // org.jetbrains.kotlin.plugin.compose ci-dessus — plus besoin de composeOptions.
@@ -68,6 +80,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("co.opensi.kkiapay:kkiapay:1.1.8")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
