@@ -24,6 +24,7 @@ data class EvenementUi(
     val id: Long,
     val titre: String,
     val date: LocalDate,
+    val matiereId: Long?,
     val matiereNom: String?
 ) {
     val dateAffichee: String get() = date.format(FORMAT_DATE)
@@ -33,7 +34,9 @@ private data class FormState(
     val titre: String = "",
     val dateTexte: String = LocalDate.now().format(FORMAT_DATE),
     val matiereId: Long? = null,
-    val erreur: String? = null
+    val erreur: String? = null,
+    /** Non null quand on modifie un événement existant plutôt que d'en créer un. */
+    val editionId: Long? = null
 )
 
 data class PlanningUiState(
@@ -44,7 +47,8 @@ data class PlanningUiState(
     val titre: String = "",
     val dateTexte: String = "",
     val matiereId: Long? = null,
-    val erreur: String? = null
+    val erreur: String? = null,
+    val editionId: Long? = null
 )
 
 class PlanningViewModel(private val repository: NoteaRepository) : ViewModel() {
@@ -73,6 +77,7 @@ class PlanningViewModel(private val repository: NoteaRepository) : ViewModel() {
                                 id = ev.id,
                                 titre = ev.titre,
                                 date = ev.date,
+                                matiereId = ev.matiereId,
                                 matiereNom = ev.matiereId?.let { matieresParId[it]?.nom }
                             )
                         },
@@ -80,7 +85,8 @@ class PlanningViewModel(private val repository: NoteaRepository) : ViewModel() {
                         titre = form.titre,
                         dateTexte = form.dateTexte,
                         matiereId = form.matiereId,
-                        erreur = form.erreur
+                        erreur = form.erreur,
+                        editionId = form.editionId
                     )
                 }
             }
@@ -104,14 +110,44 @@ class PlanningViewModel(private val repository: NoteaRepository) : ViewModel() {
             return
         }
         viewModelScope.launch {
-            repository.ajouterEvenement(
-                Evenement(eleveId = eleveId, matiereId = form.matiereId, titre = form.titre.trim(), date = date)
-            )
+            val editionId = form.editionId
+            if (editionId == null) {
+                repository.ajouterEvenement(
+                    Evenement(eleveId = eleveId, matiereId = form.matiereId, titre = form.titre.trim(), date = date)
+                )
+            } else {
+                val existant = repository.getEvenement(editionId)
+                if (existant != null) {
+                    repository.mettreAJourEvenement(
+                        existant.copy(
+                            titre = form.titre.trim(),
+                            date = date,
+                            matiereId = form.matiereId,
+                            // Une date modifiée doit pouvoir déclencher à nouveau le rappel.
+                            notifie = if (date == existant.date) existant.notifie else false
+                        )
+                    )
+                }
+            }
             _form.value = FormState()
         }
     }
 
+    fun commencerEdition(evenement: EvenementUi) {
+        _form.value = FormState(
+            titre = evenement.titre,
+            dateTexte = evenement.dateAffichee,
+            matiereId = evenement.matiereId,
+            editionId = evenement.id
+        )
+    }
+
+    fun annulerEdition() {
+        _form.value = FormState()
+    }
+
     fun supprimerEvenement(evenementUi: EvenementUi) {
+        if (_form.value.editionId == evenementUi.id) _form.value = FormState()
         viewModelScope.launch { repository.supprimerEvenementParId(evenementUi.id) }
     }
 }

@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -75,7 +77,16 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
             onClick = { eleveId?.let { viewModel.ajouterEvenement(it) } },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Ajouter au planning")
+            Text(if (etat.editionId == null) "Ajouter au planning" else "Enregistrer les modifications")
+        }
+        if (etat.editionId != null) {
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = viewModel::annulerEdition,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Annuler la modification")
+            }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -91,6 +102,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(etat.evenements, key = { it.id }) { evenement ->
                     ListItem(
+                        modifier = Modifier.clickable { viewModel.commencerEdition(evenement) },
                         headlineContent = { Text(evenement.titre) },
                         supportingContent = {
                             Text(

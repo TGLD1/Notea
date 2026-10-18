@@ -24,6 +24,9 @@ interface EvenementDao {
     @Query("DELETE FROM evenement WHERE id = :id")
     suspend fun supprimerParId(id: Long)
 
+    @Query("SELECT * FROM evenement WHERE id = :id")
+    suspend fun getEvenement(id: Long): Evenement?
+
     @Query("SELECT * FROM evenement WHERE eleveId = :eleveId ORDER BY date")
     fun observerEvenements(eleveId: Long): Flow<List<Evenement>>
 

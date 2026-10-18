@@ -114,6 +114,7 @@ class NoteaRepository(
     fun observerEvenements(eleveId: Long): Flow<List<Evenement>> = evenementDao.observerEvenements(eleveId)
     suspend fun ajouterEvenement(evenement: Evenement): Long =
         Journal.suivre("evenement.ajout") { evenementDao.inserer(evenement) }
+    suspend fun getEvenement(id: Long): Evenement? = evenementDao.getEvenement(id)
     suspend fun mettreAJourEvenement(evenement: Evenement) = evenementDao.mettreAJour(evenement)
     suspend fun supprimerEvenement(evenement: Evenement) = evenementDao.supprimer(evenement)
     suspend fun supprimerEvenementParId(id: Long) = evenementDao.supprimerParId(id)
