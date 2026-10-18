@@ -41,6 +41,11 @@ android {
     // org.jetbrains.kotlin.plugin.compose ci-dessus — plus besoin de composeOptions.
 }
 
+// Schémas Room exportés (app/schemas) : base des futurs tests de migration.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")

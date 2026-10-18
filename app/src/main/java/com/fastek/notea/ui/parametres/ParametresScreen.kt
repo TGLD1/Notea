@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 private val OPTIONS = listOf(
     "profil" to "Profil",
     "bulletin" to "Générer le bulletin PDF",
+    "rappel" to "Heure du rappel",
     "sauvegarde" to "Sauvegarde et restauration",
     "don" to "Faire un don à FASTEK",
     "signaler-probleme" to "Signaler un problème",

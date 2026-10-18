@@ -19,7 +19,7 @@ import com.fastek.notea.data.local.entity.Periode
 @Database(
     entities = [Eleve::class, Matiere::class, Note::class, Periode::class, Evenement::class],
     version = 4,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class NoteaDatabase : RoomDatabase() {

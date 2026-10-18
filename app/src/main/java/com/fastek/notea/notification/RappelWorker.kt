@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Vérifie chaque jour à 18h les événements dans les 48h à venir pas encore notifiés,
+ * Vérifie chaque jour à l'heure choisie (18h par défaut, voir [ReglagesRappel]) les événements dans les 48h à venir pas encore notifiés,
  * envoie une notification si besoin, puis planifie sa propre prochaine exécution
  * (plus fiable qu'un simple travail périodique, qui peut dériver dans le temps).
  */
@@ -94,10 +94,10 @@ class RappelWorker(
         private const val NOTIFICATION_ID = 1001
         private const val NOM_TRAVAIL = "rappel_planning"
 
-        /** Planifie l'exécution suivante à 18h (aujourd'hui si pas encore passé, sinon demain). */
+        /** Planifie l'exécution suivante à l'heure du rappel (aujourd'hui si pas encore passée, sinon demain). */
         fun planifierProchainRappel(context: Context) {
             val maintenant = LocalDateTime.now()
-            var cible = maintenant.toLocalDate().atTime(18, 0)
+            var cible = maintenant.toLocalDate().atTime(ReglagesRappel.heure(context), 0)
             if (!maintenant.isBefore(cible)) {
                 cible = cible.plusDays(1)
             }

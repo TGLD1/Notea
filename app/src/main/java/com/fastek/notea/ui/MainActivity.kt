@@ -61,6 +61,7 @@ import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
+import com.fastek.notea.ui.parametres.RappelScreen
 import com.fastek.notea.ui.parametres.SauvegardeScreen
 import com.fastek.notea.ui.parametres.restaurerDepuisFichier
 import com.fastek.notea.ui.parametres.TextScreen
@@ -254,6 +255,9 @@ private fun NoteaNavHost(
             }
             composable("bulletin") {
                 BulletinScreen(repository)
+            }
+            composable("rappel") {
+                RappelScreen()
             }
             composable("sauvegarde") {
                 SauvegardeScreen(sauvegarde)
