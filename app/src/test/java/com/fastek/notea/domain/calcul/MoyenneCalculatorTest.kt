@@ -66,4 +66,22 @@ class MoyenneCalculatorTest {
         // (2*13 + 10) / 3 = 12.0
         assertEquals(12.0, annuelle, 0.001)
     }
+
+    @Test
+    fun `moyenne annuelle privee = somme des 3 trimestres divisee par 3`() {
+        val annuelle = MoyenneCalculator.moyenneAnnuellePrive(10.0, 12.0, 14.0)
+        assertEquals(12.0, annuelle, 0.001)
+    }
+
+    @Test
+    fun `devoirs seuls ou interrogations seules`() {
+        assertEquals(13.0, MoyenneCalculator.moyenneMatiere(listOf(note(TypeNote.DEVOIR, 12.0), note(TypeNote.DEVOIR, 14.0)))!!, 0.001)
+        assertEquals(8.0, MoyenneCalculator.moyenneMatiere(listOf(note(TypeNote.INTERROGATION, 6.0), note(TypeNote.INTERROGATION, 10.0)))!!, 0.001)
+    }
+
+    @Test
+    fun `aucune note donne une moyenne nulle`() {
+        assertEquals(null, MoyenneCalculator.moyenneMatiere(emptyList()))
+        assertEquals(null, MoyenneCalculator.moyenneGeneralePeriode(emptyList()))
+    }
 }

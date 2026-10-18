@@ -6,9 +6,7 @@ import com.fastek.notea.data.local.entity.TypeNote
 import java.time.LocalDate
 
 /**
- * Moteur de calcul des moyennes — système scolaire béninois, établissement PUBLIC (2 semestres).
- * PUBLIC : 2 semestres.
- * PRIVE : 3 trimestres.
+ * Moteur de calcul des moyennes — système scolaire béninois : PUBLIC (2 semestres) et PRIVÉ (3 trimestres).
  *
  * Règle par matière et par période :
  *   1. M_intero = moyenne simple de toutes les notes d'interrogation de la matière.
@@ -25,6 +23,9 @@ import java.time.LocalDate
  *
  * Moyenne annuelle (public) :
  *   (2 × moyenne S2 + moyenne S1) / 3   — le 2e semestre pèse double (poids 2 + poids 1 = 3).
+ *
+ * Moyenne annuelle (privé) :
+ *   (T1 + T2 + T3) / 3 — les trois trimestres pèsent autant.
  */
 object MoyenneCalculator {
 
@@ -79,6 +80,13 @@ object MoyenneCalculator {
      */
     fun moyenneAnnuellePublic(moyenneS1: Double, moyenneS2: Double): Double =
         (2 * moyenneS2 + moyenneS1) / 3
+
+    /**
+     * Moyenne annuelle pour un établissement PRIVÉ (3 trimestres) :
+     * (T1 + T2 + T3) / 3 — les trimestres ont tous le même poids.
+     */
+    fun moyenneAnnuellePrive(moyenneT1: Double, moyenneT2: Double, moyenneT3: Double): Double =
+        (moyenneT1 + moyenneT2 + moyenneT3) / 3
 
     /** Statut visuel (pour l'effet "glow" du dashboard) selon l'écart à l'objectif. */
     enum class StatutObjectif { ATTEINT, PROCHE, LOIN }

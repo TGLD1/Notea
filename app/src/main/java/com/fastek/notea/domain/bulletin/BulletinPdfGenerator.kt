@@ -188,11 +188,15 @@ object BulletinPdfGenerator {
         r.y += 28f
 
         if (data.moyenneAnnuelle != null) {
-            val s1 = format(data.moyennePeriode1)
-            r.canvas.drawText("Moyenne du semestre 1 : $s1 / 20", MARGE, r.y, normal)
-            r.y += 16f
+            data.moyennesPrecedentes.forEachIndexed { index, moyenne ->
+                r.canvas.drawText(
+                    "Moyenne du ${data.libellePeriode.lowercase(Locale.FRANCE)} ${index + 1} : ${format(moyenne)} / 20",
+                    MARGE, r.y, normal
+                )
+                r.y += 16f
+            }
             r.canvas.drawText(
-                "Moyenne annuelle : ${format(data.moyenneAnnuelle)} / 20  (2 × S2 + S1) ÷ 3",
+                "Moyenne annuelle : ${format(data.moyenneAnnuelle)} / 20  ${data.formuleAnnuelle}",
                 MARGE, r.y, peinture(11f, gras = true)
             )
             r.y += 20f

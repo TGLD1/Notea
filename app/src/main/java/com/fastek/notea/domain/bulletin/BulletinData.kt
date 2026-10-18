@@ -32,9 +32,12 @@ data class BulletinData(
     val totalCoefficients: Int,
     /** Somme des (moyenne × coefficient) des matières déjà notées. */
     val totalMoyCoef: Double,
-    /** Renseignée uniquement sur le bulletin du semestre 2 (public). */
-    val moyennePeriode1: Double?,
-    /** Renseignée uniquement sur le bulletin du semestre 2 (public), si S1 et S2 existent. */
+    /**
+     * Moyennes des périodes précédentes (période 1, 2…), renseignées uniquement sur le
+     * dernier bulletin de l'année ; une valeur null = période sans note.
+     */
+    val moyennesPrecedentes: List<Double?>,
+    /** Renseignée uniquement sur le dernier bulletin de l'année, si toutes les périodes ont une moyenne. */
     val moyenneAnnuelle: Double?,
     /** Dernier bulletin de l'année : décision du conseil + appréciation générale. */
     val finAnnee: Boolean,
@@ -46,5 +49,9 @@ data class BulletinData(
     val redoublant: String = ""
 ) {
     val libellePeriode: String
-        get() = if (typeEtablissement == TypeEtablissement.PUBLIC) "Semestre" else "Trimestre"
+        get() = typeEtablissement.nomPeriode
+
+    /** Formule affichée à côté de la moyenne annuelle. */
+    val formuleAnnuelle: String
+        get() = if (typeEtablissement == TypeEtablissement.PUBLIC) "(2 × S2 + S1) ÷ 3" else "(T1 + T2 + T3) ÷ 3"
 }

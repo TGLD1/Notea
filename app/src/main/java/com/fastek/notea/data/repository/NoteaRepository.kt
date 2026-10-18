@@ -164,19 +164,19 @@ class NoteaRepository(
         }
 
     /**
-     * Moyenne annuelle (établissement public). Prend un instantané des moyennes
-     * de S1 et S2 au moment de l'appel — à utiliser pour le bulletin de fin d'année,
-     * pas pour un affichage réactif continu.
+     * Moyenne annuelle (public : 2 semestres, privé : 3 trimestres). Prend un instantané des
+     * moyennes de toutes les périodes ; null tant qu'une période n'a aucune note.
      */
-    suspend fun calculerMoyenneAnnuellePublic(eleveId: Long): Double? {
-        val periodes = periodeDao.observerPeriodes(eleveId).first()
-        val periode1 = periodes.find { it.numero == 1 } ?: return null
-        val periode2 = periodes.find { it.numero == 2 } ?: return null
-
-        val moyenneS1 = observerMoyenneGeneralePeriode(eleveId, periode1).first() ?: return null
-        val moyenneS2 = observerMoyenneGeneralePeriode(eleveId, periode2).first() ?: return null
-
-        return MoyenneCalculator.moyenneAnnuellePublic(moyenneS1, moyenneS2)
+    suspend fun calculerMoyenneAnnuelle(eleveId: Long): Double? {
+        val eleve = getProfil() ?: return null
+        val moyennes = (1..eleve.typeEtablissement.nombrePeriodes).map { numero ->
+            val periode = periodeDao.getPeriode(eleveId, numero) ?: return null
+            observerMoyenneGeneralePeriode(eleveId, periode).first() ?: return null
+        }
+        return when (eleve.typeEtablissement) {
+            TypeEtablissement.PUBLIC -> MoyenneCalculator.moyenneAnnuellePublic(moyennes[0], moyennes[1])
+            TypeEtablissement.PRIVE -> MoyenneCalculator.moyenneAnnuellePrive(moyennes[0], moyennes[1], moyennes[2])
+        }
     }
 
     /**
@@ -209,19 +209,21 @@ class NoteaRepository(
             notees.map { MoyenneCalculator.MoyennePonderee(it.moyenne!!, it.coefficient) }
         )
 
-        val estPublic = eleve.typeEtablissement == TypeEtablissement.PUBLIC
-        var moyennePeriode1: Double? = null
+        val finAnnee = numeroPeriode == eleve.typeEtablissement.nombrePeriodes
+        var moyennesPrecedentes: List<Double?> = emptyList()
         var moyenneAnnuelle: Double? = null
-        if (estPublic && numeroPeriode == 2) {
-            val periode1 = periodeDao.getPeriode(eleve.id, 1)
-            val s1: Double? = if (periode1 != null) {
-                observerMoyenneGeneralePeriode(eleve.id, periode1).first()
-            } else {
-                null
+        if (finAnnee && numeroPeriode > 1) {
+            moyennesPrecedentes = (1 until numeroPeriode).map { numero ->
+                periodeDao.getPeriode(eleve.id, numero)?.let { observerMoyenneGeneralePeriode(eleve.id, it).first() }
             }
-            moyennePeriode1 = s1
-            if (s1 != null && moyenneGenerale != null) {
-                moyenneAnnuelle = MoyenneCalculator.moyenneAnnuellePublic(s1, moyenneGenerale)
+            val toutes = moyennesPrecedentes + moyenneGenerale
+            if (toutes.all { it != null }) {
+                moyenneAnnuelle = when (eleve.typeEtablissement) {
+                    TypeEtablissement.PUBLIC ->
+                        MoyenneCalculator.moyenneAnnuellePublic(toutes[0]!!, toutes[1]!!)
+                    TypeEtablissement.PRIVE ->
+                        MoyenneCalculator.moyenneAnnuellePrive(toutes[0]!!, toutes[1]!!, toutes[2]!!)
+                }
             }
         }
 
@@ -237,9 +239,9 @@ class NoteaRepository(
             moyenneGenerale = moyenneGenerale,
             totalCoefficients = notees.sumOf { it.coefficient },
             totalMoyCoef = notees.sumOf { it.moyenneCoef ?: 0.0 },
-            moyennePeriode1 = moyennePeriode1,
+            moyennesPrecedentes = moyennesPrecedentes,
             moyenneAnnuelle = moyenneAnnuelle,
-            finAnnee = numeroPeriode == eleve.typeEtablissement.nombrePeriodes,
+            finAnnee = finAnnee,
             dateNaissance = eleve.dateNaissance,
             lieuNaissance = eleve.lieuNaissance,
             effectif = eleve.effectif,
