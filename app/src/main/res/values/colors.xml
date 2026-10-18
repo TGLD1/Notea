@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="kkiapay_theme">#1565C0</color>
+    <color name="marque_violet">#5B21B6</color>
+    <color name="marque_cyan">#22D3EE</color>
+    <color name="kkiapay_theme">#6D28D9</color>
 </resources>

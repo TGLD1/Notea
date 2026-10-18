@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thème de l'application après l'écran de démarrage. -->
+    <style name="Theme.Notea" parent="@android:style/Theme.Material.Light.NoActionBar" />
+
+    <!-- Écran de démarrage : fond violet FASTEK + logo Notea. -->
+    <style name="Theme.Notea.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/marque_violet</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.Notea</item>
+    </style>
+</resources>

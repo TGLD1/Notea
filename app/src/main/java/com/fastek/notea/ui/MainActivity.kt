@@ -2,6 +2,10 @@ package com.fastek.notea.ui
 
 import android.Manifest
 import android.content.Intent
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.fastek.notea.ui.intro.PresentationScreen
+import com.fastek.notea.ui.intro.PresentationVue
+import com.fastek.notea.ui.theme.NoteaTheme
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -104,6 +108,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         if (BuildConfig.KKIAPAY_PUBLIC_KEY.isNotBlank()) {
             Kkiapay.get().setListener { status, transactionId ->
@@ -128,6 +133,8 @@ class MainActivity : ComponentActivity() {
 private fun NoteaApp(app: NoteaApplication) {
     val factory = remember { NoteaViewModelFactory(app.repository) }
     var profilExiste by remember { mutableStateOf<Boolean?>(null) }
+    val contexte = LocalContext.current
+    var introVue by remember { mutableStateOf(PresentationVue.dejaVue(contexte)) }
 
     val lanceurPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -140,11 +147,16 @@ private fun NoteaApp(app: NoteaApplication) {
         }
     }
 
-    MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
+    NoteaTheme {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             when (profilExiste) {
                 null -> Text("Chargement...")
-                false -> {
+                false -> if (!introVue) {
+                    PresentationScreen(onTerminer = {
+                        PresentationVue.marquerVue(contexte)
+                        introVue = true
+                    })
+                } else {
                     val onboardingViewModel: OnboardingViewModel = viewModel(factory = factory)
                     val etat by onboardingViewModel.uiState.collectAsState()
                     if (etat.profilCreeAvecId != null) {
@@ -299,6 +311,9 @@ private fun NoteaNavHost(
             }
             composable("bulletin") {
                 BulletinScreen(repository)
+            }
+            composable("presentation") {
+                PresentationScreen(onTerminer = { navController.popBackStack() })
             }
             composable("rappel") {
                 RappelScreen()

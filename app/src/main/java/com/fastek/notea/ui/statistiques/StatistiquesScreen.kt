@@ -113,7 +113,7 @@ private fun GraphiqueEvolution(points: List<PointGraphique>) {
         return
     }
 
-    val couleurLigne = Color(0xFF3B82F6)
+    val couleurLigne = MaterialTheme.colorScheme.primary
 
     Canvas(
         modifier = Modifier

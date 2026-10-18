@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 
 private val OPTIONS = listOf(
     "profil" to "Profil",
+    "presentation" to "Découvrir Notea",
     "bulletin" to "Générer le bulletin PDF",
     "rappel" to "Heure du rappel",
     "sauvegarde" to "Sauvegarde et restauration",
