@@ -25,10 +25,20 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Vérifier la clé KkiaPay
+        env:
+          KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
+        run: |
+          if [ -z "$KKIAPAY_PUBLIC_KEY" ]; then
+            echo "::warning::Clé KkiaPay ABSENTE : créer le secret KKIAPAY_PUBLIC_KEY (Settings > Secrets and variables > Actions > Secrets)."
+          else
+            echo "::notice::Clé KkiaPay transmise (${#KKIAPAY_PUBLIC_KEY} caractères)."
+          fi
+
       - name: Build APK debug
         run: gradle assembleDebug --no-daemon
         env:
-          KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY }}
+          KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
           KKIAPAY_SANDBOX: ${{ vars.KKIAPAY_SANDBOX }}
 
       - name: Publier l'APK comme artifact
