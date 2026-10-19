@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -45,6 +47,16 @@ private val FORMAT_DATE_ECRAN = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 fun PlanningScreen(viewModel: PlanningViewModel) {
     val etat by viewModel.uiState.collectAsState()
     val eleveId = etat.eleveId
+    var choixDate by remember { mutableStateOf(false) }
+
+    if (choixDate) {
+        ChoixDate(
+            dateTexte = etat.dateTexte,
+            onValider = { viewModel.onDateTexteChange(it); choixDate = false },
+            onAnnuler = { choixDate = false }
+        )
+        return
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Planning", style = MaterialTheme.typography.headlineSmall)
@@ -58,7 +70,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
         )
         Spacer(Modifier.height(8.dp))
 
-        ChampDate(dateTexte = etat.dateTexte, onDateChange = viewModel::onDateTexteChange)
+        ChampDate(dateTexte = etat.dateTexte, onClick = { choixDate = true })
         Spacer(Modifier.height(8.dp))
 
         SelecteurMatiereOptionnel(
@@ -122,31 +134,47 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
     }
 }
 
-/** Bouton date : ouvre le calendrier du système (plus de saisie à la main). */
+/** Bouton date : ouvre le choix de date (affiché à la place du formulaire, sans fenêtre flottante). */
 @Composable
-private fun ChampDate(dateTexte: String, onDateChange: (String) -> Unit) {
-    val contexte = androidx.compose.ui.platform.LocalContext.current
-
-    OutlinedButton(
-        onClick = {
-            val depart = try {
-                LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN)
-            } catch (e: Exception) {
-                LocalDate.now()
-            }
-            android.app.DatePickerDialog(
-                contexte,
-                { _, annee, mois, jour ->
-                    onDateChange(LocalDate.of(annee, mois + 1, jour).format(FORMAT_DATE_ECRAN))
-                },
-                depart.year,
-                depart.monthValue - 1,
-                depart.dayOfMonth
-            ).show()
-        },
-        modifier = Modifier.fillMaxWidth()
-    ) {
+private fun ChampDate(dateTexte: String, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Text("Date : $dateTexte  (modifier)")
+    }
+}
+
+/** Choix de la date en plein écran dans l'écran Planning (aucune fenêtre flottante). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChoixDate(dateTexte: String, onValider: (String) -> Unit, onAnnuler: () -> Unit) {
+    val departMillis = try {
+        LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    } catch (e: Exception) {
+        null
+    }
+    val etatCalendrier = rememberDatePickerState(initialSelectedDateMillis = departMillis)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        Text("Choisir la date", style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(8.dp))
+        DatePicker(state = etatCalendrier, showModeToggle = false)
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = onAnnuler, modifier = Modifier.weight(1f)) { Text("Annuler") }
+            Button(
+                onClick = {
+                    etatCalendrier.selectedDateMillis?.let { millis ->
+                        val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onValider(date.format(FORMAT_DATE_ECRAN))
+                    } ?: onAnnuler()
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("Valider") }
+        }
     }
 }
 
