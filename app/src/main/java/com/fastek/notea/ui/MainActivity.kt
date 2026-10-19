@@ -87,7 +87,18 @@ class MainActivity : ComponentActivity() {
     private fun lancerDon(montant: Int) {
         EtatDon.message = null
         try {
-            Kkiapay.get().requestPayment(this, montant.toString(), "Don à FASTEK pour Notea", "Donateur Notea")
+            Kkiapay.get().requestPayment(
+                this,
+                montant,
+                reason = "Don à FASTEK pour Notea",
+                api_key = BuildConfig.KKIAPAY_PUBLIC_KEY,
+                sandbox = BuildConfig.KKIAPAY_SANDBOX,
+                name = "Donateur Notea",
+                partnerId = "notea-don",
+                phone = "",
+                email = "",
+                paymentMethods = listOf("momo", "card")
+            )
         } catch (e: Exception) {
             Journal.erreur("don.lancement", e)
             EtatDon.reussi = false
