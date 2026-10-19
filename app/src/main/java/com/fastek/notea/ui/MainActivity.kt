@@ -9,9 +9,8 @@ import com.fastek.notea.ui.theme.NoteaTheme
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import android.content.Intent
 import androidx.activity.compose.setContent
 import co.opensi.kkiapay.uikit.Kkiapay
 import com.fastek.notea.BuildConfig
@@ -81,7 +80,7 @@ import com.fastek.notea.ui.planning.PlanningViewModel
 import com.fastek.notea.ui.statistiques.StatistiquesScreen
 import com.fastek.notea.ui.statistiques.StatistiquesViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     /** Ouvre la fenêtre de paiement KkiaPay pour le don. */
     private fun lancerDon(montant: Int) {
