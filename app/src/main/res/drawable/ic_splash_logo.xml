@@ -3,10 +3,31 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,32 L44,32 L64,62 L64,32 L74,32 L74,76 L64,76 L44,46 L44,76 L34,76 Z" />
-    <path
-        android:fillColor="#22D3EE"
-        android:pathData="M80,26 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+    <!-- Symbole FASTEK (F stylisé + hexagone cyan), centré dans la zone de sécurité. -->
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="-3"
+        android:translateY="4">
+        <path
+            android:fillColor="#F3F6FC"
+            android:pathData="M86,40 L158,40 L142,66 L70,66 Z" />
+        <path
+            android:fillColor="#F3F6FC"
+            android:pathData="M76,92 L132,92 L118,116 L64,116 Z" />
+        <path
+            android:fillColor="#F3F6FC"
+            android:pathData="M86,40 L110,40 L82,160 L58,160 Z" />
+        <path
+            android:strokeColor="#22D3EE"
+            android:strokeWidth="2.5"
+            android:strokeLineCap="round"
+            android:pathData="M150,44 L156,49" />
+        <path
+            android:fillColor="#22D3EE"
+            android:pathData="M147.5,44 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0" />
+        <path
+            android:fillColor="#22D3EE"
+            android:pathData="M162,41 L170,45.5 L170,54.5 L162,59 L154,54.5 L154,45.5 Z" />
+    </group>
 </vector>

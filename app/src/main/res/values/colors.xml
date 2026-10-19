@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="marque_violet">#5B21B6</color>
+    <!-- Identité FASTEK (tgld-fastek.netlify.app) -->
+    <color name="marque_violet">#1B1040</color>
+    <color name="marque_violet_clair">#4C1D95</color>
     <color name="marque_cyan">#22D3EE</color>
-    <color name="kkiapay_theme">#6D28D9</color>
+    <color name="kkiapay_theme">#4C1D95</color>
 </resources>
