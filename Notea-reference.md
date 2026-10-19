@@ -9,22 +9,24 @@ FASTEK — application de suivi scolaire pour lycéens béninois
 - **Nom** : Notea (anciennement "TGLD School V1", dépôt GitHub `TGLD1/Schoolnote`)
 - **Objectif** : véritable application professionnelle FASTEK
 - **Cible** : lycéens (15-18 ans), smartphones d'entrée de gamme
-- **Priorité actuelle** : établissement **public** (2 semestres) d'abord ; le **privé** (3 trimestres) suivra le même principe, à développer plus tard
+- **Établissements pris en charge** : **public** (2 semestres) et **privé** (3 trimestres)
 
 ### Contraintes techniques
-- 100% hors ligne, aucune connexion internet requise
+- 100% hors ligne ; internet uniquement au moment d'un don en ligne (KkiaPay)
 - Légère : < 50 Mo
 - Compatible Android 7+ (API 24)
 - Pas de backend : tout en local via SQLite (Room)
 - Notifications locales via WorkManager
 - Material Design 3
-- Thème aux couleurs vives, adapté aux ados
+- Identité visuelle officielle FASTEK (violet nuit #1B1040 → #4C1D95, cyan #22D3EE, blanc cassé #F3F6FC), thèmes clair et sombre
 
 ### Stack technique
 - Kotlin + Jetpack Compose, Navigation Compose
 - Room (SQLite) — pas de framework d'injection (pas de Hilt), une factory manuelle à la place, pour rester léger
+- Don en ligne : SDK KkiaPay (`com.github.kkiapay:android-sdk` via JitPack), activité principale en `AppCompatActivity` (exigé par le SDK), thème AppCompat
 - Build via GitHub Actions à chaque push : Gradle 8.9, AGP 8.5.2, Kotlin 2.0.21, JDK 17
-- Repo GitHub : `TGLD1/Notea`
+- Repo GitHub : `TGLD1/Notea` (branche `master`)
+- Clé publique KkiaPay injectée à la compilation : secret (ou variable) GitHub `KKIAPAY_PUBLIC_KEY` ; variable `KKIAPAY_SANDBOX` (`true` par défaut, `false` pour la production). Jamais la clé privée ni le secret dans le code
 
 ---
 
@@ -57,14 +59,20 @@ Moyenne annuelle = (2 × moyenne S2 + moyenne S1) ÷ 3
 ```
 Le 2e semestre pèse double (poids 2 + poids 1 = diviseur 3).
 
+**Moyenne annuelle (établissement privé, 3 trimestres) :**
+```
+Moyenne annuelle = (T1 + T2 + T3) ÷ 3
+```
+
 - **Seuil de réussite officiel** : 10/20
 - **Objectif par défaut proposé par l'app** : 12/20
 
 ### Format du bulletin officiel réel
-- Colonnes : Disciplines, Coef, Moy. interro., Devoir 1, Devoir 2, Moy/20, Moy Coef, Rang, Appréciation
+- Colonnes : Disciplines, Coef, Moy. interro., Devoir 1, Devoir 2, Moy/20, Moy Coef, Rang, Appréciation (Conduite : colonnes interro/devoirs fusionnées)
 - En-tête : Matricule, Nom, Prénoms, Date et lieu de naissance, Année scolaire, Classe, Effectif, Semestre, Aptitude EPS, Redoublant (Oui/Non), Abandon (Oui/Non), photo
 - Rang par matière, Rang de classe, Moy. Classe, Plus forte/faible moyenne : demandent les notes de **toute la classe**, indisponibles dans Notea (app mono-élève). Décision : champs laissés **vides**, modifiables manuellement par l'élève sur le PDF généré.
-- Décision du conseil (Passe/Redouble) + appréciation générale : uniquement sur le bulletin de **fin d'année** (2e semestre), pas au 1er semestre.
+- Décision du conseil (Passe/Redouble) + appréciation générale : uniquement sur le bulletin de **fin d'année** (dernier semestre ou trimestre) ; le 1er semestre porte le bloc BILAN + SANCTION.
+- Mise en page du PDF alignée sur le bulletin réel du CEG Pahou : en-tête ministère/établissement, cadre identité, tableau des disciplines, bilan, cadre appréciation avec cachet et signature.
 
 ---
 
@@ -72,74 +80,78 @@ Le 2e semestre pèse double (poids 2 + poids 1 = diviseur 3).
 
 | Écran | Contenu |
 |---|---|
+| **Présentation** | 5 diapositives au premier démarrage sur les fonctionnalités principales ; accessible ensuite depuis Paramètres → « Découvrir Notea » |
 | **Onboarding** | Nom, prénom, classe (niveau + série en menus déroulants), type d'établissement, liste de matières prédéfinie à cocher + coefficient libre. Conduite ajoutée automatiquement. |
-| **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet "glow" — pas de cartes de couleur pleine), sélecteur Semestre 1/2, liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
+| **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet « glow »), sélecteur de période, liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
 | **Mes matières** | Liste des matières, moyenne en direct, tap → écran de saisie des notes |
-| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs/semestre), coefficient éditable, moyenne recalculée en temps réel |
-| **Planning/Événements** | Liste triée par date, ajout (titre, date JJ/MM/AAAA, matière optionnelle), notification à 18h pour les événements à 48h (WorkManager, auto-replanifié chaque jour) |
-| **Objectifs** | Objectif annuel + objectif par semestre |
-| **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (reconstruit à partir des dates des notes, pas de table d'historique séparée ; dessiné en Canvas natif, sans librairie externe) + simulateur "si j'ai X au prochain devoir/interro, ma moyenne devient Y" |
-| **Bulletin PDF** | (Paramètres) Choix du semestre, génération d'un PDF A4 au format du bulletin officiel (API native `PdfDocument`, aucune dépendance), partage via le menu Android (WhatsApp, e-mail, Drive, impression). Rang, moyenne de classe, appréciations, décision du conseil laissés vides à remplir à la main |
-| **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local (`Journal.kt`), partage et remise à zéro. Aucune donnée personnelle journalisée |
-| **Paramètres** | Profil éditable (nom, prénom, matricule), objectif/classe en lecture seule, Don à FASTEK (Moov Money), Signaler un problème (email pré-rempli), À propos de l'app, Comment sont calculées les moyennes, À propos du développeur, Politique de confidentialité, CGU |
+| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs par période), coefficient éditable, moyenne recalculée en temps réel. Conduite : une seule note par période, saisie ici comme les autres matières |
+| **Planning/Événements** | Événements à venir uniquement, triés par date ; ajout et modification d'un événement (titre, date, matière optionnelle) ; choix de la date par calendrier affiché à la place du formulaire ; rappel notifié pour les événements à 48 h (WorkManager, replanifié chaque jour) |
+| **Objectifs** | Objectif annuel + objectif par période (la Conduite n'apparaît plus ici : c'est une matière normale) |
+| **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (Canvas natif) + simulateur « si j'ai X au prochain devoir/interro, ma moyenne devient Y » |
+| **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Rang, moyenne de classe, appréciations par matière, décision du conseil laissés vides |
+| **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local, partage et remise à zéro. Aucune donnée personnelle journalisée |
+| **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
+| **Heure du rappel** | (Paramètres) Heure du rappel réglable de 6 h à 22 h (défaut 18 h) |
+| **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou montant libre (min. 100 FCFA), paiement Mobile Money ou carte via KkiaPay. Affiche l'état de la clé (début de la clé publique et mode test/réel) ; si la clé est absente de la compilation, un message l'indique |
+| **Paramètres** | Profil éditable, objectif/classe en lecture seule, Don, Signaler un problème (email pré-rempli), À propos, Calcul des moyennes, Développeur, Politique de confidentialité, CGU, Découvrir Notea |
 
 Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en haut menant vers Objectifs et Paramètres.
 
 ---
 
-## 4. État d'avancement (au 08/10)
+## 4. État d'avancement (au 19/10/2026)
 
-✅ Fait et confirmé fonctionnel sur téléphone :
-- Pipeline CI GitHub Actions (build APK à chaque push)
-- Onboarding, Accueil/Dashboard, Mes matières, Saisie des notes
-- Objectifs, Planning/Événements, Notifications WorkManager
-- Statistiques (graphique + simulateur)
-- Paramètres (profil éditable + matricule, Don, Signaler un problème, pages légales)
-- Refonte Conduite → matière normale, coefficients éditables après coup
-- Page d'explication du calcul des moyennes
+✅ Fait :
+- Pipeline CI GitHub Actions : build APK debug vert à chaque push, artifacts `notea-debug-apk` et `room-schemas`
+- Onboarding, Accueil, Mes matières, Saisie des notes, Objectifs, Planning, Statistiques, Paramètres
+- Conduite = matière normale, coefficients éditables, page d'explication des calculs
+- Établissement privé : moyenne annuelle (T1+T2+T3)÷3, bulletin trimestriel, tests unitaires
+- Bulletin PDF refait sur le modèle CEG Pahou
+- Journal de diagnostic
+- Sauvegarde/restauration JSON locale
+- Heure du rappel réglable
+- Planning : modification d'un événement, événements à venir uniquement
+- Identité visuelle FASTEK officielle (splash, icône adaptative, thèmes) et écran de présentation
+- Don en ligne KkiaPay intégré (build vert)
+- Export du schéma Room activé
 
-🟡 Écrit le 08/10, pas encore validé par un build ni sur appareil :
-- Bulletin PDF (`domain/bulletin/`, `ui/parametres/BulletinScreen.kt`, FileProvider)
-- Journal de diagnostic (`diagnostic/Journal.kt`, `ui/parametres/JournalScreen.kt`)
-- Correctif de compilation `nomPeriode` (Semestre/Trimestre, via `TypeEtablissement.nomPeriode`)
-- Migration Room 3→4, champs facultatifs du profil pour l'en-tête du bulletin, calendrier dans le Planning, icône de notification
+🟡 À valider sur appareil :
+- Don : l'écran doit afficher « Clé KkiaPay : … — mode test » ; si le message indique l'absence de clé, le secret `KKIAPAY_PUBLIC_KEY` n'est pas transmis au build (le workflow affiche un avertissement ou une confirmation à l'étape « Vérifier la clé KkiaPay »). Puis tester un paiement en mode test
+- Planning : le choix de date ne répondait pas (ni calendrier intégré, ni calendrier système) ; remplacé par un calendrier affiché à la place du formulaire, à confirmer
+- Bulletin PDF sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM)
 
-⚠️ Point technique : base de données en version 4 ; migration 3→4 en place. Les bases v1 et v2 (versions de test) sont encore réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration.
+⚠️ Point technique : base de données en version 4 ; migration 3→4 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../4.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
 
 ---
 
-## 4 bis. Fonctionnalités restantes (définies le 08/10)
+## 4 bis. Fonctionnalités restantes
 
-Légende : **[demandé]** = demandé par Divin ; **[proposition]** = suggéré, à confirmer.
+### Prochaines fonctionnalités élève (ordre convenu)
+1. Modifier une note existante (aujourd'hui : suppression puis ressaisie)
+2. Simulateur d'objectif inversé : note minimale requise au prochain devoir ou à la prochaine interro pour atteindre une moyenne visée
+3. Alerte « matière en danger » sur l'Accueil (matières sous 10 ou qui tirent la moyenne vers le bas)
+4. Calculateur de passage : note nécessaire au dernier semestre pour atteindre 10 ou 12 en annuelle
+5. Appréciation par matière sur le bulletin PDF (saisie libre ou menu rapide)
 
-### Phase 1 — Valider l'existant (avant toute nouvelle fonctionnalité)
-1. **Build CI vert** après les correctifs `nomPeriode` + journal. *Fini quand* : l'APK `notea-debug-apk` se télécharge.
-2. **Test du bulletin PDF** sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM) : tableau lisible, chiffres identiques au bulletin réel (CEG Pahou, 2nde C), partage WhatsApp, plusieurs pages si beaucoup de matières.
-3. **Page Don** : vérifier que le numéro Moov Money s'affiche (le texte `TextesStatiques.DON` du zip du 08/10 affichait encore « [Numéro à venir] »).
-4. **Tests unitaires** [proposition] : moyenne annuelle S1/S2, `construireBulletin`, limite de 2 devoirs.
+Suggestions non priorisées : classement des matières par impact, rappels de révision (veille + jour J), multi-année (archivage), partage d'un résumé par WhatsApp, export CSV, photo de l'élève sur le bulletin.
 
-### Phase 2 — Fiabilité des données
-5. **Vraies migrations Room** [demandé] : ✅ migration 3→4 écrite le 08/10 (les données des versions 3 sont conservées ; seules les bases v1/v2 de test sont réinitialisées). Reste : `exportSchema = true` + tests de migration, et une nouvelle migration à chaque changement de schéma (notamment pour le point 8, établissement privé, s'il touche aux tables).
-6. **Sauvegarde / restauration** [demandé : Google Drive] :
-   - Étape 1 [proposition] : export/import d'un fichier JSON local (marche hors ligne, sans compte Google).
-   - Étape 2 : sauvegarde sur Google Drive de l'élève (OAuth2). Demande une configuration dans la console Google Cloud (empreinte SHA-1 de la clé de signature).
-7. **Journal → FastekLog** [proposition] : envoyer aussi le journal à FastekLog (contrat connu : authority `com.fastek.log.provider`). Demande le fichier `FastekLogClient.kt` de Faspress et une signature commune des deux apps (mêmes secrets GitHub `FASTEK_KEYSTORE_*`).
+### Fiabilité des données
+- Tests de migration Room et commit du schéma exporté
+- Sauvegarde sur Google Drive (OAuth2, empreinte SHA-1 de la clé de signature)
+- Journal → FastekLog (authority `com.fastek.log.provider`, signature commune des deux apps)
 
-### Phase 3 — Fonctionnalités élève
-8. **Établissement privé (3 trimestres)** [demandé] : la formule de la moyenne annuelle du privé reste à confirmer (idéalement sur un vrai bulletin d'école privée) ; ensuite `moyenneAnnuellePrive`, bulletin trimestriel, sélecteur « Trimestre » (déjà prêt côté libellé).
-9. **Don par paiement en ligne** [demandé] : MTN MoMo, Moov Money et carte bancaire via un agrégateur (KkiaPay envisagé, SDK Android). Prérequis : compte marchand activé + clé publique de test fournie par Divin. À faire en même temps : mettre à jour la politique de confidentialité (paiement géré par le prestataire, Notea ne collecte rien) et vérifier les règles de Google Play sur les dons/paiements. C'est la seule fonction qui demandera internet, uniquement au moment du don.
-10. **Bulletin PDF — compléments** [proposition] : ✅ champs optionnels du profil (date et lieu de naissance, effectif, aptitude EPS, redoublant) qui pré-remplissent l'en-tête (08/10). Reste : appréciation saisissable par matière ; photo de l'élève.
-11. **Planning** [proposition] : ✅ sélecteur de date (calendrier) à la place du texte libre (08/10). Reste : modification d'un événement existant ; n'afficher que les événements à venir.
-12. **Notifications** : ✅ icône de notification dédiée (cloche) à la place de l'icône système (08/10). Reste : heure du rappel réglable [proposition].
-13. **Identité visuelle** [demandé] : vrai logo/icône (logo officiel FASTEK), icône adaptative Android, thème aux couleurs vives.
+### Don en ligne
+- Passer en production : variable `KKIAPAY_SANDBOX=false` et clé publique de production
+- Épingler une version stable du SDK KkiaPay à la place de `master-SNAPSHOT`
+- Mettre à jour la politique de confidentialité (paiement géré par le prestataire, Notea ne collecte rien) et vérifier les règles de Google Play sur les dons
 
-### Phase 4 — Sortie publique
-14. **Build release signé** : secrets GitHub `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, règles R8/ProGuard, `versionCode`/`versionName`, poids < 50 Mo, test sur Android 7 (API 24).
-15. **Textes légaux** : faire valider par Divin le brouillon de la politique de confidentialité et des CGU ; prévoir une adresse web publique pour la politique si la publication sur le Play Store l'exige.
-16. **Test terrain** avec de vrais lycéens (public d'abord), puis correction des retours.
+### Sortie publique
+- **Build release signé** : secrets GitHub `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, règles R8/ProGuard, `versionCode`/`versionName`, poids < 50 Mo, test sur Android 7 (API 24)
+- **Textes légaux** : validation par Divin de la politique de confidentialité et des CGU ; adresse web publique si le Play Store l'exige
+- **Test terrain** avec de vrais lycéens, puis correction des retours
 
 ### Plus tard
-17. **Version École (V2)** : voir section 6 (projet séparé, MVP hors ligne envisagé en premier).
+- **Version École (V2)** : voir section 6 (projet séparé, MVP hors ligne envisagé en premier)
 
 ---
 
@@ -147,7 +159,7 @@ Légende : **[demandé]** = demandé par Divin ; **[proposition]** = suggéré, 
 
 - Email : tgldivin@gmail.com
 - WhatsApp : +229 01 64 40 94 45
-- Don (Moov Money) : +229 01 94 81 83 24
+- Don : en ligne via KkiaPay (Mobile Money et carte), plus de numéro affiché
 
 ---
 
