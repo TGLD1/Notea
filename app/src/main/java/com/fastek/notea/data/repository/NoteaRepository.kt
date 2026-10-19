@@ -87,8 +87,35 @@ class NoteaRepository(
     suspend fun mettreAJourEvenement(evenement: Evenement) = evenementDao.mettreAJour(evenement)
     suspend fun supprimerEvenement(evenement: Evenement) = evenementDao.supprimer(evenement)
     suspend fun supprimerEvenementParId(id: Long) = evenementDao.supprimerParId(id)
+    suspend fun getEvenementsDuJour(eleveId: Long, date: LocalDate): List<Evenement> =
+        evenementDao.getEvenementsDuJour(eleveId, date)
     suspend fun getEvenementsAvenirNonNotifies(eleveId: Long, debut: LocalDate, fin: LocalDate): List<Evenement> =
         evenementDao.getEvenementsAvenirNonNotifies(eleveId, debut, fin)
+
+    /**
+     * Toutes les notes au format CSV (séparateur « ; », virgule décimale : s'ouvre directement
+     * dans Excel en français). Retourne null s'il n'y a pas encore de profil.
+     */
+    suspend fun exporterNotesCsv(): String? {
+        val eleve = getProfil() ?: return null
+        val periodes = periodeDao.observerPeriodes(eleve.id).first()
+        val matieres = matiereDao.observerMatieres(eleve.id).first()
+        val sortie = StringBuilder("\uFEFFPériode;Matière;Coefficient;Type;Note /20;Date\n")
+        fun champ(texte: String) = "\"" + texte.replace("\"", "\"\"") + "\""
+        periodes.forEach { periode ->
+            matieres.forEach { matiere ->
+                noteDao.getNotes(matiere.id, periode.id).forEach { note ->
+                    sortie.append(champ("${eleve.typeEtablissement.nomPeriode} ${periode.numero}")).append(';')
+                        .append(champ(matiere.nom)).append(';')
+                        .append(matiere.coefficient).append(';')
+                        .append(if (note.type == TypeNote.DEVOIR) "Devoir" else "Interrogation").append(';')
+                        .append(String.format(java.util.Locale.FRANCE, "%.2f", note.valeur)).append(';')
+                        .append(note.date).append('\n')
+                }
+            }
+        }
+        return sortie.toString()
+    }
 
     // --- Données combinées (moyennes calculées en direct) ---
 

@@ -52,6 +52,30 @@ fun StatistiquesScreen(viewModel: StatistiquesViewModel) {
         Spacer(Modifier.height(8.dp))
         GraphiqueEvolution(points = etat.evolution)
 
+        if (etat.impacts.isNotEmpty()) {
+            Spacer(Modifier.height(32.dp))
+            Text("Impact des matières sur ta moyenne", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "De la matière qui tire le plus ta moyenne vers le bas à celle qui la tire le plus vers le haut " +
+                    "(en points de moyenne générale, coefficients compris).",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(8.dp))
+            etat.impacts.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("${item.nom}  (${String.format("%.2f", item.moyenne)})")
+                    Text(
+                        (if (item.impact >= 0) "+" else "") + String.format("%.2f", item.impact) + " pt",
+                        color = if (item.impact < 0) Color(0xFFF44336) else Color(0xFF4CAF50)
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(32.dp))
         Text("Simulateur", style = MaterialTheme.typography.titleMedium)
         Text(

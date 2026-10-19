@@ -34,6 +34,10 @@ interface EvenementDao {
     @Query("SELECT * FROM evenement WHERE eleveId = :eleveId AND date BETWEEN :debut AND :fin AND notifie = 0")
     suspend fun getEvenementsAvenirNonNotifies(eleveId: Long, debut: LocalDate, fin: LocalDate): List<Evenement>
 
+    /** Événements d'un jour précis (rappels « demain » et « aujourd'hui »). */
+    @Query("SELECT * FROM evenement WHERE eleveId = :eleveId AND date = :date ORDER BY titre")
+    suspend fun getEvenementsDuJour(eleveId: Long, date: LocalDate): List<Evenement>
+
     @Query("SELECT * FROM evenement")
     suspend fun getTous(): List<Evenement>
 

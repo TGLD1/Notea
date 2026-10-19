@@ -1,5 +1,7 @@
 package com.fastek.notea.ui.dashboard
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.domain.calcul.MoyenneCalculator
@@ -115,6 +118,14 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 .padding(top = 8.dp)
         )
 
+        val contexte = LocalContext.current
+        if (etat.moyenneGenerale != null) {
+            OutlinedButton(
+                onClick = { partagerResume(contexte, etat) },
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
+            ) { Text("Partager mon résumé") }
+        }
+
         Spacer(Modifier.height(24.dp))
 
         AlerteMatieres(etat.matieres, etat.moyenneGenerale)
@@ -193,6 +204,23 @@ private fun AlerteMatieres(matieres: List<NoteaRepository.MatiereAvecMoyenne>, m
         )
     }
     Spacer(Modifier.height(24.dp))
+}
+
+/** Résumé en texte (WhatsApp, SMS…) : moyenne générale et moyenne de chaque matière notée. */
+private fun partagerResume(contexte: Context, etat: DashboardUiState) {
+    val texte = buildString {
+        append("Notea — ${etat.nomPeriode} ${etat.periodeNumero ?: ""}\n")
+        append("Moyenne générale : ${String.format("%.2f", etat.moyenneGenerale ?: 0.0)}/20")
+        append(" (objectif ${etat.objectifPeriode.toInt()}/20)\n\n")
+        etat.matieres.filter { it.moyenne != null }.forEach {
+            append("${it.matiere.nom} : ${String.format("%.2f", it.moyenne)}\n")
+        }
+    }.trim()
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, texte)
+    }
+    contexte.startActivity(Intent.createChooser(intent, "Partager mon résumé"))
 }
 
 @Composable

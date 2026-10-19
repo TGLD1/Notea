@@ -15,6 +15,7 @@ private val OPTIONS = listOf(
     "bulletin" to "Générer le bulletin PDF",
     "rappel" to "Heure du rappel",
     "sauvegarde" to "Sauvegarde et restauration",
+    "export-csv" to "Exporter les notes (CSV)",
     "don" to "Faire un don à FASTEK",
     "signaler-probleme" to "Signaler un problème",
     "apropos-app" to "À propos de l'application",

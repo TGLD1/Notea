@@ -48,9 +48,13 @@ data class PassageUi(
     val resultats: List<PassageResultat> = emptyList()
 )
 
+/** Effet d'une matière sur la moyenne générale : (moyenne − moyenne générale) × coefficient ÷ Σ coefficients. */
+data class ImpactMatiere(val nom: String, val moyenne: Double, val impact: Double)
+
 data class StatistiquesUiState(
     val chargement: Boolean = true,
     val evolution: List<PointGraphique> = emptyList(),
+    val impacts: List<ImpactMatiere> = emptyList(),
     val matieresDisponibles: List<Matiere> = emptyList(),
     val simulateur: SimulateurState = SimulateurState()
 )
@@ -145,6 +149,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
         return StatistiquesUiState(
             chargement = false,
             evolution = evolution,
+            impacts = calculerImpacts(matieresAvecNotes),
             matieresDisponibles = matieres,
             simulateur = calculerSimulation(matieresAvecNotes, periode, simu)
                 .let { calculerNoteRequise(matieresAvecNotes, periode, it) }
@@ -188,6 +193,21 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             nouvelleMoyenneGenerale = nouvelleMoyenneGenerale,
             erreur = null
         )
+    }
+
+    /** Classement des matières notées, de celle qui tire le plus la moyenne vers le bas à celle qui la tire le plus vers le haut. */
+    private fun calculerImpacts(matieresAvecNotes: List<Pair<Matiere, List<Note>>>): List<ImpactMatiere> {
+        val notees = matieresAvecNotes.mapNotNull { (matiere, notes) ->
+            MoyenneCalculator.moyenneMatiere(notes)?.let { matiere to it }
+        }
+        val totalCoefficients = notees.sumOf { it.first.coefficient }
+        if (notees.isEmpty() || totalCoefficients == 0) return emptyList()
+        val moyenneGenerale = notees.sumOf { it.second * it.first.coefficient } / totalCoefficients
+        return notees
+            .map { (matiere, moyenne) ->
+                ImpactMatiere(matiere.nom, moyenne, (moyenne - moyenneGenerale) * matiere.coefficient / totalCoefficients)
+            }
+            .sortedBy { it.impact }
     }
 
     /** Calcul inverse : note minimale pour atteindre la moyenne générale visée. */

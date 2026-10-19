@@ -2,4 +2,6 @@
 <paths>
     <!-- Bulletins PDF générés dans le cache, partagés via FileProvider -->
     <cache-path name="bulletins" path="bulletins/" />
+    <!-- Export CSV des notes -->
+    <cache-path name="exports" path="exports/" />
 </paths>

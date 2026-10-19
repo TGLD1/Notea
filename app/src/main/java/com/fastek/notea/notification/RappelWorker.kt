@@ -14,7 +14,6 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.fastek.notea.NoteaApplication
 import com.fastek.notea.R
-import com.fastek.notea.data.local.entity.Evenement
 import com.fastek.notea.diagnostic.Journal
 import java.time.Duration
 import java.time.LocalDate
@@ -23,8 +22,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Vérifie chaque jour à l'heure choisie (18h par défaut, voir [ReglagesRappel]) les événements dans les 48h à venir pas encore notifiés,
- * envoie une notification si besoin, puis planifie sa propre prochaine exécution
+ * Vérifie chaque jour à l'heure choisie (18h par défaut, voir [ReglagesRappel]) les événements du jour, de demain et d'après-demain
+ * (ce dernier une seule fois), envoie une notification groupée si besoin, puis planifie sa propre prochaine exécution
  * (plus fiable qu'un simple travail périodique, qui peut dériver dans le temps).
  */
 class RappelWorker(
@@ -41,13 +40,22 @@ class RappelWorker(
 
             if (eleve != null) {
                 val aujourdHui = LocalDate.now()
-                val dansDeuxJours = aujourdHui.plusDays(2)
-                val evenements = repository.getEvenementsAvenirNonNotifies(eleve.id, aujourdHui, dansDeuxJours)
-                nbEvenements = evenements.size
+                // Trois rappels : dans 2 jours (une seule fois), la veille, et le jour même.
+                val dansDeuxJours = repository.getEvenementsAvenirNonNotifies(
+                    eleve.id, aujourdHui.plusDays(2), aujourdHui.plusDays(2)
+                )
+                val demain = repository.getEvenementsDuJour(eleve.id, aujourdHui.plusDays(1))
+                val duJour = repository.getEvenementsDuJour(eleve.id, aujourdHui)
+                nbEvenements = dansDeuxJours.size + demain.size + duJour.size
 
-                if (evenements.isNotEmpty()) {
-                    afficherNotification(evenements)
-                    evenements.forEach { repository.mettreAJourEvenement(it.copy(notifie = true)) }
+                val lignes = buildList {
+                    if (duJour.isNotEmpty()) add("Aujourd'hui : " + duJour.joinToString(", ") { it.titre })
+                    if (demain.isNotEmpty()) add("Demain : " + demain.joinToString(", ") { it.titre })
+                    if (dansDeuxJours.isNotEmpty()) add("Dans 2 jours : " + dansDeuxJours.joinToString(", ") { it.titre })
+                }
+                if (lignes.isNotEmpty()) {
+                    afficherNotification(lignes)
+                    dansDeuxJours.forEach { repository.mettreAJourEvenement(it.copy(notifie = true)) }
                 }
             }
             Journal.ok("notification.rappel", "$nbEvenements événement(s) notifié(s)")
@@ -62,16 +70,13 @@ class RappelWorker(
         return Result.success()
     }
 
-    private fun afficherNotification(evenements: List<Evenement>) {
-        val texte = if (evenements.size == 1) {
-            evenements.first().titre
-        } else {
-            evenements.joinToString(", ") { it.titre }
-        }
+    private fun afficherNotification(lignes: List<String>) {
+        val texte = lignes.joinToString("\n")
 
         val notification = NotificationCompat.Builder(applicationContext, CANAL_ID)
             .setContentTitle("Notea — Rappel")
-            .setContentText(texte)
+            .setContentText(lignes.first())
+            .setStyle(NotificationCompat.BigTextStyle().bigText(texte))
             .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)

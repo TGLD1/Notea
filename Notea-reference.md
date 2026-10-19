@@ -85,12 +85,13 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 | **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet « glow »), sélecteur de période, encadré « Matières à surveiller » (moyenne sous 10/20, avec l'effet de chaque matière sur la moyenne générale), liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
 | **Mes matières** | Liste des matières, moyenne en direct, tap → écran de saisie des notes |
 | **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs par période), modification d'une note existante (bouton « Modif. »), coefficient éditable, moyenne recalculée en temps réel. Conduite : une seule note par période, saisie ici comme les autres matières |
-| **Planning/Événements** | Événements à venir uniquement, triés par date ; ajout et modification d'un événement (titre, date, matière optionnelle) ; choix de la date par calendrier affiché à la place du formulaire ; rappel notifié pour les événements à 48 h (WorkManager, replanifié chaque jour) |
+| **Planning/Événements** | Événements à venir uniquement, triés par date ; ajout et modification d'un événement (titre, date, matière optionnelle) ; choix de la date par calendrier affiché à la place du formulaire ; rappels notifiés à l'heure choisie : dans 2 jours (une fois), la veille et le jour même (WorkManager, replanifié chaque jour) |
 | **Objectifs** | Objectif annuel + objectif par période (la Conduite n'apparaît plus ici : c'est une matière normale) |
 | **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (Canvas natif) + simulateur « si j'ai X au prochain devoir/interro, ma moyenne devient Y » + « Quelle note me faut-il ? » (note minimale au prochain devoir/interro pour atteindre une moyenne générale visée) + calculateur de passage (moyenne à obtenir au dernier semestre/trimestre pour 10, 12 ou l'objectif annuel) |
 | **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Appréciation par matière (menu rapide ou saisie libre, proposition automatique selon la moyenne) ; rang, moyenne de classe et décision du conseil laissés vides |
 | **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local, partage et remise à zéro. Aucune donnée personnelle journalisée |
 | **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
+| **Export CSV** | (Paramètres) Toutes les notes en fichier CSV (séparateur « ; », virgule décimale), partagé via le menu Android |
 | **Heure du rappel** | (Paramètres) Heure du rappel réglable de 6 h à 22 h (défaut 18 h) |
 | **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou montant libre (min. 100 FCFA), paiement Mobile Money ou carte via KkiaPay. Affiche l'état de la clé (début de la clé publique et mode test/réel) ; si la clé est absente de la compilation, un message l'indique |
 | **Paramètres** | Profil éditable, objectif/classe en lecture seule, Don, Signaler un problème (email pré-rempli), À propos, Calcul des moyennes, Développeur, Politique de confidentialité, CGU, Découvrir Notea |
@@ -133,8 +134,12 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Calculateur de passage (public : (2×S2 + S1)÷3 ; privé : (T1+T2+T3)÷3)
 - Appréciation par matière sur le bulletin PDF
 - Bulletin PDF sur une seule page, Conduite en dernière ligne
+- Classement des matières par impact sur la moyenne générale (Statistiques)
+- Partage d'un résumé en texte (WhatsApp, SMS…) depuis l'Accueil
+- Export CSV de toutes les notes (Paramètres)
+- Rappels du planning : dans 2 jours (une fois), la veille et le jour même
 
-Suggestions non priorisées : classement des matières par impact, rappels de révision (veille + jour J), multi-année (archivage), partage d'un résumé par WhatsApp, export CSV, photo de l'élève sur le bulletin.
+Suggestions restantes : multi-année (archivage de l'année précédente, demande une migration de la base), photo de l'élève sur le bulletin.
 
 ### Fiabilité des données
 - Tests de migration Room et commit du schéma exporté

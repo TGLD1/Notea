@@ -65,6 +65,7 @@ import com.fastek.notea.ui.onboarding.OnboardingScreen
 import com.fastek.notea.ui.onboarding.OnboardingViewModel
 import com.fastek.notea.ui.parametres.BulletinScreen
 import com.fastek.notea.ui.parametres.JournalScreen
+import com.fastek.notea.ui.parametres.ExportCsvScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
@@ -327,6 +328,9 @@ private fun NoteaNavHost(
             }
             composable("rappel") {
                 RappelScreen()
+            }
+            composable("export-csv") {
+                ExportCsvScreen(repository)
             }
             composable("sauvegarde") {
                 SauvegardeScreen(sauvegarde)
