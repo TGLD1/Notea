@@ -1,13 +1,11 @@
 package com.fastek.notea.ui.objectifs
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -49,25 +47,11 @@ fun ObjectifsScreen(viewModel: ObjectifsViewModel) {
         etat.periodes.forEach { periode ->
             Text("Période ${periode.numero}", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = periode.objectif,
-                    onValueChange = { viewModel.onObjectifPeriodeChange(periode.id, it) },
-                    label = { Text("Objectif /20") },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = periode.conduite,
-                    onValueChange = { viewModel.onConduiteChange(periode.id, it) },
-                    label = { Text("Conduite /20") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Text(
-                "Conduite : note unique attribuée par le conseil des professeurs en fin de période.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            OutlinedTextField(
+                value = periode.objectif,
+                onValueChange = { viewModel.onObjectifPeriodeChange(periode.id, it) },
+                label = { Text("Objectif /20") },
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(24.dp))
         }

@@ -122,20 +122,15 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
     }
 }
 
-/** Champ date en lecture seule : le bouton « Choisir » ouvre un calendrier (plus de saisie à la main). */
+/** Bouton date : ouvre un calendrier (plus de saisie à la main). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChampDate(dateTexte: String, onDateChange: (String) -> Unit) {
     var ouvert by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
-        value = dateTexte,
-        onValueChange = {},
-        readOnly = true,
-        label = { Text("Date") },
-        trailingIcon = { TextButton(onClick = { ouvert = true }) { Text("Choisir") } },
-        modifier = Modifier.fillMaxWidth()
-    )
+    OutlinedButton(onClick = { ouvert = true }, modifier = Modifier.fillMaxWidth()) {
+        Text("Date : $dateTexte  (modifier)")
+    }
 
     if (ouvert) {
         val departMillis = try {
