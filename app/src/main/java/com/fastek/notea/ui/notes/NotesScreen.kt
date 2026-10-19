@@ -83,8 +83,11 @@ fun NotesScreen(viewModel: NotesViewModel) {
             )
             Spacer(Modifier.width(8.dp))
             Button(onClick = viewModel::ajouterNote) {
-                Text("Ajouter")
+                Text(if (etat.enEditionId != null) "Enregistrer" else "Ajouter")
             }
+        }
+        if (etat.enEditionId != null) {
+            TextButton(onClick = viewModel::annulerModification) { Text("Annuler la modification") }
         }
 
         etat.erreur?.let { erreur ->
@@ -104,7 +107,12 @@ fun NotesScreen(viewModel: NotesViewModel) {
         } else {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(etat.notes, key = { it.id }) { note ->
-                    LigneNote(note = note, onSupprimer = { viewModel.supprimerNote(note) })
+                    LigneNote(
+                        note = note,
+                        enEdition = note.id == etat.enEditionId,
+                        onModifier = { viewModel.commencerModification(note) },
+                        onSupprimer = { viewModel.supprimerNote(note) }
+                    )
                 }
             }
         }
@@ -112,16 +120,19 @@ fun NotesScreen(viewModel: NotesViewModel) {
 }
 
 @Composable
-private fun LigneNote(note: Note, onSupprimer: () -> Unit) {
+private fun LigneNote(note: Note, enEdition: Boolean, onModifier: () -> Unit, onSupprimer: () -> Unit) {
     ListItem(
         headlineContent = {
             Text(if (note.type == TypeNote.DEVOIR) "Devoir" else "Interrogation")
         },
-        supportingContent = { Text(note.date.toString()) },
+        supportingContent = { Text(if (enEdition) "${note.date} — en cours de modification" else note.date.toString()) },
         trailingContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(String.format("%.1f", note.valeur), style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(4.dp))
+                TextButton(onClick = onModifier) {
+                    Text("Modif.")
+                }
                 TextButton(onClick = onSupprimer) {
                     Text("Suppr.")
                 }

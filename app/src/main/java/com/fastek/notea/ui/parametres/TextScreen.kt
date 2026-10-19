@@ -43,9 +43,15 @@ object TextesStatiques {
         "téléphone, dans la mémoire de l'application.\n\n" +
         "Si tu exportes une sauvegarde, elle est enregistrée dans un fichier que tu choisis toi-même " +
         "(téléphone, Drive, WhatsApp…) : FASTEK n'y a jamais accès.\n\n" +
-        "Seul le don en ligne, facultatif, utilise internet : il est traité par KkiaPay, notre " +
-        "prestataire de paiement. Notea ne collecte ni ne conserve aucune information de paiement ; " +
-        "KkiaPay applique sa propre politique de confidentialité."
+        "Don en ligne (facultatif)\n" +
+        "C'est la seule fonction qui utilise internet. Le paiement est traité par KkiaPay, notre " +
+        "prestataire de paiement, dans sa propre fenêtre : c'est KkiaPay, et non Notea, qui reçoit " +
+        "les informations nécessaires au paiement (nom, numéro de téléphone Mobile Money ou données " +
+        "de carte bancaire). Notea ne voit, ne collecte et ne conserve aucune information de paiement ; " +
+        "elle est seulement informée du résultat (réussi ou échoué). Le don ne demande aucun compte, " +
+        "ni sur Notea ni chez KkiaPay. KkiaPay applique sa propre politique de confidentialité.\n\n" +
+        "Notea ne contient ni publicité ni outil de suivi.\n\n" +
+        "Contact : tgldivin@gmail.com"
 
     const val DON = "Notea est gratuite. Si l'application t'est utile, ton don aide FASTEK à " +
         "terminer son développement et à l'améliorer. Le paiement se fait en toute sécurité " +

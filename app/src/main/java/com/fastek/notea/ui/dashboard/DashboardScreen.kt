@@ -115,7 +115,9 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 .padding(top = 8.dp)
         )
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
+
+        AlerteMatieres(etat.matieres, etat.moyenneGenerale)
 
         Text("Tes matières", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
@@ -133,6 +135,64 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
             }
         }
     }
+}
+
+/**
+ * Matières « en danger » : moyenne sous le seuil de réussite (10/20), de la plus faible à la
+ * moins faible, avec leur poids sur la moyenne générale de la période.
+ */
+@Composable
+private fun AlerteMatieres(matieres: List<NoteaRepository.MatiereAvecMoyenne>, moyenneGenerale: Double?) {
+    val notees = matieres.filter { it.moyenne != null }
+    val enDanger = notees
+        .filter { it.moyenne!! < MoyenneCalculator.SEUIL_REUSSITE }
+        .sortedBy { it.moyenne }
+    if (enDanger.isEmpty()) return
+
+    val totalCoefficients = notees.sumOf { it.matiere.coefficient }
+    val rouge = Color(0xFFF44336)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(rouge.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        Text("Matières à surveiller", style = MaterialTheme.typography.titleMedium, color = rouge)
+        Text(
+            "Moyenne sous ${MoyenneCalculator.SEUIL_REUSSITE.toInt()}/20 :",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(Modifier.height(6.dp))
+        enDanger.forEach { item ->
+            val moyenne = item.moyenne!!
+            val poids = if (moyenneGenerale != null && totalCoefficients > 0) {
+                (moyenne - moyenneGenerale) * item.matiere.coefficient / totalCoefficients
+            } else {
+                null
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(item.matiere.nom, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    buildString {
+                        append(String.format("%.2f", moyenne))
+                        if (poids != null && poids < 0) append("  ·  ${String.format("%.2f", poids)} pt")
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = rouge
+                )
+            }
+        }
+        Text(
+            "Le chiffre en points est l'effet de la matière sur ta moyenne générale. " +
+                "Menu ⋮ → Statistiques → « Quelle note me faut-il ? » pour savoir quoi viser.",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 6.dp)
+        )
+    }
+    Spacer(Modifier.height(24.dp))
 }
 
 @Composable

@@ -8,6 +8,7 @@ import com.fastek.notea.data.local.entity.Periode
 import com.fastek.notea.data.local.entity.TypeNote
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.domain.calcul.MoyenneCalculator
+import com.fastek.notea.ui.notes.NotesViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +28,24 @@ data class SimulateurState(
     val valeurTexte: String = "",
     val nouvelleMoyenneMatiere: Double? = null,
     val nouvelleMoyenneGenerale: Double? = null,
-    val erreur: String? = null
+    val erreur: String? = null,
+    /** Moyenne générale visée (texte saisi ; vide = objectif de la période). */
+    val cibleTexte: String = "",
+    val cible: Double? = null,
+    /** Note minimale requise pour atteindre [cible] (calcul inverse). */
+    val requis: MoyenneCalculator.Requis? = null,
+    val limiteDevoirs: Boolean = false
+)
+
+/** Une ligne du calculateur de passage : cible de moyenne annuelle et moyenne requise à la dernière période. */
+data class PassageResultat(val cible: Double, val requis: MoyenneCalculator.Requis)
+
+data class PassageUi(
+    val libelleDernierePeriode: String,
+    val libellePeriodePrecedente: String,
+    /** false tant qu'une période précédente n'a aucune note. */
+    val disponible: Boolean,
+    val resultats: List<PassageResultat> = emptyList()
 )
 
 data class StatistiquesUiState(
@@ -40,6 +58,43 @@ data class StatistiquesUiState(
 class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel() {
 
     private val _simulateur = MutableStateFlow(SimulateurState())
+
+    /** Calculateur de passage : moyenne requise à la dernière période pour une moyenne annuelle visée. */
+    val passage: StateFlow<PassageUi?> = repository.observerProfil()
+        .flatMapLatest { profil ->
+            if (profil == null) {
+                flowOf(null)
+            } else {
+                repository.observerPeriodes(profil.id).flatMapLatest { periodes ->
+                    val type = profil.typeEtablissement
+                    val nom = type.nomPeriode
+                    val precedentes = periodes.filter { it.numero < type.nombrePeriodes }.sortedBy { it.numero }
+                    if (precedentes.size != type.nombrePeriodes - 1) {
+                        flowOf(null)
+                    } else {
+                        combine(precedentes.map { repository.observerMoyenneGeneralePeriode(profil.id, it) }) { moyennes ->
+                            val libelleFinal = "$nom ${type.nombrePeriodes}"
+                            val libellePrecedent = if (precedentes.size == 1) "$nom 1" else "les ${nom.lowercase()}s précédents"
+                            if (moyennes.any { it == null }) {
+                                PassageUi(libelleFinal, libellePrecedent, disponible = false)
+                            } else {
+                                val connues = moyennes.map { it!! }
+                                val cibles = (listOf(10.0, 12.0, profil.objectifAnnuel)).distinct()
+                                PassageUi(
+                                    libelleDernierePeriode = libelleFinal,
+                                    libellePeriodePrecedente = libellePrecedent,
+                                    disponible = true,
+                                    resultats = cibles.map { cible ->
+                                        PassageResultat(cible, MoyenneCalculator.moyenneRequiseDernierePeriode(type, connues, cible))
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val uiState: StateFlow<StatistiquesUiState> = repository.observerProfil()
         .flatMapLatest { profil ->
@@ -92,6 +147,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             evolution = evolution,
             matieresDisponibles = matieres,
             simulateur = calculerSimulation(matieresAvecNotes, periode, simu)
+                .let { calculerNoteRequise(matieresAvecNotes, periode, it) }
         )
     }
 
@@ -132,6 +188,38 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             nouvelleMoyenneGenerale = nouvelleMoyenneGenerale,
             erreur = null
         )
+    }
+
+    /** Calcul inverse : note minimale pour atteindre la moyenne générale visée. */
+    private fun calculerNoteRequise(
+        matieresAvecNotes: List<Pair<Matiere, List<Note>>>,
+        periode: Periode,
+        etat: SimulateurState
+    ): SimulateurState {
+        val cible = etat.cibleTexte.replace(',', '.').toDoubleOrNull() ?: periode.objectifCible
+        val choisie = matieresAvecNotes.find { it.first.id == etat.matiereId }
+            ?: return etat.copy(cible = cible, requis = null, limiteDevoirs = false)
+        if (etat.type == TypeNote.DEVOIR &&
+            choisie.second.count { it.type == TypeNote.DEVOIR } >= NotesViewModel.MAX_DEVOIRS_PAR_PERIODE
+        ) {
+            return etat.copy(cible = cible, requis = null, limiteDevoirs = true)
+        }
+        val autres = matieresAvecNotes
+            .filter { it.first.id != choisie.first.id }
+            .mapNotNull { (matiere, notes) ->
+                MoyenneCalculator.moyenneMatiere(notes)
+                    ?.let { MoyenneCalculator.MoyennePonderee(it, matiere.coefficient) }
+            }
+        val requis = MoyenneCalculator.noteRequisePourMoyenneGenerale(
+            choisie.second, etat.type, choisie.first.coefficient, autres, cible
+        )
+        return etat.copy(cible = cible, requis = requis, limiteDevoirs = false)
+    }
+
+    fun onCibleChange(texte: String) {
+        if (texte.isEmpty() || texte.matches(Regex("^\\d{0,2}([.,]\\d{0,2})?$"))) {
+            _simulateur.update { it.copy(cibleTexte = texte) }
+        }
     }
 
     fun onMatiereChange(matiereId: Long?) = _simulateur.update {

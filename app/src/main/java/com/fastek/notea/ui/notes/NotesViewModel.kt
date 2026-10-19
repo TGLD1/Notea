@@ -23,16 +23,20 @@ data class NotesUiState(
     val moyenne: Double? = null,
     val nouvelleValeur: String = "",
     val nouveauType: TypeNote = TypeNote.DEVOIR,
-    val erreur: String? = null
+    val erreur: String? = null,
+    /** Identifiant de la note en cours de modification (null = nouvelle saisie). */
+    val enEditionId: Long? = null
 ) {
     val devoirsAtteints: Boolean
-        get() = notes.count { it.type == TypeNote.DEVOIR } >= NotesViewModel.MAX_DEVOIRS_PAR_PERIODE
+        get() = notes.count { it.type == TypeNote.DEVOIR && it.id != enEditionId } >=
+            NotesViewModel.MAX_DEVOIRS_PAR_PERIODE
 }
 
 private data class SaisieState(
     val valeur: String = "",
     val type: TypeNote = TypeNote.DEVOIR,
-    val erreur: String? = null
+    val erreur: String? = null,
+    val enEdition: Note? = null
 )
 
 class NotesViewModel(
@@ -63,7 +67,8 @@ class NotesViewModel(
             moyenne = MoyenneCalculator.moyenneMatiere(notes),
             nouvelleValeur = saisie.valeur,
             nouveauType = saisie.type,
-            erreur = saisie.erreur
+            erreur = saisie.erreur,
+            enEditionId = saisie.enEdition?.id
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NotesUiState())
 
@@ -83,36 +88,55 @@ class NotesViewModel(
             _saisie.update { it.copy(erreur = "Note invalide (0 à 20)") }
             return
         }
+        val enEdition = _saisie.value.enEdition
+        val autresNotes = uiState.value.notes.filter { it.id != enEdition?.id }
         val isConduite = _matiereNom.value == "Conduite"
-        if (isConduite && uiState.value.notes.isNotEmpty()) {
+        if (isConduite && autresNotes.isNotEmpty()) {
             _saisie.update { it.copy(erreur = "Conduite ne peut avoir qu'une seule note par période.") }
             return
         }
 
         val type = if (isConduite) TypeNote.INTERROGATION else _saisie.value.type
         if (type == TypeNote.DEVOIR) {
-            val nombreDevoirs = uiState.value.notes.count { it.type == TypeNote.DEVOIR }
+            val nombreDevoirs = autresNotes.count { it.type == TypeNote.DEVOIR }
             if (nombreDevoirs >= MAX_DEVOIRS_PAR_PERIODE) {
                 _saisie.update { it.copy(erreur = "Maximum $MAX_DEVOIRS_PAR_PERIODE devoirs par période (comme sur le bulletin officiel)") }
                 return
             }
         }
         viewModelScope.launch {
-            repository.ajouterNote(
-                Note(
-                    matiereId = matiereId,
-                    periodeId = periodeId,
-                    type = type,
-                    valeur = valeur,
-                    date = LocalDate.now()
+            if (enEdition != null) {
+                repository.mettreAJourNote(enEdition.copy(type = type, valeur = valeur))
+            } else {
+                repository.ajouterNote(
+                    Note(
+                        matiereId = matiereId,
+                        periodeId = periodeId,
+                        type = type,
+                        valeur = valeur,
+                        date = LocalDate.now()
+                    )
                 )
-            )
-            _saisie.update { it.copy(valeur = "", erreur = null) }
+            }
+            _saisie.update { it.copy(valeur = "", erreur = null, enEdition = null) }
         }
     }
 
+    /** Charge une note existante dans le formulaire pour la modifier. */
+    fun commencerModification(note: Note) {
+        val texte = if (note.valeur % 1.0 == 0.0) note.valeur.toInt().toString() else note.valeur.toString()
+        _saisie.update { SaisieState(valeur = texte, type = note.type, enEdition = note) }
+    }
+
+    fun annulerModification() {
+        _saisie.update { SaisieState(type = it.type) }
+    }
+
     fun supprimerNote(note: Note) {
-        viewModelScope.launch { repository.supprimerNote(note) }
+        viewModelScope.launch {
+            repository.supprimerNote(note)
+            if (_saisie.value.enEdition?.id == note.id) _saisie.update { SaisieState(type = it.type) }
+        }
     }
 
     companion object {

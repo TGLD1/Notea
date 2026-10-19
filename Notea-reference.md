@@ -82,13 +82,13 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 |---|---|
 | **Présentation** | 5 diapositives au premier démarrage sur les fonctionnalités principales ; accessible ensuite depuis Paramètres → « Découvrir Notea » |
 | **Onboarding** | Nom, prénom, classe (niveau + série en menus déroulants), type d'établissement, liste de matières prédéfinie à cocher + coefficient libre. Conduite ajoutée automatiquement. |
-| **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet « glow »), sélecteur de période, liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
+| **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet « glow »), sélecteur de période, encadré « Matières à surveiller » (moyenne sous 10/20, avec l'effet de chaque matière sur la moyenne générale), liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
 | **Mes matières** | Liste des matières, moyenne en direct, tap → écran de saisie des notes |
-| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs par période), coefficient éditable, moyenne recalculée en temps réel. Conduite : une seule note par période, saisie ici comme les autres matières |
+| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs par période), modification d'une note existante (bouton « Modif. »), coefficient éditable, moyenne recalculée en temps réel. Conduite : une seule note par période, saisie ici comme les autres matières |
 | **Planning/Événements** | Événements à venir uniquement, triés par date ; ajout et modification d'un événement (titre, date, matière optionnelle) ; choix de la date par calendrier affiché à la place du formulaire ; rappel notifié pour les événements à 48 h (WorkManager, replanifié chaque jour) |
 | **Objectifs** | Objectif annuel + objectif par période (la Conduite n'apparaît plus ici : c'est une matière normale) |
-| **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (Canvas natif) + simulateur « si j'ai X au prochain devoir/interro, ma moyenne devient Y » |
-| **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Rang, moyenne de classe, appréciations par matière, décision du conseil laissés vides |
+| **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (Canvas natif) + simulateur « si j'ai X au prochain devoir/interro, ma moyenne devient Y » + « Quelle note me faut-il ? » (note minimale au prochain devoir/interro pour atteindre une moyenne générale visée) + calculateur de passage (moyenne à obtenir au dernier semestre/trimestre pour 10, 12 ou l'objectif annuel) |
+| **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Appréciation par matière (menu rapide ou saisie libre, proposition automatique selon la moyenne) ; rang, moyenne de classe et décision du conseil laissés vides |
 | **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local, partage et remise à zéro. Aucune donnée personnelle journalisée |
 | **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
 | **Heure du rappel** | (Paramètres) Heure du rappel réglable de 6 h à 22 h (défaut 18 h) |
@@ -112,7 +112,7 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Heure du rappel réglable
 - Planning : modification d'un événement, événements à venir uniquement
 - Identité visuelle FASTEK officielle (splash, icône adaptative, thèmes) et écran de présentation
-- Don en ligne KkiaPay intégré (build vert)
+- Don en ligne KkiaPay intégré et fonctionnel (mode test) ; clé publique fournie par `gradle.properties`
 - Export du schéma Room activé
 
 🟡 À valider sur appareil :
@@ -126,12 +126,13 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 
 ## 4 bis. Fonctionnalités restantes
 
-### Prochaines fonctionnalités élève (ordre convenu)
-1. Modifier une note existante (aujourd'hui : suppression puis ressaisie)
-2. Simulateur d'objectif inversé : note minimale requise au prochain devoir ou à la prochaine interro pour atteindre une moyenne visée
-3. Alerte « matière en danger » sur l'Accueil (matières sous 10 ou qui tirent la moyenne vers le bas)
-4. Calculateur de passage : note nécessaire au dernier semestre pour atteindre 10 ou 12 en annuelle
-5. Appréciation par matière sur le bulletin PDF (saisie libre ou menu rapide)
+### Fonctionnalités élève livrées
+- Modifier une note existante
+- « Quelle note me faut-il ? » : note minimale requise pour une moyenne générale visée
+- Alerte « Matières à surveiller » sur l'Accueil
+- Calculateur de passage (public : (2×S2 + S1)÷3 ; privé : (T1+T2+T3)÷3)
+- Appréciation par matière sur le bulletin PDF
+- Bulletin PDF sur une seule page, Conduite en dernière ligne
 
 Suggestions non priorisées : classement des matières par impact, rappels de révision (veille + jour J), multi-année (archivage), partage d'un résumé par WhatsApp, export CSV, photo de l'élève sur le bulletin.
 
@@ -143,7 +144,7 @@ Suggestions non priorisées : classement des matières par impact, rappels de r�
 ### Don en ligne
 - Passer en production : variable `KKIAPAY_SANDBOX=false` et clé publique de production
 - Épingler une version stable du SDK KkiaPay à la place de `master-SNAPSHOT`
-- Mettre à jour la politique de confidentialité (paiement géré par le prestataire, Notea ne collecte rien) et vérifier les règles de Google Play sur les dons
+- Vérifier les règles de Google Play sur les dons (la politique de confidentialité mentionne déjà KkiaPay)
 
 ### Sortie publique
 - **Build release signé** : secrets GitHub `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, règles R8/ProGuard, `versionCode`/`versionName`, poids < 50 Mo, test sur Android 7 (API 24)

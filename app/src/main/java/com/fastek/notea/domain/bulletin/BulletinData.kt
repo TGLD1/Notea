@@ -12,7 +12,9 @@ data class LigneBulletin(
     val devoir1: Double?,
     val devoir2: Double?,
     /** Moyenne de la matière sur 20 — null tant qu'aucune note n'est saisie. */
-    val moyenne: Double?
+    val moyenne: Double?,
+    /** Appréciation de la matière (menu rapide ou saisie libre) ; vide = case à remplir à la main. */
+    val appreciation: String = ""
 ) {
     /** Comme sur le bulletin officiel : la moyenne arrondie à 2 décimales × le coefficient. */
     val moyenneCoef: Double? get() = moyenne?.let { Math.round(it * 100.0) / 100.0 * coefficient }

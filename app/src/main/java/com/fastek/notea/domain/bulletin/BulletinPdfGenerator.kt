@@ -180,7 +180,7 @@ object BulletinPdfGenerator {
             format2(l.moyenne).ifEmpty { "—" },
             format2(l.moyenneCoef).ifEmpty { "—" },
             "",
-            ""
+            l.appreciation
         )
         val tailleTexte = minOf(9f, hauteur * 0.4f)
         val texte = peinture(tailleTexte)
@@ -194,6 +194,9 @@ object BulletinPdfGenerator {
             if (i > 0 && !fusionnee) trait(c, x, haut, x, bas, BORDURE, 0.7f)
             if (i == 0) {
                 c.drawText(tronquer(contenu, gras, largeur - 8f), x + 5f, base, gras)
+            } else if (i == 8) {
+                val petit = peinture(minOf(8f, hauteur * 0.36f))
+                centre(c, tronquer(contenu, petit, largeur - 6f), x, largeur, base, petit)
             } else {
                 centre(c, contenu, x, largeur, base, texte)
             }

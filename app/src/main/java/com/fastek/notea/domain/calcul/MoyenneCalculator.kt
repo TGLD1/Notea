@@ -2,6 +2,7 @@ package com.fastek.notea.domain.calcul
 
 import com.fastek.notea.data.local.entity.Matiere
 import com.fastek.notea.data.local.entity.Note
+import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
 import java.time.LocalDate
 
@@ -87,6 +88,74 @@ object MoyenneCalculator {
      */
     fun moyenneAnnuellePrive(moyenneT1: Double, moyenneT2: Double, moyenneT3: Double): Double =
         (moyenneT1 + moyenneT2 + moyenneT3) / 3
+
+    /** Issue d'un calcul « il me faut X » : atteignable, déjà acquis, ou hors de portée. */
+    enum class StatutRequis { ATTEIGNABLE, DEJA_ATTEINT, IMPOSSIBLE }
+
+    /**
+     * Résultat d'un calcul inverse. [valeur] est la note (ou moyenne) requise, arrondie au
+     * centième supérieur ; [maximum] n'est renseigné que pour [StatutRequis.IMPOSSIBLE] d'une
+     * note à saisir : la meilleure moyenne générale obtenable avec 20/20.
+     */
+    data class Requis(val statut: StatutRequis, val valeur: Double, val maximum: Double? = null)
+
+    private fun arrondiSuperieur(valeur: Double): Double = Math.ceil(valeur * 100.0 - 1e-9) / 100.0
+
+    /**
+     * Note minimale à obtenir au prochain devoir (ou à la prochaine interrogation) d'une matière
+     * pour que la moyenne générale de la période atteigne [cible].
+     * [autres] : moyennes pondérées des autres matières déjà notées.
+     */
+    fun noteRequisePourMoyenneGenerale(
+        notesMatiere: List<Note>,
+        type: TypeNote,
+        coefficient: Int,
+        autres: List<MoyennePonderee>,
+        cible: Double
+    ): Requis {
+        fun moyenneGenerale(x: Double): Double {
+            val hypothese = Note(
+                matiereId = 0, periodeId = 0, type = type, valeur = x, date = LocalDate.now()
+            )
+            val moyenneMatiere = moyenneMatiere(notesMatiere + hypothese) ?: x
+            val somme = autres.sumOf { it.moyenne * it.coefficient } + moyenneMatiere * coefficient
+            val poids = autres.sumOf { it.coefficient } + coefficient
+            return somme / poids
+        }
+
+        val avecZero = moyenneGenerale(0.0)
+        val avecVingt = moyenneGenerale(20.0)
+        return when {
+            cible <= avecZero -> Requis(StatutRequis.DEJA_ATTEINT, 0.0)
+            cible > avecVingt + 1e-9 -> Requis(StatutRequis.IMPOSSIBLE, 20.0, avecVingt)
+            else -> Requis(
+                StatutRequis.ATTEIGNABLE,
+                arrondiSuperieur(20.0 * (cible - avecZero) / (avecVingt - avecZero))
+            )
+        }
+    }
+
+    /**
+     * Moyenne à obtenir à la dernière période (2e semestre ou 3e trimestre) pour que la moyenne
+     * annuelle atteigne [cible], connaissant les moyennes des périodes précédentes.
+     *  - public : (2 × S2 + S1) / 3 = cible
+     *  - privé  : (T1 + T2 + T3) / 3 = cible
+     */
+    fun moyenneRequiseDernierePeriode(
+        type: TypeEtablissement,
+        precedentes: List<Double>,
+        cible: Double
+    ): Requis {
+        val requise = when (type) {
+            TypeEtablissement.PUBLIC -> (3 * cible - precedentes[0]) / 2
+            TypeEtablissement.PRIVE -> 3 * cible - precedentes[0] - precedentes[1]
+        }
+        return when {
+            requise <= 0.0 -> Requis(StatutRequis.DEJA_ATTEINT, 0.0)
+            requise > 20.0 + 1e-9 -> Requis(StatutRequis.IMPOSSIBLE, arrondiSuperieur(requise))
+            else -> Requis(StatutRequis.ATTEIGNABLE, arrondiSuperieur(requise))
+        }
+    }
 
     /** Statut visuel (pour l'effet "glow" du dashboard) selon l'écart à l'objectif. */
     enum class StatutObjectif { ATTEINT, PROCHE, LOIN }
