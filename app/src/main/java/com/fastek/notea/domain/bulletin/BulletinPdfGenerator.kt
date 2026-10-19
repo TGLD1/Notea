@@ -44,11 +44,14 @@ object BulletinPdfGenerator {
         try {
             rendu.nouvellePage()
             dessinerEntete(rendu, data)
+            // Le bulletin tient sur une seule page : la hauteur des lignes s'adapte au nombre de
+            // matières. La Conduite est toujours placée en dernier.
+            val lignes = data.lignes.sortedBy { it.estConduite }
+            val reserve = HAUTEUR_TITRES + 22f + 14f + hauteurBilan(data) + 142f
+            val hauteurLigne = ((BAS_UTILISABLE - rendu.y - reserve) / lignes.size.coerceAtLeast(1))
+                .coerceIn(12f, HAUTEUR_LIGNE)
             dessinerTitresTableau(rendu)
-            data.lignes.forEach { ligne ->
-                rendu.assurerPlace(HAUTEUR_LIGNE) { dessinerTitresTableau(rendu) }
-                dessinerLigneMatiere(rendu, ligne)
-            }
+            lignes.forEach { ligne -> dessinerLigneMatiere(rendu, ligne, hauteurLigne) }
             dessinerTotal(rendu, data)
             rendu.y += 14f
             dessinerBilan(rendu, data)
@@ -156,11 +159,17 @@ object BulletinPdfGenerator {
         r.y += HAUTEUR_TITRES
     }
 
-    private fun dessinerLigneMatiere(r: Rendu, l: LigneBulletin) {
+    private fun hauteurBilan(d: BulletinData): Float {
+        val gauche = if (d.finAnnee) d.moyennesPrecedentes.size + 4 else 3
+        val droite = if (d.finAnnee) d.numeroPeriode + 2 else 2
+        return 22f + maxOf(gauche, droite) * 18f + 12f + (if (d.finAnnee) 30f else 0f)
+    }
+
+    private fun dessinerLigneMatiere(r: Rendu, l: LigneBulletin, hauteur: Float) {
         val c = r.canvas
         val haut = r.y
-        val bas = haut + HAUTEUR_LIGNE
-        cadre(c, MARGE, haut, LARGEUR, HAUTEUR_LIGNE, BORDURE, 0.7f)
+        val bas = haut + hauteur
+        cadre(c, MARGE, haut, LARGEUR, hauteur, BORDURE, 0.7f)
 
         val cellules = listOf(
             l.matiere.uppercase(Locale.FRANCE),
@@ -173,9 +182,10 @@ object BulletinPdfGenerator {
             "",
             ""
         )
-        val texte = peinture(9f)
-        val gras = peinture(8.5f, gras = true)
-        val base = haut + HAUTEUR_LIGNE / 2f + 3f
+        val tailleTexte = minOf(9f, hauteur * 0.4f)
+        val texte = peinture(tailleTexte)
+        val gras = peinture(minOf(8.5f, hauteur * 0.38f), gras = true)
+        val base = haut + hauteur / 2f + tailleTexte / 3f
         var x = MARGE
         cellules.forEachIndexed { i, contenu ->
             val largeur = LARGEURS[i]
