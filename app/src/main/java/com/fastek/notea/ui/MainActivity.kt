@@ -83,7 +83,7 @@ import com.fastek.notea.ui.statistiques.StatistiquesViewModel
 class MainActivity : AppCompatActivity() {
 
     /** Ouvre la fenêtre de paiement KkiaPay pour le don. */
-    private fun lancerDon(montant: Int) {
+    fun lancerDon(montant: Int) {
         EtatDon.message = null
         try {
             Kkiapay.get().requestPayment(
@@ -191,7 +191,7 @@ private fun NoteaApp(app: NoteaApplication) {
                         )
                     }
                 }
-                true -> NoteaNavHost(factory, app.repository, app.sauvegarde, onDon = { montant -> lancerDon(montant) })
+                true -> NoteaNavHost(factory, app.repository, app.sauvegarde, onDon = { montant -> (contexte as? MainActivity)?.lancerDon(montant) })
             }
         }
     }
