@@ -122,38 +122,31 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
     }
 }
 
-/** Bouton date : ouvre un calendrier (plus de saisie à la main). */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Bouton date : ouvre le calendrier du système (plus de saisie à la main). */
 @Composable
 private fun ChampDate(dateTexte: String, onDateChange: (String) -> Unit) {
-    var ouvert by remember { mutableStateOf(false) }
+    val contexte = androidx.compose.ui.platform.LocalContext.current
 
-    OutlinedButton(onClick = { ouvert = true }, modifier = Modifier.fillMaxWidth()) {
+    OutlinedButton(
+        onClick = {
+            val depart = try {
+                LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN)
+            } catch (e: Exception) {
+                LocalDate.now()
+            }
+            android.app.DatePickerDialog(
+                contexte,
+                { _, annee, mois, jour ->
+                    onDateChange(LocalDate.of(annee, mois + 1, jour).format(FORMAT_DATE_ECRAN))
+                },
+                depart.year,
+                depart.monthValue - 1,
+                depart.dayOfMonth
+            ).show()
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text("Date : $dateTexte  (modifier)")
-    }
-
-    if (ouvert) {
-        val departMillis = try {
-            LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-        } catch (e: Exception) {
-            null
-        }
-        val etatCalendrier = rememberDatePickerState(initialSelectedDateMillis = departMillis)
-        DatePickerDialog(
-            onDismissRequest = { ouvert = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    etatCalendrier.selectedDateMillis?.let { millis ->
-                        val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                        onDateChange(date.format(FORMAT_DATE_ECRAN))
-                    }
-                    ouvert = false
-                }) { Text("OK") }
-            },
-            dismissButton = { TextButton(onClick = { ouvert = false }) { Text("Annuler") } }
-        ) {
-            DatePicker(state = etatCalendrier)
-        }
     }
 }
 

@@ -56,13 +56,18 @@ fun DonScreen(onDon: (montant: Int) -> Unit) {
 
         if (!disponible) {
             Text(
-                "Le don en ligne sera bientôt disponible.",
+                "Le don en ligne est indisponible : cette version a été compilée sans clé KkiaPay (secret GitHub KKIAPAY_PUBLIC_KEY non transmis).",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
             return@Column
         }
 
+        Text(
+            "Clé KkiaPay : ${BuildConfig.KKIAPAY_PUBLIC_KEY.take(6)}… — mode ${if (BuildConfig.KKIAPAY_SANDBOX) "test" else "réel"}",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             MONTANTS_PROPOSES.forEach { valeur ->
                 val selectionne = autre.isEmpty() && montant == valeur
