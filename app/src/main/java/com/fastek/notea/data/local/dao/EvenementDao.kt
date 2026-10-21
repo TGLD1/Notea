@@ -38,6 +38,9 @@ interface EvenementDao {
     @Query("SELECT * FROM evenement WHERE eleveId = :eleveId AND date = :date ORDER BY titre")
     suspend fun getEvenementsDuJour(eleveId: Long, date: LocalDate): List<Evenement>
 
+    @Query("DELETE FROM evenement")
+    suspend fun toutSupprimer()
+
     @Query("SELECT * FROM evenement")
     suspend fun getTous(): List<Evenement>
 

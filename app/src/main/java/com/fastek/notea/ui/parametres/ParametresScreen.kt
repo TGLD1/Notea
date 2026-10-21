@@ -13,6 +13,8 @@ private val OPTIONS = listOf(
     "profil" to "Profil",
     "presentation" to "Découvrir Notea",
     "bulletin" to "Générer le bulletin PDF",
+    "photo" to "Photo de l'élève",
+    "archives" to "Années scolaires (archives)",
     "rappel" to "Heure du rappel",
     "sauvegarde" to "Sauvegarde et restauration",
     "export-csv" to "Exporter les notes (CSV)",

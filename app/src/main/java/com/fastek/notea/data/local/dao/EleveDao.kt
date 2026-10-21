@@ -50,6 +50,9 @@ interface EleveDao {
     @Query("UPDATE eleve SET redoublant = :valeur WHERE id = :eleveId")
     suspend fun mettreAJourRedoublant(eleveId: Long, valeur: String)
 
+    @Query("UPDATE eleve SET photo = :valeur WHERE id = :eleveId")
+    suspend fun mettreAJourPhoto(eleveId: Long, valeur: String)
+
     // --- Sauvegarde / restauration ---
     @Query("SELECT * FROM eleve")
     suspend fun getTous(): List<Eleve>

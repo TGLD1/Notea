@@ -9,6 +9,7 @@ import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
 import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
+import com.fastek.notea.domain.calcul.MoyenneCalculator
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -55,6 +56,39 @@ class SauvegardeManager(private val database: NoteaDatabase) {
             database.noteDao().insererToutes(donnees.notes)
             database.evenementDao().insererTous(donnees.evenements)
         }
+    }
+
+    /** Résumé lisible d'une archive d'année : moyennes de chaque période et moyenne annuelle. */
+    data class ResumeArchive(
+        val anneeScolaire: String,
+        val classe: String,
+        val libellePeriode: String,
+        val moyennesPeriodes: List<Double?>,
+        val moyenneAnnuelle: Double?
+    )
+
+    /** Calcule le résumé d'une sauvegarde/archive sans toucher à la base. */
+    fun resumer(contenu: String): ResumeArchive {
+        val donnees = lire(contenu)
+        val eleve = donnees.eleves.first()
+        val moyennes = donnees.periodes.filter { it.eleveId == eleve.id }.sortedBy { it.numero }.map { periode ->
+            MoyenneCalculator.moyenneGeneralePeriode(
+                donnees.matieres.filter { it.eleveId == eleve.id }.mapNotNull { matiere ->
+                    val notes = donnees.notes.filter { it.matiereId == matiere.id && it.periodeId == periode.id }
+                    MoyenneCalculator.moyenneMatiere(notes)
+                        ?.let { MoyenneCalculator.MoyennePonderee(it, matiere.coefficient) }
+                }
+            )
+        }
+        val annuelle = if (moyennes.size == eleve.typeEtablissement.nombrePeriodes && moyennes.all { it != null }) {
+            when (eleve.typeEtablissement) {
+                TypeEtablissement.PUBLIC -> MoyenneCalculator.moyenneAnnuellePublic(moyennes[0]!!, moyennes[1]!!)
+                TypeEtablissement.PRIVE -> MoyenneCalculator.moyenneAnnuellePrive(moyennes[0]!!, moyennes[1]!!, moyennes[2]!!)
+            }
+        } else {
+            null
+        }
+        return ResumeArchive(eleve.anneeScolaire, eleve.classe, eleve.typeEtablissement.nomPeriode, moyennes, annuelle)
     }
 
     private class Donnees(

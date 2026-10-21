@@ -18,7 +18,7 @@ import com.fastek.notea.data.local.entity.Periode
 
 @Database(
     entities = [Eleve::class, Matiere::class, Note::class, Periode::class, Evenement::class],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -37,6 +37,13 @@ abstract class NoteaDatabase : RoomDatabase() {
          * Les données existantes sont conservées. Les bases v1 et v2 (versions de test
          * d'avant le schéma stable) sont encore réinitialisées, voir NoteaApplication.
          */
+        /** v4 -> v5 : photo facultative de l'élève pour le bulletin PDF. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE eleve ADD COLUMN photo TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE eleve ADD COLUMN dateNaissance TEXT NOT NULL DEFAULT ''")

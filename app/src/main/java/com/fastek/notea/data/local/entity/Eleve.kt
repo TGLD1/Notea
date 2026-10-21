@@ -25,5 +25,7 @@ data class Eleve(
     val lieuNaissance: String = "",
     val effectif: String = "",
     val aptitudeEps: String = "",
-    val redoublant: String = ""
+    val redoublant: String = "",
+    /** Chemin du fichier photo (dossier privé de l'application) ; vide = pas de photo. */
+    val photo: String = ""
 )

@@ -1,12 +1,14 @@
 package com.fastek.notea
 
 import android.app.Application
+import java.io.File
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.room.Room
 import co.opensi.kkiapay.uikit.Kkiapay
 import co.opensi.kkiapay.uikit.SdkConfig
+import com.fastek.notea.data.backup.ArchiveManager
 import com.fastek.notea.data.backup.SauvegardeManager
 import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
@@ -17,12 +19,14 @@ class NoteaApplication : Application() {
 
     val database: NoteaDatabase by lazy {
         Room.databaseBuilder(this, NoteaDatabase::class.java, NoteaDatabase.NOM_BASE)
-            .addMigrations(NoteaDatabase.MIGRATION_3_4)
+            .addMigrations(NoteaDatabase.MIGRATION_3_4, NoteaDatabase.MIGRATION_4_5)
             .fallbackToDestructiveMigrationFrom(1, 2)
             .build()
     }
 
     val sauvegarde: SauvegardeManager by lazy { SauvegardeManager(database) }
+
+    val archives: ArchiveManager by lazy { ArchiveManager(File(filesDir, "archives"), database, sauvegarde) }
 
     val repository: NoteaRepository by lazy {
         NoteaRepository(

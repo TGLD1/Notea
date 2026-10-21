@@ -38,4 +38,7 @@ interface NoteDao {
 
     @Insert
     suspend fun insererToutes(notes: List<Note>)
+
+    @Query("DELETE FROM note")
+    suspend fun toutSupprimer()
 }

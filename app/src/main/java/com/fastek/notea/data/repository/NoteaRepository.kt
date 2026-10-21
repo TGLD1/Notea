@@ -55,6 +55,7 @@ class NoteaRepository(
         eleveDao.mettreAJourEffectif(eleveId, valeur)
     suspend fun mettreAJourAptitudeEps(eleveId: Long, valeur: String) =
         eleveDao.mettreAJourAptitudeEps(eleveId, valeur)
+    suspend fun mettreAJourPhoto(eleveId: Long, chemin: String) = eleveDao.mettreAJourPhoto(eleveId, chemin)
     suspend fun mettreAJourRedoublant(eleveId: Long, valeur: String) =
         eleveDao.mettreAJourRedoublant(eleveId, valeur)
 
@@ -242,7 +243,8 @@ class NoteaRepository(
             lieuNaissance = eleve.lieuNaissance,
             effectif = eleve.effectif,
             aptitudeEps = eleve.aptitudeEps,
-            redoublant = eleve.redoublant
+            redoublant = eleve.redoublant,
+            photo = eleve.photo
         )
     }
 }

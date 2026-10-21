@@ -67,6 +67,9 @@ import com.fastek.notea.ui.parametres.BulletinScreen
 import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ExportCsvScreen
 import com.fastek.notea.ui.parametres.ParametresScreen
+import com.fastek.notea.ui.parametres.PhotoScreen
+import com.fastek.notea.ui.parametres.ArchivesScreen
+import com.fastek.notea.data.backup.ArchiveManager
 import com.fastek.notea.ui.parametres.ProfilScreen
 import com.fastek.notea.ui.parametres.ProfilViewModel
 import com.fastek.notea.ui.parametres.DonScreen
@@ -192,7 +195,7 @@ private fun NoteaApp(app: NoteaApplication) {
                         )
                     }
                 }
-                true -> NoteaNavHost(factory, app.repository, app.sauvegarde, onDon = { montant -> (contexte as? MainActivity)?.lancerDon(montant) })
+                true -> NoteaNavHost(factory, app.repository, app.sauvegarde, app.archives, onDon = { montant -> (contexte as? MainActivity)?.lancerDon(montant) })
             }
         }
     }
@@ -213,6 +216,7 @@ private fun NoteaNavHost(
     factory: NoteaViewModelFactory,
     repository: NoteaRepository,
     sauvegarde: SauvegardeManager,
+    archives: ArchiveManager,
     onDon: (Int) -> Unit
 ) {
     val navController = rememberNavController()
@@ -328,6 +332,12 @@ private fun NoteaNavHost(
             }
             composable("rappel") {
                 RappelScreen()
+            }
+            composable("photo") {
+                PhotoScreen(repository)
+            }
+            composable("archives") {
+                ArchivesScreen(archives)
             }
             composable("export-csv") {
                 ExportCsvScreen(repository)

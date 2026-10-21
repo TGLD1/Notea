@@ -91,6 +91,8 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 | **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Appréciation par matière (menu rapide ou saisie libre, proposition automatique selon la moyenne) ; rang, moyenne de classe et décision du conseil laissés vides |
 | **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local, partage et remise à zéro. Aucune donnée personnelle journalisée |
 | **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
+| **Photo de l'élève** | (Paramètres) Choix d'une photo dans la galerie, réduite à 400 px et enregistrée dans la mémoire privée ; elle remplit le cadre « Photo » du bulletin PDF |
+| **Années scolaires** | (Paramètres) Bouton « Démarrer une nouvelle année » (archive puis efface notes et événements, passe l'année scolaire à la suivante) ; liste des archives avec moyennes par période et annuelle, partage et suppression |
 | **Export CSV** | (Paramètres) Toutes les notes en fichier CSV (séparateur « ; », virgule décimale), partagé via le menu Android |
 | **Heure du rappel** | (Paramètres) Heure du rappel réglable de 6 h à 22 h (défaut 18 h) |
 | **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou montant libre (min. 100 FCFA), paiement Mobile Money ou carte via KkiaPay. Affiche l'état de la clé (début de la clé publique et mode test/réel) ; si la clé est absente de la compilation, un message l'indique |
@@ -121,7 +123,7 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Planning : le choix de date ne répondait pas (ni calendrier intégré, ni calendrier système) ; remplacé par un calendrier affiché à la place du formulaire, à confirmer
 - Bulletin PDF sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM)
 
-⚠️ Point technique : base de données en version 4 ; migration 3→4 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../4.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
+⚠️ Point technique : base de données en version 5 (colonne `photo`) ; migrations 3→4 et 4→5 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../5.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
 
 ---
 
@@ -138,8 +140,10 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Partage d'un résumé en texte (WhatsApp, SMS…) depuis l'Accueil
 - Export CSV de toutes les notes (Paramètres)
 - Rappels du planning : dans 2 jours (une fois), la veille et le jour même
+- Photo de l'élève sur le bulletin PDF (Paramètres → Photo de l'élève, stockée localement)
+- Années scolaires : « Nouvelle année » archive notes et événements dans un fichier, conserve profil, matières, coefficients et objectifs ; archives consultables, partageables et supprimables
 
-Suggestions restantes : multi-année (archivage de l'année précédente, demande une migration de la base), photo de l'élève sur le bulletin.
+Aucune fonctionnalité en attente. Pistes futures : restauration d'une archive en un geste depuis l'application, comparaison entre années.
 
 ### Fiabilité des données
 - Tests de migration Room et commit du schéma exporté

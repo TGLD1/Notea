@@ -41,8 +41,10 @@ object TextesStatiques {
         "personnelle (notes, nom, classe, etc.) n'est collectée, transmise ou partagée avec " +
         "FASTEK ou un tiers. Toutes les informations restent stockées uniquement sur ton " +
         "téléphone, dans la mémoire de l'application.\n\n" +
-        "Si tu exportes une sauvegarde, elle est enregistrée dans un fichier que tu choisis toi-même " +
-        "(téléphone, Drive, WhatsApp…) : FASTEK n'y a jamais accès.\n\n" +
+        "La photo de l'élève, facultative, est enregistrée dans la mémoire de l'application et sert " +
+        "uniquement au bulletin PDF. Les archives des années précédentes restent aussi sur ton téléphone.\n\n" +
+        "Si tu exportes une sauvegarde, une archive ou un fichier CSV, il est enregistré ou partagé là où " +
+        "tu le choisis toi-même (téléphone, Drive, WhatsApp…) : FASTEK n'y a jamais accès.\n\n" +
         "Don en ligne (facultatif)\n" +
         "C'est la seule fonction qui utilise internet. Le paiement est traité par KkiaPay, notre " +
         "prestataire de paiement, dans sa propre fenêtre : c'est KkiaPay, et non Notea, qui reçoit " +

@@ -1,6 +1,9 @@
 package com.fastek.notea.domain.bulletin
 
 import android.graphics.Canvas
+import android.graphics.RectF
+import android.graphics.Rect
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
@@ -108,10 +111,38 @@ object BulletinPdfGenerator {
         ligneOuiNon(c, xMid + 6f, top + 3 * h + 11f, "Redoublant :", redoublant.equals("oui", true), redoublant.equals("non", true))
         ligneOuiNon(c, xMid + 6f, top + 3 * h + 23f, "Abandon :", false, false)
 
-        cadre(c, xPhoto + 8f, top + 6f, 64f, 3 * h - 12f, GRIS_TEXTE, 0.6f)
-        centre(c, "Photo", xPhoto + 8f, 64f, top + 3 * h / 2f + 3f, peinture(7f, couleur = GRIS_TEXTE))
+        val cadrePhoto = RectF(xPhoto + 8f, top + 6f, xPhoto + 8f + 64f, top + 6f + 3 * h - 12f)
+        if (!dessinerPhoto(c, d.photo, cadrePhoto)) {
+            cadre(c, cadrePhoto.left, cadrePhoto.top, cadrePhoto.width(), cadrePhoto.height(), GRIS_TEXTE, 0.6f)
+            centre(c, "Photo", cadrePhoto.left, cadrePhoto.width(), top + 3 * h / 2f + 3f, peinture(7f, couleur = GRIS_TEXTE))
+        }
 
         r.y = top + 4 * h + 12f
+    }
+
+    /** Dessine la photo recadrée au centre du cadre ; false si absente ou illisible. */
+    private fun dessinerPhoto(c: Canvas, chemin: String, zone: RectF): Boolean {
+        if (chemin.isBlank()) return false
+        val bitmap = try {
+            BitmapFactory.decodeFile(chemin)
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        val ratioCadre = zone.width() / zone.height()
+        val ratioImage = bitmap.width.toFloat() / bitmap.height
+        val source = if (ratioImage > ratioCadre) {
+            val largeur = (bitmap.height * ratioCadre).toInt()
+            val x = (bitmap.width - largeur) / 2
+            Rect(x, 0, x + largeur, bitmap.height)
+        } else {
+            val hauteur = (bitmap.width / ratioCadre).toInt()
+            val y = (bitmap.height - hauteur) / 2
+            Rect(0, y, bitmap.width, y + hauteur)
+        }
+        c.drawBitmap(bitmap, source, zone, Paint(Paint.FILTER_BITMAP_FLAG))
+        cadre(c, zone.left, zone.top, zone.width(), zone.height(), GRIS_TEXTE, 0.6f)
+        bitmap.recycle()
+        return true
     }
 
     private fun naissance(d: BulletinData): String =

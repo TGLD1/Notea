@@ -49,7 +49,9 @@ data class BulletinData(
     val lieuNaissance: String = "",
     val effectif: String = "",
     val aptitudeEps: String = "",
-    val redoublant: String = ""
+    val redoublant: String = "",
+    /** Chemin de la photo de l'élève ; vide = cadre « Photo » laissé vide. */
+    val photo: String = ""
 ) {
     val libellePeriode: String
         get() = typeEtablissement.nomPeriode
