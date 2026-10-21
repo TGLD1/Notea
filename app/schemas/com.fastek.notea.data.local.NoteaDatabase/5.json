@@ -1,0 +1,416 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "83a6410c49b4f1ea158082c414be03ef",
+    "entities": [
+      {
+        "tableName": "eleve",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nom` TEXT NOT NULL, `prenom` TEXT NOT NULL, `classe` TEXT NOT NULL, `typeEtablissement` TEXT NOT NULL, `anneeScolaire` TEXT NOT NULL, `objectifAnnuel` REAL NOT NULL, `matricule` TEXT NOT NULL, `dateNaissance` TEXT NOT NULL, `lieuNaissance` TEXT NOT NULL, `effectif` TEXT NOT NULL, `aptitudeEps` TEXT NOT NULL, `redoublant` TEXT NOT NULL, `photo` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prenom",
+            "columnName": "prenom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "classe",
+            "columnName": "classe",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeEtablissement",
+            "columnName": "typeEtablissement",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anneeScolaire",
+            "columnName": "anneeScolaire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "objectifAnnuel",
+            "columnName": "objectifAnnuel",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matricule",
+            "columnName": "matricule",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateNaissance",
+            "columnName": "dateNaissance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lieuNaissance",
+            "columnName": "lieuNaissance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "effectif",
+            "columnName": "effectif",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aptitudeEps",
+            "columnName": "aptitudeEps",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redoublant",
+            "columnName": "redoublant",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photo",
+            "columnName": "photo",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "matiere",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `eleveId` INTEGER NOT NULL, `nom` TEXT NOT NULL, `coefficient` INTEGER NOT NULL, FOREIGN KEY(`eleveId`) REFERENCES `eleve`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eleveId",
+            "columnName": "eleveId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coefficient",
+            "columnName": "coefficient",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_matiere_eleveId",
+            "unique": false,
+            "columnNames": [
+              "eleveId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_matiere_eleveId` ON `${TABLE_NAME}` (`eleveId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "eleve",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "eleveId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "note",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `matiereId` INTEGER NOT NULL, `periodeId` INTEGER NOT NULL, `type` TEXT NOT NULL, `valeur` REAL NOT NULL, `date` INTEGER NOT NULL, FOREIGN KEY(`matiereId`) REFERENCES `matiere`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`periodeId`) REFERENCES `periode`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matiereId",
+            "columnName": "matiereId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "periodeId",
+            "columnName": "periodeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valeur",
+            "columnName": "valeur",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_note_matiereId",
+            "unique": false,
+            "columnNames": [
+              "matiereId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_matiereId` ON `${TABLE_NAME}` (`matiereId`)"
+          },
+          {
+            "name": "index_note_periodeId",
+            "unique": false,
+            "columnNames": [
+              "periodeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_periodeId` ON `${TABLE_NAME}` (`periodeId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "matiere",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "matiereId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "periode",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "periodeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "periode",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `eleveId` INTEGER NOT NULL, `numero` INTEGER NOT NULL, `objectifCible` REAL NOT NULL, FOREIGN KEY(`eleveId`) REFERENCES `eleve`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eleveId",
+            "columnName": "eleveId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numero",
+            "columnName": "numero",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "objectifCible",
+            "columnName": "objectifCible",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_periode_eleveId",
+            "unique": false,
+            "columnNames": [
+              "eleveId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_periode_eleveId` ON `${TABLE_NAME}` (`eleveId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "eleve",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "eleveId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "evenement",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `eleveId` INTEGER NOT NULL, `matiereId` INTEGER, `titre` TEXT NOT NULL, `date` INTEGER NOT NULL, `notifie` INTEGER NOT NULL, FOREIGN KEY(`eleveId`) REFERENCES `eleve`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`matiereId`) REFERENCES `matiere`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eleveId",
+            "columnName": "eleveId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matiereId",
+            "columnName": "matiereId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "titre",
+            "columnName": "titre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notifie",
+            "columnName": "notifie",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_evenement_eleveId",
+            "unique": false,
+            "columnNames": [
+              "eleveId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_evenement_eleveId` ON `${TABLE_NAME}` (`eleveId`)"
+          },
+          {
+            "name": "index_evenement_matiereId",
+            "unique": false,
+            "columnNames": [
+              "matiereId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_evenement_matiereId` ON `${TABLE_NAME}` (`matiereId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "eleve",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "eleveId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "matiere",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "matiereId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '83a6410c49b4f1ea158082c414be03ef')"
+    ]
+  }
+}
