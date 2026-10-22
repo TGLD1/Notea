@@ -75,7 +75,7 @@ fun ProfilScreen(viewModel: ProfilViewModel) {
         OutlinedTextField(
             value = etat.aptitudeEps,
             onValueChange = { valeur -> eleveId?.let { viewModel.onAptitudeEpsChange(it, valeur) } },
-            label = { Text("Aptitude EPS (Apte / Inapte)") },
+            label = { Text("Aptitude en EPS (Apte / Inapte)") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -97,7 +97,7 @@ fun ProfilScreen(viewModel: ProfilViewModel) {
 
         Spacer(Modifier.height(16.dp))
         Text(
-            "Classe, établissement et objectif annuel se modifient depuis l'onboarding ou l'écran Objectifs.",
+            "La classe et le type d'établissement sont définis à la création du profil. L'objectif annuel se modifie dans l'écran Objectifs.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -35,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -66,6 +67,8 @@ import com.fastek.notea.ui.onboarding.OnboardingViewModel
 import com.fastek.notea.ui.parametres.BulletinScreen
 import com.fastek.notea.ui.parametres.JournalScreen
 import com.fastek.notea.ui.parametres.ExportCsvScreen
+import com.fastek.notea.notification.NotificationsHelper
+import com.fastek.notea.ui.intro.SplashFastek
 import com.fastek.notea.ui.parametres.ParametresScreen
 import com.fastek.notea.ui.parametres.PhotoScreen
 import com.fastek.notea.ui.parametres.ArchivesScreen
@@ -149,6 +152,8 @@ private fun NoteaApp(app: NoteaApplication) {
     var profilExiste by remember { mutableStateOf<Boolean?>(null) }
     val contexte = LocalContext.current
     var introVue by remember { mutableStateOf(PresentationVue.dejaVue(contexte)) }
+    // Animation FASTEK de 3 s à chaque lancement à froid (conservée à la rotation de l'écran).
+    var splashActif by rememberSaveable { mutableStateOf(true) }
 
     val lanceurPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -156,7 +161,10 @@ private fun NoteaApp(app: NoteaApplication) {
 
     LaunchedEffect(Unit) {
         profilExiste = app.repository.getProfil() != null
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !NotificationsHelper.activees(contexte) && !NotificationsHelper.dejaDemandee(contexte)
+        ) {
+            NotificationsHelper.marquerDemandee(contexte)
             lanceurPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
@@ -196,6 +204,9 @@ private fun NoteaApp(app: NoteaApplication) {
                     }
                 }
                 true -> NoteaNavHost(factory, app.repository, app.sauvegarde, app.archives, onDon = { montant -> (contexte as? MainActivity)?.lancerDon(montant) })
+            }
+            if (splashActif) {
+                SplashFastek(onTermine = { splashActif = false })
             }
         }
     }

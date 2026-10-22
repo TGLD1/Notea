@@ -94,7 +94,7 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 | **Photo de l'élève** | (Paramètres) Choix d'une photo dans la galerie, réduite à 400 px et enregistrée dans la mémoire privée ; elle remplit le cadre « Photo » du bulletin PDF |
 | **Années scolaires** | (Paramètres) Bouton « Démarrer une nouvelle année » (archive puis efface notes et événements, passe l'année scolaire à la suivante) ; liste des archives avec moyennes par période et annuelle, partage et suppression |
 | **Export CSV** | (Paramètres) Toutes les notes en fichier CSV (séparateur « ; », virgule décimale), partagé via le menu Android |
-| **Heure du rappel** | (Paramètres) Heure du rappel réglable de 6 h à 22 h (défaut 18 h) |
+| **Rappels et notifications** | (Paramètres) État de l'autorisation et bouton pour l'accorder, heure d'envoi de 6 h à 22 h (défaut 18 h), notification de test, conseils pour les téléphones qui limitent la batterie |
 | **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou montant libre (min. 100 FCFA), paiement Mobile Money ou carte via KkiaPay. Affiche l'état de la clé (début de la clé publique et mode test/réel) ; si la clé est absente de la compilation, un message l'indique |
 | **Paramètres** | Profil éditable, objectif/classe en lecture seule, Don, Signaler un problème (email pré-rempli), À propos, Calcul des moyennes, Développeur, Politique de confidentialité, CGU, Découvrir Notea |
 
@@ -141,6 +141,9 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Export CSV de toutes les notes (Paramètres)
 - Rappels du planning : dans 2 jours (une fois), la veille et le jour même
 - Photo de l'élève sur le bulletin PDF (Paramètres → Photo de l'élève, stockée localement)
+- Notifications : demande d'autorisation guidée, bandeau d'alerte dans Planning, écran « Rappels et notifications » (état de l'autorisation, heure d'envoi, notification de test, conseils batterie)
+- Statistiques : choix de la période, graphique d'évolution note après note avec repères 10/20 et objectif, barres par matière, matière présélectionnée dans les simulateurs
+- Identité : icône en N (diagonale cyan, montants blancs) ; écran de lancement FASTEK animé de 3 secondes
 - Années scolaires : « Nouvelle année » archive notes et événements dans un fichier, conserve profil, matières, coefficients et objectifs ; archives consultables, partageables et supprimables
 
 Aucune fonctionnalité en attente. Pistes futures : restauration d'une archive en un geste depuis l'application, comparaison entre années.

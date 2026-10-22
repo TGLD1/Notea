@@ -1,19 +1,12 @@
 package com.fastek.notea.notification
 
-import android.Manifest
-import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.fastek.notea.NoteaApplication
-import com.fastek.notea.R
 import com.fastek.notea.diagnostic.Journal
 import java.time.Duration
 import java.time.LocalDate
@@ -54,7 +47,9 @@ class RappelWorker(
                     if (dansDeuxJours.isNotEmpty()) add("Dans 2 jours : " + dansDeuxJours.joinToString(", ") { it.titre })
                 }
                 if (lignes.isNotEmpty()) {
-                    afficherNotification(lignes)
+                    if (!NotificationsHelper.afficherRappel(applicationContext, lignes)) {
+                        Journal.erreur("notification.rappel", detail = "notifications désactivées dans Android")
+                    }
                     dansDeuxJours.forEach { repository.mettreAJourEvenement(it.copy(notifie = true)) }
                 }
             }
@@ -70,33 +65,8 @@ class RappelWorker(
         return Result.success()
     }
 
-    private fun afficherNotification(lignes: List<String>) {
-        val texte = lignes.joinToString("\n")
-
-        val notification = NotificationCompat.Builder(applicationContext, CANAL_ID)
-            .setContentTitle("Notea — Rappel")
-            .setContentText(lignes.first())
-            .setStyle(NotificationCompat.BigTextStyle().bigText(texte))
-            .setSmallIcon(R.drawable.ic_notification)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
-
-        val permissionOk = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ActivityCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-
-        if (permissionOk) {
-            val manager = applicationContext.getSystemService(NotificationManager::class.java)
-            manager.notify(NOTIFICATION_ID, notification)
-        }
-    }
-
     companion object {
         const val CANAL_ID = "notea_rappels"
-        private const val NOTIFICATION_ID = 1001
         private const val NOM_TRAVAIL = "rappel_planning"
 
         /** Planifie l'exécution suivante à l'heure du rappel (aujourd'hui si pas encore passée, sinon demain). */

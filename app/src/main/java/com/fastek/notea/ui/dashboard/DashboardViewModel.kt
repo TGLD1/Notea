@@ -27,7 +27,7 @@ data class DashboardUiState(
 
 class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
 
-    /** null = pas de choix explicite -> on affiche la période la plus avancée. */
+    /** null = pas de choix explicite -> période de la dernière note saisie (sinon la première). */
     private val _periodeChoisie = MutableStateFlow<Int?>(null)
 
     val uiState: StateFlow<DashboardUiState> = repository.observerProfil()
@@ -37,11 +37,13 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
             } else {
                 combine(
                     repository.observerPeriodes(profil.id),
-                    _periodeChoisie
-                ) { periodes, choix -> periodes to choix }
-                    .flatMapLatest { (periodes, choix) ->
+                    _periodeChoisie,
+                    repository.observerPeriodeDerniereNote()
+                ) { periodes, choix, derniere -> Triple(periodes, choix, derniere) }
+                    .flatMapLatest { (periodes, choix, derniere) ->
                         val periodeCourante = periodes.find { it.numero == choix }
-                            ?: periodes.maxByOrNull { it.numero }
+                            ?: periodes.find { it.id == derniere }
+                            ?: periodes.minByOrNull { it.numero }
 
                         if (periodeCourante == null) {
                             flowOf(

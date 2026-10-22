@@ -55,22 +55,23 @@ private val DIAPOSITIVES = listOf(
     ),
     Diapositive(
         "🎯", "Fixe ton objectif",
-        "Choisis la moyenne à atteindre pour chaque période et pour l'année. Le tableau de bord " +
-            "te montre où tu en es, et le simulateur t'indique la note à viser au prochain devoir."
+        "Définis la moyenne à atteindre pour chaque période et pour l'année. Le tableau de bord " +
+            "mesure ta progression, et le simulateur t'indique la note à obtenir au prochain devoir."
     ),
     Diapositive(
         "📅", "Planning et rappels",
-        "Ajoute tes devoirs et interrogations à venir. Notea te prévient avant la date, à l'heure " +
-            "que tu choisis."
+        "Ajoute tes devoirs et interrogations à venir. Notea te prévient deux jours avant, la veille " +
+            "et le jour même, à l'heure que tu choisis."
     ),
     Diapositive(
         "📄", "Ton bulletin en PDF",
-        "Génère le bulletin de ta période et partage-le facilement par WhatsApp ou par e-mail."
+        "Génère le bulletin de la période au format PDF, avec photo et appréciations, puis partage-le " +
+            "par WhatsApp ou par e-mail."
     ),
     Diapositive(
         "🔒", "Gratuite, hors ligne, à toi",
-        "Tes données restent sur ton téléphone, sans compte ni connexion. Fais une sauvegarde dans " +
-            "un fichier pour les retrouver si tu changes de téléphone."
+        "Tes données restent sur ton téléphone, sans compte ni connexion. Pense à créer une " +
+            "sauvegarde pour les retrouver si tu changes de téléphone."
     )
 )
 

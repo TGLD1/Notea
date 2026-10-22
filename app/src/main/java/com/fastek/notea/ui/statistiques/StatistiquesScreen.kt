@@ -1,6 +1,14 @@
 package com.fastek.notea.ui.statistiques
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,11 +54,37 @@ fun StatistiquesScreen(viewModel: StatistiquesViewModel) {
             .padding(16.dp)
     ) {
         Text("Statistiques", style = MaterialTheme.typography.headlineSmall)
+
+        if (etat.periodesDisponibles.size > 1) {
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                etat.periodesDisponibles.forEach { numero ->
+                    if (numero == etat.periodeNumero) {
+                        Button(onClick = { viewModel.selectionnerPeriode(numero) }) { Text("${etat.nomPeriode} $numero") }
+                    } else {
+                        OutlinedButton(onClick = { viewModel.selectionnerPeriode(numero) }) { Text("${etat.nomPeriode} $numero") }
+                    }
+                    Spacer(Modifier.width(8.dp))
+                }
+            }
+        }
         Spacer(Modifier.height(16.dp))
 
-        Text("Évolution de la moyenne générale (30 jours)", style = MaterialTheme.typography.titleMedium)
+        Text("Évolution de la moyenne générale", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Moyenne générale après chacune de tes dernières notes (30 maximum), avec ton objectif en pointillés verts " +
+                "et la moyenne de 10/20 en pointillés rouges.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(Modifier.height(8.dp))
-        GraphiqueEvolution(points = etat.evolution)
+        GraphiqueEvolution(points = etat.evolution, objectif = etat.objectif)
+
+        if (etat.moyennesMatieres.isNotEmpty()) {
+            Spacer(Modifier.height(32.dp))
+            Text("Moyennes par matière", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            BarresMatieres(etat.moyennesMatieres)
+        }
 
         if (etat.impacts.isNotEmpty()) {
             Spacer(Modifier.height(32.dp))
@@ -79,7 +113,7 @@ fun StatistiquesScreen(viewModel: StatistiquesViewModel) {
         Spacer(Modifier.height(32.dp))
         Text("Simulateur", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Si j'ai cette note au prochain devoir/interro, ma moyenne devient...",
+            "Saisis une note hypothétique pour voir son effet sur la moyenne de la matière et sur ta moyenne générale.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -109,7 +143,7 @@ fun StatistiquesScreen(viewModel: StatistiquesViewModel) {
         OutlinedTextField(
             value = etat.simulateur.valeurTexte,
             onValueChange = viewModel::onValeurChange,
-            label = { Text("Note hypothétique /20") },
+            label = { Text("Note hypothétique sur 20") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -128,8 +162,8 @@ fun StatistiquesScreen(viewModel: StatistiquesViewModel) {
         Spacer(Modifier.height(32.dp))
         Text("Quelle note me faut-il ?", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Avec la matière et le type choisis ci-dessus : la note minimale au prochain devoir/interro " +
-                "pour atteindre la moyenne générale visée.",
+            "Pour la matière et le type de note choisis ci-dessus : la note minimale à obtenir au prochain " +
+                "devoir ou à la prochaine interrogation pour atteindre la moyenne générale visée.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -157,7 +191,7 @@ private fun ResultatRequis(simu: SimulateurState) {
             Text("Choisis une matière pour lancer le calcul.", style = MaterialTheme.typography.bodyMedium)
         simu.limiteDevoirs ->
             Text(
-                "Cette matière a déjà 2 devoirs : choisis « Interrogation » pour ce calcul.",
+                "Cette matière compte déjà 2 devoirs : choisis « Interrogation » pour ce calcul.",
                 style = MaterialTheme.typography.bodyMedium
             )
         simu.requis == null -> Unit
@@ -165,11 +199,11 @@ private fun ResultatRequis(simu: SimulateurState) {
             val requis = checkNotNull(simu.requis)
             val texte = when (requis.statut) {
                 MoyenneCalculator.StatutRequis.ATTEIGNABLE ->
-                    "Il te faut au moins ${String.format("%.2f", requis.valeur)}/20 pour atteindre $cible de moyenne générale."
+                    "Note minimale à obtenir : ${String.format("%.2f", requis.valeur)}/20 pour atteindre une moyenne générale de $cible."
                 MoyenneCalculator.StatutRequis.DEJA_ATTEINT ->
-                    "Objectif déjà atteint : même avec 0/20, ta moyenne générale resterait au-dessus de $cible."
+                    "Objectif déjà atteint : même avec 0/20, ta moyenne générale resterait supérieure ou égale à $cible."
                 MoyenneCalculator.StatutRequis.IMPOSSIBLE ->
-                    "Impossible avec une seule note : même 20/20 ne donnerait que " +
+                    "Objectif hors de portée avec une seule note : même 20/20 ne porterait la moyenne générale qu'à " +
                         "${String.format("%.2f", requis.maximum ?: 0.0)} de moyenne générale."
             }
             Text(texte, style = MaterialTheme.typography.bodyLarge)
@@ -206,11 +240,11 @@ private fun CalculateurPassage(passage: PassageUi?) {
         val requis = resultat.requis
         val texte = when (requis.statut) {
             MoyenneCalculator.StatutRequis.ATTEIGNABLE ->
-                "Pour $cible en annuelle : ${String.format("%.2f", requis.valeur)}/20 en ${passage.libelleDernierePeriode}."
+                "Pour une moyenne annuelle de $cible : ${String.format("%.2f", requis.valeur)}/20 en ${passage.libelleDernierePeriode}."
             MoyenneCalculator.StatutRequis.DEJA_ATTEINT ->
-                "Pour $cible en annuelle : déjà acquis, quelle que soit ta moyenne en ${passage.libelleDernierePeriode}."
+                "Pour une moyenne annuelle de $cible : déjà acquis, quelle que soit ta moyenne en ${passage.libelleDernierePeriode}."
             MoyenneCalculator.StatutRequis.IMPOSSIBLE ->
-                "Pour $cible en annuelle : hors de portée (il faudrait ${String.format("%.2f", requis.valeur)}/20)."
+                "Pour une moyenne annuelle de $cible : hors de portée (il faudrait ${String.format("%.2f", requis.valeur)}/20)."
         }
         Text(texte, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(6.dp))
@@ -218,11 +252,11 @@ private fun CalculateurPassage(passage: PassageUi?) {
 }
 
 @Composable
-private fun GraphiqueEvolution(points: List<PointGraphique>) {
+private fun GraphiqueEvolution(points: List<PointGraphique>, objectif: Double) {
     val valeurs = points.mapNotNull { it.moyenne }
     if (valeurs.isEmpty()) {
         Text(
-            "Pas encore assez de notes pour afficher un graphique.",
+            "Ajoute une première note pour voir apparaître l'évolution de ta moyenne.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -230,59 +264,83 @@ private fun GraphiqueEvolution(points: List<PointGraphique>) {
     }
 
     val couleurLigne = MaterialTheme.colorScheme.primary
+    val couleurGrille = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+    val couleurTexte = MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
+    val vert = Color(0xFF4CAF50)
+    val rouge = Color(0xFFF44336)
+    val pointille = PathEffect.dashPathEffect(floatArrayOf(14f, 10f), 0f)
 
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp)
+            .height(200.dp)
     ) {
-        val largeur = size.width
-        val hauteur = size.height
-        val nbSegments = (points.size - 1).coerceAtLeast(1)
-        val espacement = largeur / nbSegments
-        val minEchelle = 0.0
-        val maxEchelle = 20.0
+        val margeGauche = 56f
+        val margeBas = 8f
+        val margeHaut = 8f
+        val largeur = size.width - margeGauche - 8f
+        val hauteur = size.height - margeBas - margeHaut
 
-        var pointPrecedent: Offset? = null
+        fun yDe(valeur: Double) = margeHaut + hauteur - (valeur / 20.0 * hauteur).toFloat()
+
+        val peinture = android.graphics.Paint().apply {
+            color = couleurTexte
+            textSize = 28f
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.RIGHT
+        }
+        listOf(0, 5, 10, 15, 20).forEach { graduation ->
+            val y = yDe(graduation.toDouble())
+            drawLine(couleurGrille, Offset(margeGauche, y), Offset(margeGauche + largeur, y), strokeWidth = 2f)
+            drawContext.canvas.nativeCanvas.drawText("$graduation", margeGauche - 10f, y + 10f, peinture)
+        }
+        drawLine(rouge, Offset(margeGauche, yDe(10.0)), Offset(margeGauche + largeur, yDe(10.0)), strokeWidth = 3f, pathEffect = pointille)
+        if (objectif in 0.0..20.0) {
+            drawLine(vert, Offset(margeGauche, yDe(objectif)), Offset(margeGauche + largeur, yDe(objectif)), strokeWidth = 3f, pathEffect = pointille)
+        }
+
+        val pas = if (points.size > 1) largeur / (points.size - 1) else 0f
+        var precedent: Offset? = null
         points.forEachIndexed { index, point ->
             val valeur = point.moyenne ?: return@forEachIndexed
-            val x = index * espacement
-            val y = hauteur - ((valeur - minEchelle) / (maxEchelle - minEchelle) * hauteur).toFloat()
-            val actuel = Offset(x, y)
-
-            pointPrecedent?.let { precedent ->
-                drawLine(color = couleurLigne, start = precedent, end = actuel, strokeWidth = 4f)
-            }
-            drawCircle(color = couleurLigne, radius = 4f, center = actuel)
-            pointPrecedent = actuel
+            val x = if (points.size > 1) margeGauche + index * pas else margeGauche + largeur / 2f
+            val actuel = Offset(x, yDe(valeur))
+            precedent?.let { drawLine(couleurLigne, it, actuel, strokeWidth = 5f) }
+            drawCircle(couleurLigne, radius = 7f, center = actuel)
+            precedent = actuel
         }
     }
+    Text(
+        "Dernière valeur : ${String.format("%.2f", valeurs.last())}/20",
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.padding(top = 4.dp)
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SelecteurMatiere(
-    matieres: List<Matiere>,
-    selectionId: Long?,
-    onSelection: (Long?) -> Unit
-) {
-    var etendu by remember { mutableStateOf(false) }
-    val libelle = matieres.find { it.id == selectionId }?.nom ?: "Choisir une matière"
-
-    ExposedDropdownMenuBox(expanded = etendu, onExpandedChange = { etendu = it }) {
-        OutlinedTextField(
-            value = libelle,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Matière") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = etendu) },
-            modifier = Modifier.menuAnchor().fillMaxWidth()
-        )
-        ExposedDropdownMenu(expanded = etendu, onDismissRequest = { etendu = false }) {
-            matieres.forEach { matiere ->
-                DropdownMenuItem(
-                    text = { Text(matiere.nom) },
-                    onClick = { onSelection(matiere.id); etendu = false }
+private fun BarresMatieres(matieres: List<ImpactMatiere>) {
+    matieres.sortedByDescending { it.moyenne }.forEach { item ->
+        val couleur = when {
+            item.moyenne >= 12 -> Color(0xFF4CAF50)
+            item.moyenne >= 10 -> Color(0xFFFFB300)
+            else -> Color(0xFFF44336)
+        }
+        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(item.nom, style = MaterialTheme.typography.bodyMedium)
+                Text(String.format("%.2f", item.moyenne), style = MaterialTheme.typography.bodyMedium)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth((item.moyenne / 20.0).toFloat().coerceIn(0.02f, 1f))
+                        .height(8.dp)
+                        .background(couleur, RoundedCornerShape(4.dp))
                 )
             }
         }

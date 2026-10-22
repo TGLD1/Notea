@@ -43,7 +43,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
 
         if (etat.isConduite) {
             Text(
-                "Note unique attribuée par le conseil des professeurs en fin de période.",
+                "Note unique attribuée par le conseil des professeurs à la fin de la période.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -64,7 +64,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
             }
             if (etat.devoirsAtteints) {
                 Text(
-                    "Limite de 2 devoirs atteinte pour cette période.",
+                    "Limite atteinte : 2 devoirs maximum par période.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -78,7 +78,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
             OutlinedTextField(
                 value = etat.nouvelleValeur,
                 onValueChange = viewModel::onValeurChange,
-                label = { Text("Note /20") },
+                label = { Text("Note sur 20") },
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(8.dp))
@@ -100,7 +100,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
 
         if (etat.notes.isEmpty()) {
             Text(
-                "Aucune note pour l'instant.",
+                "Aucune note enregistrée pour cette période.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -131,10 +131,10 @@ private fun LigneNote(note: Note, enEdition: Boolean, onModifier: () -> Unit, on
                 Text(String.format("%.1f", note.valeur), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.width(4.dp))
                 TextButton(onClick = onModifier) {
-                    Text("Modif.")
+                    Text("Modifier")
                 }
                 TextButton(onClick = onSupprimer) {
-                    Text("Suppr.")
+                    Text("Supprimer")
                 }
             }
         }

@@ -135,7 +135,7 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
 
         if (etat.matieres.isEmpty()) {
             Text(
-                "Aucune matière pour l'instant.",
+                "Aucune matière enregistrée.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -170,7 +170,7 @@ private fun AlerteMatieres(matieres: List<NoteaRepository.MatiereAvecMoyenne>, m
     ) {
         Text("Matières à surveiller", style = MaterialTheme.typography.titleMedium, color = rouge)
         Text(
-            "Moyenne sous ${MoyenneCalculator.SEUIL_REUSSITE.toInt()}/20 :",
+            "Matières dont la moyenne est inférieure à ${MoyenneCalculator.SEUIL_REUSSITE.toInt()}/20 :",
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(6.dp))
@@ -197,8 +197,8 @@ private fun AlerteMatieres(matieres: List<NoteaRepository.MatiereAvecMoyenne>, m
             }
         }
         Text(
-            "Le chiffre en points est l'effet de la matière sur ta moyenne générale. " +
-                "Menu ⋮ → Statistiques → « Quelle note me faut-il ? » pour savoir quoi viser.",
+            "Les points indiquent l'effet de la matière sur ta moyenne générale. " +
+                "Pour savoir quelle note viser : menu ⋮ → Statistiques → « Quelle note me faut-il ? ».",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 6.dp)
         )

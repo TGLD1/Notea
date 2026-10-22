@@ -63,7 +63,7 @@ fun MatieresScreen(
         if (etat.matieres.isEmpty()) {
             item {
                 Text(
-                    "Aucune matière — ajoute-en depuis l'onboarding pour l'instant.",
+                    "Aucune matière enregistrée. Les matières sont choisies à la création du profil.",
                     modifier = Modifier.padding(16.dp)
                 )
             }

@@ -84,7 +84,7 @@ fun BulletinScreen(repository: NoteaRepository) {
         Text("Bulletin PDF", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Choisis la période, puis partage le bulletin (WhatsApp, e-mail, Drive, impression…).",
+            "Choisis la période, puis génère le bulletin au format PDF pour le partager (WhatsApp, e-mail, Drive) ou l'imprimer.",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(Modifier.height(16.dp))
@@ -171,9 +171,8 @@ fun BulletinScreen(repository: NoteaRepository) {
 
         Spacer(Modifier.height(24.dp))
         Text(
-            "Rang, moyenne de la classe et décision du conseil ne peuvent pas être " +
-                "calculés par l'application : ces cases restent vides sur le PDF pour que tu les " +
-                "complètes (à la main ou après impression).",
+            "Le rang, la moyenne de la classe et la décision du conseil ne peuvent pas être calculés par " +
+                "l'application : ces cases restent vides sur le PDF, à compléter à la main après impression.",
             style = MaterialTheme.typography.bodySmall
         )
     }

@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NoteDao {
 
+    /** Période de la note saisie en dernier : sert de période affichée par défaut. */
+    @Query("SELECT periodeId FROM note ORDER BY id DESC LIMIT 1")
+    fun observerPeriodeDerniereNote(): Flow<Long?>
+
     @Insert
     suspend fun inserer(note: Note): Long
 

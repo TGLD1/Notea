@@ -29,15 +29,16 @@ fun TextScreen(titre: String, contenu: String) {
 }
 
 object TextesStatiques {
-    const val A_PROPOS_APP = "Notea est une application de suivi scolaire conçue pour les " +
-        "lycéens béninois. Elle permet de gérer ses notes, ses matières et ses objectifs, " +
-        "avec un tableau de bord visuel — 100% hors ligne, sans connexion internet requise.\n\n" +
-        "Développée par FASTEK.\nVersion 0.1."
+    const val A_PROPOS_APP = "Notea est une application de suivi scolaire conçue pour les élèves béninois. " +
+        "Elle permet de saisir ses notes, de suivre ses moyennes et ses objectifs, de simuler ses résultats " +
+        "et de produire un bulletin au format PDF. Elle fonctionne hors ligne, sans compte, et ne nécessite " +
+        "internet que pour le don facultatif.\n\n" +
+        "Développée par FASTEK, à Ouidah (Bénin)."
 
-    const val A_PROPOS_DEV = "Notea est développée par Divin, fondateur de FASTEK.\n\n" +
-        "Contact :\nEmail : tgldivin@gmail.com\nWhatsApp : +229 01 64 40 94 45"
+    const val A_PROPOS_DEV = "Notea est conçue et développée par Divin, fondateur de FASTEK.\n\n" +
+        "Pour toute question, suggestion ou signalement :\nE-mail : tgldivin@gmail.com\nWhatsApp : +229 01 64 40 94 45"
 
-    const val CONFIDENTIALITE = "Notea fonctionne entièrement hors ligne. Aucune donnée " +
+    const val CONFIDENTIALITE = "Notea fonctionne hors ligne. Aucune donnée " +
         "personnelle (notes, nom, classe, etc.) n'est collectée, transmise ou partagée avec " +
         "FASTEK ou un tiers. Toutes les informations restent stockées uniquement sur ton " +
         "téléphone, dans la mémoire de l'application.\n\n" +
@@ -55,17 +56,18 @@ object TextesStatiques {
         "Notea ne contient ni publicité ni outil de suivi.\n\n" +
         "Contact : tgldivin@gmail.com"
 
-    const val DON = "Notea est gratuite. Si l'application t'est utile, ton don aide FASTEK à " +
-        "terminer son développement et à l'améliorer. Le paiement se fait en toute sécurité " +
-        "par Mobile Money ou carte bancaire, via KkiaPay.\n\n" +
-        "Merci pour ton soutien !"
+    const val DON = "Notea est gratuite. Si elle t'est utile, ton don aide FASTEK à la maintenir et à la faire évoluer. " +
+        "Le paiement s'effectue de manière sécurisée par Mobile Money ou par carte bancaire, via KkiaPay, " +
+        "sans création de compte.\n\n" +
+        "Merci pour ton soutien."
 
-    const val CGU = "En utilisant Notea, tu acceptes que :\n\n" +
-        "• L'application est fournie « en l'état », sans garantie de résultat scolaire.\n\n" +
-        "• Les calculs de moyennes sont fournis à titre indicatif ; se référer au bulletin " +
-        "officiel de ton établissement en cas de doute.\n\n" +
-        "• FASTEK ne pourra être tenu responsable de la perte de données en cas de " +
-        "désinstallation, de changement de téléphone sans sauvegarde, ou de dysfonctionnement " +
-        "de l'appareil.\n\n" +
-        "• Il est interdit de revendre ou redistribuer l'application sans autorisation de FASTEK."
+    const val CGU = "En utilisant Notea, tu reconnais et acceptes que :\n\n" +
+        "• L'application est fournie « en l'état » et ne garantit aucun résultat scolaire.\n\n" +
+        "• Les calculs de moyennes sont fournis à titre indicatif : en cas de différence, le bulletin " +
+        "officiel de ton établissement fait foi.\n\n" +
+        "• FASTEK ne peut être tenu responsable d'une perte de données due à une désinstallation, à un " +
+        "changement de téléphone sans sauvegarde ou à un dysfonctionnement de l'appareil. Pense à " +
+        "sauvegarder régulièrement tes données.\n\n" +
+        "• Les dons sont facultatifs, volontaires et non remboursables.\n\n" +
+        "• La revente ou la redistribution de l'application sans l'autorisation de FASTEK est interdite."
 }

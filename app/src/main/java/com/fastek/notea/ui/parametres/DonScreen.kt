@@ -56,7 +56,7 @@ fun DonScreen(onDon: (montant: Int) -> Unit) {
 
         if (!disponible) {
             Text(
-                "Le don en ligne est indisponible : cette version a été compilée sans clé KkiaPay (secret GitHub KKIAPAY_PUBLIC_KEY non transmis).",
+                "Le don en ligne est momentanément indisponible dans cette version de l'application.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -64,7 +64,7 @@ fun DonScreen(onDon: (montant: Int) -> Unit) {
         }
 
         Text(
-            "Clé KkiaPay : ${BuildConfig.KKIAPAY_PUBLIC_KEY.take(6)}… — mode ${if (BuildConfig.KKIAPAY_SANDBOX) "test" else "réel"}",
+            if (BuildConfig.KKIAPAY_SANDBOX) "Mode test : aucun montant ne sera débité." else "Paiement sécurisé par KkiaPay.",
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(8.dp))
@@ -83,7 +83,7 @@ fun DonScreen(onDon: (montant: Int) -> Unit) {
         OutlinedTextField(
             value = autre,
             onValueChange = { saisie -> autre = saisie.filter { it.isDigit() }.take(7) },
-            label = { Text("Autre montant (FCFA)") },
+            label = { Text("Autre montant (en FCFA)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()

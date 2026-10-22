@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
-data class PointGraphique(val jour: Int, val moyenne: Double?)
+/** Moyenne générale après la [rang]-ième note saisie de la période. */
+data class PointGraphique(val rang: Int, val moyenne: Double?)
 
 data class SimulateurState(
     val matiereId: Long? = null,
@@ -53,7 +54,12 @@ data class ImpactMatiere(val nom: String, val moyenne: Double, val impact: Doubl
 
 data class StatistiquesUiState(
     val chargement: Boolean = true,
+    val nomPeriode: String = "",
+    val periodeNumero: Int? = null,
+    val periodesDisponibles: List<Int> = emptyList(),
+    val objectif: Double = 10.0,
     val evolution: List<PointGraphique> = emptyList(),
+    val moyennesMatieres: List<ImpactMatiere> = emptyList(),
     val impacts: List<ImpactMatiere> = emptyList(),
     val matieresDisponibles: List<Matiere> = emptyList(),
     val simulateur: SimulateurState = SimulateurState()
@@ -62,6 +68,13 @@ data class StatistiquesUiState(
 class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel() {
 
     private val _simulateur = MutableStateFlow(SimulateurState())
+
+    /** null = période de la dernière note saisie (sinon la première). */
+    private val _periodeChoisie = MutableStateFlow<Int?>(null)
+
+    fun selectionnerPeriode(numero: Int) {
+        _periodeChoisie.value = numero
+    }
 
     /** Calculateur de passage : moyenne requise à la dernière période pour une moyenne annuelle visée. */
     val passage: StateFlow<PassageUi?> = repository.observerProfil()
@@ -105,8 +118,15 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             if (profil == null) {
                 flowOf(StatistiquesUiState(chargement = false))
             } else {
-                repository.observerPeriodes(profil.id).flatMapLatest { periodes ->
-                    val periode = periodes.maxByOrNull { it.numero }
+                combine(
+                    repository.observerPeriodes(profil.id),
+                    _periodeChoisie,
+                    repository.observerPeriodeDerniereNote()
+                ) { periodes, choix, derniere ->
+                    Triple(periodes, periodes.find { it.numero == choix }
+                        ?: periodes.find { it.id == derniere }
+                        ?: periodes.minByOrNull { it.numero }, derniere)
+                }.flatMapLatest { (periodes, periode, _) ->
                     if (periode == null) {
                         flowOf(StatistiquesUiState(chargement = false))
                     } else {
@@ -121,7 +141,10 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
                                     }
                                 ) { paires -> paires.toList() }
                                     .combine(_simulateur) { matieresAvecNotes, simu ->
-                                        construireEtat(matieresAvecNotes, matieres, periode, simu)
+                                        construireEtat(
+                                            matieresAvecNotes, matieres, periode, simu,
+                                            profil.typeEtablissement.nomPeriode, periodes.map { it.numero }.sorted()
+                                        )
                                     }
                             }
                         }
@@ -135,25 +158,51 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
         matieresAvecNotes: List<Pair<Matiere, List<Note>>>,
         matieres: List<Matiere>,
         periode: Periode,
-        simu: SimulateurState
+        simuSaisi: SimulateurState,
+        nomPeriode: String,
+        numerosPeriodes: List<Int>
     ): StatistiquesUiState {
-        val aujourdHui = LocalDate.now()
-        val evolution = (0..29).map { i ->
-            val jourDate = aujourdHui.minusDays((29 - i).toLong())
-            PointGraphique(
-                jour = i,
-                moyenne = MoyenneCalculator.moyenneGeneraleADate(matieresAvecNotes, jourDate)
-            )
+        // Matière présélectionnée : la première matière hors Conduite.
+        val simu = if (simuSaisi.matiereId == null) {
+            simuSaisi.copy(matiereId = matieres.firstOrNull { it.nom != "Conduite" }?.id ?: matieres.firstOrNull()?.id)
+        } else {
+            simuSaisi
         }
-
+        val moyennesMatieres = matieresAvecNotes.mapNotNull { (matiere, notes) ->
+            MoyenneCalculator.moyenneMatiere(notes)?.let { ImpactMatiere(matiere.nom, it, 0.0) }
+        }
         return StatistiquesUiState(
             chargement = false,
-            evolution = evolution,
+            nomPeriode = nomPeriode,
+            periodeNumero = periode.numero,
+            periodesDisponibles = numerosPeriodes,
+            objectif = periode.objectifCible,
+            evolution = calculerEvolution(matieresAvecNotes),
+            moyennesMatieres = moyennesMatieres,
             impacts = calculerImpacts(matieresAvecNotes),
             matieresDisponibles = matieres,
             simulateur = calculerSimulation(matieresAvecNotes, periode, simu)
                 .let { calculerNoteRequise(matieresAvecNotes, periode, it) }
         )
+    }
+
+    /**
+     * Évolution de la moyenne générale note après note (dans l'ordre de saisie), sur les 30
+     * dernières notes : lisible même quand toutes les notes ont été saisies le même jour.
+     */
+    private fun calculerEvolution(matieresAvecNotes: List<Pair<Matiere, List<Note>>>): List<PointGraphique> {
+        val ordonnees = matieresAvecNotes
+            .flatMap { (matiere, notes) -> notes.map { matiere to it } }
+            .sortedWith(compareBy({ it.second.date }, { it.second.id }))
+        val points = ordonnees.indices.map { i ->
+            val retenues = ordonnees.take(i + 1).groupBy({ it.first }, { it.second })
+            val moyennes = retenues.mapNotNull { (matiere, notes) ->
+                MoyenneCalculator.moyenneMatiere(notes)
+                    ?.let { MoyenneCalculator.MoyennePonderee(it, matiere.coefficient) }
+            }
+            PointGraphique(rang = i + 1, moyenne = MoyenneCalculator.moyenneGeneralePeriode(moyennes))
+        }
+        return points.takeLast(30)
     }
 
     private fun calculerSimulation(
@@ -168,7 +217,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             ?: return etat.copy(nouvelleMoyenneMatiere = null, nouvelleMoyenneGenerale = null, erreur = null)
 
         if (valeur < 0.0 || valeur > 20.0) {
-            return etat.copy(erreur = "Note invalide (0 à 20)", nouvelleMoyenneMatiere = null, nouvelleMoyenneGenerale = null)
+            return etat.copy(erreur = "Saisis une note comprise entre 0 et 20.", nouvelleMoyenneMatiere = null, nouvelleMoyenneGenerale = null)
         }
 
         val noteHypothetique = Note(

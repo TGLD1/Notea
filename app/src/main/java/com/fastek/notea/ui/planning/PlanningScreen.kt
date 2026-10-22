@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
+import com.fastek.notea.notification.ReglagesRappel
+import com.fastek.notea.ui.parametres.BandeauNotifications
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,12 +62,20 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Planning", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
+        BandeauNotifications()
+        Text(
+            "Rappels envoyés à ${ReglagesRappel.heure(androidx.compose.ui.platform.LocalContext.current)}h00 : " +
+                "deux jours avant, la veille et le jour même. Réglages dans Paramètres → Rappels et notifications.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(12.dp))
 
         OutlinedTextField(
             value = etat.titre,
             onValueChange = viewModel::onTitreChange,
-            label = { Text("Titre (ex : Devoir de Maths)") },
+            label = { Text("Intitulé (ex. : Devoir de mathématiques)") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -106,7 +116,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
 
         if (etat.evenements.isEmpty()) {
             Text(
-                "Aucun événement pour l'instant.",
+                "Aucun événement à venir. Ajoute un devoir, une interrogation ou un examen pour recevoir un rappel.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -124,7 +134,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
                         },
                         trailingContent = {
                             TextButton(onClick = { viewModel.supprimerEvenement(evenement) }) {
-                                Text("Suppr.")
+                                Text("Supprimer")
                             }
                         }
                     )
@@ -193,7 +203,7 @@ private fun SelecteurMatiereOptionnel(
             value = libelleSelection,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Matière (optionnel)") },
+            label = { Text("Matière (facultatif)") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = etendu) },
             modifier = Modifier.menuAnchor().fillMaxWidth()
         )

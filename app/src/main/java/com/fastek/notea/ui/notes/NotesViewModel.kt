@@ -85,14 +85,14 @@ class NotesViewModel(
     fun ajouterNote() {
         val valeur = _saisie.value.valeur.replace(',', '.').toDoubleOrNull()
         if (valeur == null || valeur < 0.0 || valeur > 20.0) {
-            _saisie.update { it.copy(erreur = "Note invalide (0 à 20)") }
+            _saisie.update { it.copy(erreur = "Saisis une note comprise entre 0 et 20.") }
             return
         }
         val enEdition = _saisie.value.enEdition
         val autresNotes = uiState.value.notes.filter { it.id != enEdition?.id }
         val isConduite = _matiereNom.value == "Conduite"
         if (isConduite && autresNotes.isNotEmpty()) {
-            _saisie.update { it.copy(erreur = "Conduite ne peut avoir qu'une seule note par période.") }
+            _saisie.update { it.copy(erreur = "La Conduite n'a qu'une seule note par période : modifie-la ou supprime-la avant d'en saisir une autre.") }
             return
         }
 
@@ -100,7 +100,7 @@ class NotesViewModel(
         if (type == TypeNote.DEVOIR) {
             val nombreDevoirs = autresNotes.count { it.type == TypeNote.DEVOIR }
             if (nombreDevoirs >= MAX_DEVOIRS_PAR_PERIODE) {
-                _saisie.update { it.copy(erreur = "Maximum $MAX_DEVOIRS_PAR_PERIODE devoirs par période (comme sur le bulletin officiel)") }
+                _saisie.update { it.copy(erreur = "Limite atteinte : $MAX_DEVOIRS_PAR_PERIODE devoirs maximum par période, comme sur le bulletin officiel.") }
                 return
             }
         }

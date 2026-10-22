@@ -67,6 +67,7 @@ class NoteaRepository(
     suspend fun supprimerMatiere(matiere: Matiere) = matiereDao.supprimer(matiere)
 
     // --- Periode ---
+    fun observerPeriodeDerniereNote(): Flow<Long?> = noteDao.observerPeriodeDerniereNote()
     fun observerPeriodes(eleveId: Long): Flow<List<Periode>> = periodeDao.observerPeriodes(eleveId)
     suspend fun creerPeriode(periode: Periode): Long = periodeDao.inserer(periode)
     suspend fun definirObjectifPeriode(periodeId: Long, objectif: Double) =

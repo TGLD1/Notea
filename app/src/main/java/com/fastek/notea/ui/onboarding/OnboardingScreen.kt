@@ -56,7 +56,7 @@ fun OnboardingScreen(
         }
         item {
             TextButton(onClick = { lanceurImport.launch(arrayOf("*/*")) }) {
-                Text("J'ai déjà une sauvegarde Notea")
+                Text("Restaurer une sauvegarde Notea")
             }
             erreurRestauration?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }
@@ -158,7 +158,7 @@ fun OnboardingScreen(
                 enabled = etat.peutValider && !etat.enCours,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (etat.enCours) "Création..." else "Commencer")
+                Text(if (etat.enCours) "Création du profil…" else "Commencer")
             }
         }
     }
