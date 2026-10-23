@@ -346,3 +346,33 @@ private fun BarresMatieres(matieres: List<ImpactMatiere>) {
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelecteurMatiere(
+    matieres: List<Matiere>,
+    selectionId: Long?,
+    onSelection: (Long?) -> Unit
+) {
+    var etendu by remember { mutableStateOf(false) }
+    val libelle = matieres.find { it.id == selectionId }?.nom ?: "Choisir une matière"
+
+    ExposedDropdownMenuBox(expanded = etendu, onExpandedChange = { etendu = it }) {
+        OutlinedTextField(
+            value = libelle,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Matière") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = etendu) },
+            modifier = Modifier.menuAnchor().fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = etendu, onDismissRequest = { etendu = false }) {
+            matieres.forEach { matiere ->
+                DropdownMenuItem(
+                    text = { Text(matiere.nom) },
+                    onClick = { onSelection(matiere.id); etendu = false }
+                )
+            }
+        }
+    }
+}
