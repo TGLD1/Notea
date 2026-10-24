@@ -6,27 +6,32 @@ FASTEK — application de suivi scolaire pour lycéens béninois
 
 ## 1. Vue d'ensemble
 
-- **Nom** : Notea (anciennement "TGLD School V1", dépôt GitHub `TGLD1/Schoolnote`)
-- **Objectif** : véritable application professionnelle FASTEK
+- **Nom** : Notea, application professionnelle FASTEK (Ouidah, Bénin)
 - **Cible** : lycéens (15-18 ans), smartphones d'entrée de gamme
 - **Établissements pris en charge** : **public** (2 semestres) et **privé** (3 trimestres)
 
 ### Contraintes techniques
-- 100% hors ligne ; internet uniquement au moment d'un don en ligne (KkiaPay)
+- 100% hors ligne, sans compte ; internet uniquement pour le don en ligne (KkiaPay)
 - Légère : < 50 Mo
 - Compatible Android 7+ (API 24)
 - Pas de backend : tout en local via SQLite (Room)
 - Notifications locales via WorkManager
-- Material Design 3
-- Identité visuelle officielle FASTEK (violet nuit #1B1040 → #4C1D95, cyan #22D3EE, blanc cassé #F3F6FC), thèmes clair et sombre
+- Material Design 3, thèmes clair et sombre
+- Identité FASTEK : violet nuit #1B1040 → #4C1D95, cyan #22D3EE, blanc cassé #F3F6FC ; icône en N ; écran de lancement animé de 3 secondes
 
 ### Stack technique
 - Kotlin + Jetpack Compose, Navigation Compose
-- Room (SQLite) — pas de framework d'injection (pas de Hilt), une factory manuelle à la place, pour rester léger
-- Don en ligne : SDK KkiaPay (`com.github.kkiapay:android-sdk` via JitPack), activité principale en `AppCompatActivity` (exigé par le SDK), thème AppCompat
-- Build via GitHub Actions à chaque push : Gradle 8.9, AGP 8.5.2, Kotlin 2.0.21, JDK 17
-- Repo GitHub : `TGLD1/Notea` (branche `master`)
-- Clé publique KkiaPay injectée à la compilation : secret (ou variable) GitHub `KKIAPAY_PUBLIC_KEY` ; variable `KKIAPAY_SANDBOX` (`true` par défaut, `false` pour la production). Jamais la clé privée ni le secret dans le code
+- Room (SQLite), sans framework d'injection : une factory manuelle pour rester léger
+- Don en ligne : SDK KkiaPay (`com.github.kkiapay:android-sdk` via JitPack) ; l'activité principale est une `AppCompatActivity` (exigé par le SDK) avec un thème AppCompat
+- Gradle 8.9, AGP 8.5.2, Kotlin 2.0.21, JDK 17
+- Dépôt GitHub : `TGLD1/Notea` (branche `master`)
+
+### Compilation et publication
+- **Build de test** (`build.yml`) : à chaque push, APK debug et schéma Room (artifacts `notea-debug-apk` et `room-schemas`)
+- **Build de production** (`release.yml`) : à chaque push (hors `docs/` et fichiers `.md`) ou lancement manuel ; produit l'APK signé, l'AAB pour Google Play et le fichier de correspondance R8, et refuse un APK de plus de 50 Mo. Le numéro de version est le numéro d'exécution du workflow ; le nom de version est `1.0.0` sauf indication lors d'un lancement manuel
+- **Signature** : clé FASTEK au format `.p12`, commune à toutes les applications FASTEK ; secrets GitHub `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`. Le fichier `.p12` n'est jamais dans le dépôt ; en conserver plusieurs copies privées
+- **Clé publique KkiaPay** : secret (ou variable) GitHub `KKIAPAY_PUBLIC_KEY`, ou propriété Gradle `kkiapayPublicKey` ; variable `KKIAPAY_SANDBOX` (`true` par défaut, `false` en production). Jamais la clé privée ni le secret dans le code
+- **Pages légales publiques** : dossier `docs/` (accueil, politique de confidentialité, conditions d'utilisation), publiables avec GitHub Pages (Settings → Pages → `master` / `docs`)
 
 ---
 
@@ -80,94 +85,79 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 
 | Écran | Contenu |
 |---|---|
-| **Présentation** | 5 diapositives au premier démarrage sur les fonctionnalités principales ; accessible ensuite depuis Paramètres → « Découvrir Notea » |
-| **Onboarding** | Nom, prénom, classe (niveau + série en menus déroulants), type d'établissement, liste de matières prédéfinie à cocher + coefficient libre. Conduite ajoutée automatiquement. |
-| **Accueil (Dashboard)** | Moyenne générale (cercle de progression avec effet « glow »), sélecteur de période, encadré « Matières à surveiller » (moyenne sous 10/20, avec l'effet de chaque matière sur la moyenne générale), liste des matières colorée selon le statut (vert/jaune/rouge/gris) |
-| **Mes matières** | Liste des matières, moyenne en direct, tap → écran de saisie des notes |
-| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (max 2 devoirs par période), modification d'une note existante (bouton « Modif. »), coefficient éditable, moyenne recalculée en temps réel. Conduite : une seule note par période, saisie ici comme les autres matières |
-| **Planning/Événements** | Événements à venir uniquement, triés par date ; ajout et modification d'un événement (titre, date, matière optionnelle) ; choix de la date par calendrier affiché à la place du formulaire ; rappels notifiés à l'heure choisie : dans 2 jours (une fois), la veille et le jour même (WorkManager, replanifié chaque jour) |
-| **Objectifs** | Objectif annuel + objectif par période (la Conduite n'apparaît plus ici : c'est une matière normale) |
-| **Statistiques** | Graphique d'évolution de la moyenne générale sur 30 jours (Canvas natif) + simulateur « si j'ai X au prochain devoir/interro, ma moyenne devient Y » + « Quelle note me faut-il ? » (note minimale au prochain devoir/interro pour atteindre une moyenne générale visée) + calculateur de passage (moyenne à obtenir au dernier semestre/trimestre pour 10, 12 ou l'objectif annuel) |
-| **Bulletin PDF** | (Paramètres) Choix de la période, PDF A4 sur le modèle du bulletin officiel (API native `PdfDocument`), partage via le menu Android. Appréciation par matière (menu rapide ou saisie libre, proposition automatique selon la moyenne) ; rang, moyenne de classe et décision du conseil laissés vides |
-| **Journal de diagnostic** | (Paramètres) État OK/ÉCHEC de chaque fonctionnalité + dernières lignes du journal local, partage et remise à zéro. Aucune donnée personnelle journalisée |
+| **Lancement** | Écran FASTEK animé de 3 secondes (symbole, lettres FASTEK, trait cyan, « Notea ») ; un toucher le passe |
+| **Présentation** | 5 diapositives au premier démarrage ; accessible ensuite depuis Paramètres → « Présentation de Notea » |
+| **Onboarding** | Nom, prénom, classe (niveau + série), type d'établissement, matières prédéfinies à cocher + coefficient libre ; Conduite ajoutée automatiquement ; possibilité de restaurer une sauvegarde |
+| **Accueil** | Moyenne générale (cercle de progression), choix de la période, interrupteur « période terminée », encadré « Matières à surveiller » (moyenne sous 10/20 et effet de chaque matière en points), liste des matières colorée selon le statut, bouton « Partager mon résumé » (texte pour WhatsApp ou SMS) |
+| **Mes matières** | Liste des matières, moyenne en direct, accès à la saisie des notes |
+| **Saisie des notes** | Valeur (0-20), type Devoir/Interrogation (2 devoirs maximum par période), modification et suppression d'une note, coefficient éditable, moyenne recalculée en direct ; Conduite : une seule note par période |
+| **Planning** | Événements à venir triés par date ; ajout et modification (intitulé, date, matière facultative) ; bandeau d'alerte si les notifications sont désactivées |
+| **Objectifs** | Objectif annuel et objectif par période |
+| **Statistiques** | Choix de la période ; évolution de la moyenne générale note après note (repères 10/20 et objectif) ; moyennes par matière en barres ; impact de chaque matière sur la moyenne générale ; simulateur de note hypothétique ; « Quelle note me faut-il ? » (note minimale pour une moyenne générale visée) ; calculateur de passage (moyenne requise au dernier semestre ou trimestre pour 10, 12 ou l'objectif annuel) |
+| **Bulletin PDF** | (Paramètres) Une seule page A4 sur le modèle officiel, Conduite en dernière ligne, photo, appréciation par matière (menu rapide, saisie libre ou proposition selon la moyenne) ; rang, moyenne de classe et décision du conseil laissés vides ; partage par le menu Android |
+| **Profil** | Nom, prénom, matricule, date de naissance (calendrier), lieu de naissance, effectif, aptitude EPS, redoublant ; classe, établissement, année et objectif en lecture seule |
+| **Photo de l'élève** | (Paramètres) Photo choisie dans la galerie, réduite à 400 px, conservée dans la mémoire privée, imprimée dans le cadre « Photo » du bulletin |
+| **Années scolaires** | (Paramètres) « Démarrer une nouvelle année » : archive l'année (JSON), efface notes et événements, remet les périodes à non terminées, passe à l'année suivante ; liste des archives avec moyennes, partage et suppression |
 | **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
-| **Photo de l'élève** | (Paramètres) Choix d'une photo dans la galerie, réduite à 400 px et enregistrée dans la mémoire privée ; elle remplit le cadre « Photo » du bulletin PDF |
-| **Années scolaires** | (Paramètres) Bouton « Démarrer une nouvelle année » (archive puis efface notes et événements, passe l'année scolaire à la suivante) ; liste des archives avec moyennes par période et annuelle, partage et suppression |
-| **Export CSV** | (Paramètres) Toutes les notes en fichier CSV (séparateur « ; », virgule décimale), partagé via le menu Android |
-| **Rappels et notifications** | (Paramètres) État de l'autorisation et bouton pour l'accorder, heure d'envoi de 6 h à 22 h (défaut 18 h), notification de test, conseils pour les téléphones qui limitent la batterie |
-| **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou montant libre (min. 100 FCFA), paiement Mobile Money ou carte via KkiaPay. Affiche l'état de la clé (début de la clé publique et mode test/réel) ; si la clé est absente de la compilation, un message l'indique |
-| **Paramètres** | Profil éditable, objectif/classe en lecture seule, Don, Signaler un problème (email pré-rempli), À propos, Calcul des moyennes, Développeur, Politique de confidentialité, CGU, Découvrir Notea |
+| **Export CSV** | (Paramètres) Toutes les notes en CSV (séparateur « ; », virgule décimale) |
+| **Rappels et notifications** | (Paramètres) Autorisation guidée, heure d'envoi (6 h à 22 h, 18 h par défaut), notification de test, conseils pour les téléphones qui limitent la batterie. Rappels : deux jours avant (une fois), la veille et le jour même |
+| **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou libre (minimum 100 FCFA), Mobile Money ou carte via KkiaPay, sans compte ; message « momentanément indisponible » si la clé est absente de la compilation |
+| **Journal de diagnostic** | (Paramètres) État de chaque fonctionnalité et dernières lignes du journal local ; aucune donnée personnelle |
+| **Textes** | À propos, Calcul des moyennes, Développeur, Politique de confidentialité, Conditions d'utilisation, Signaler un problème (e-mail pré-rempli) |
 
-Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en haut menant vers Objectifs et Paramètres.
+Navigation : 3 onglets en bas (Accueil, Matières, Planning) et un bouton **⋮** en haut menant vers Objectifs, Statistiques et Paramètres.
 
----
-
-## 4. État d'avancement (au 19/10/2026)
-
-✅ Fait :
-- Pipeline CI GitHub Actions : build APK debug vert à chaque push, artifacts `notea-debug-apk` et `room-schemas`
-- Onboarding, Accueil, Mes matières, Saisie des notes, Objectifs, Planning, Statistiques, Paramètres
-- Conduite = matière normale, coefficients éditables, page d'explication des calculs
-- Établissement privé : moyenne annuelle (T1+T2+T3)÷3, bulletin trimestriel, tests unitaires
-- Bulletin PDF refait sur le modèle CEG Pahou
-- Journal de diagnostic
-- Sauvegarde/restauration JSON locale
-- Heure du rappel réglable
-- Planning : modification d'un événement, événements à venir uniquement
-- Identité visuelle FASTEK officielle (splash, icône adaptative, thèmes) et écran de présentation
-- Don en ligne KkiaPay intégré et fonctionnel (mode test) ; clé publique fournie par `gradle.properties`
-- Export du schéma Room activé
-
-🟡 À valider sur appareil :
-- Don : l'écran doit afficher « Clé KkiaPay : … — mode test » ; si le message indique l'absence de clé, le secret `KKIAPAY_PUBLIC_KEY` n'est pas transmis au build (le workflow affiche un avertissement ou une confirmation à l'étape « Vérifier la clé KkiaPay »). Puis tester un paiement en mode test
-- Planning : le choix de date ne répondait pas (ni calendrier intégré, ni calendrier système) ; remplacé par un calendrier affiché à la place du formulaire, à confirmer
-- Bulletin PDF sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM)
-
-⚠️ Point technique : base de données en version 5 (colonne `photo`) ; migrations 3→4 et 4→5 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../6.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
+Période affichée : Semestre 1 (ou Trimestre 1) tant qu'il n'est pas marqué « terminé » ; le choix manuel d'une période est partagé entre l'Accueil, Mes matières et Statistiques.
 
 ---
 
-## 4 bis. Fonctionnalités restantes
+## 4. État d'avancement (au 24/10/2026)
 
-### Fonctionnalités élève livrées
-- Modifier une note existante
-- « Quelle note me faut-il ? » : note minimale requise pour une moyenne générale visée
-- Alerte « Matières à surveiller » sur l'Accueil
-- Calculateur de passage (public : (2×S2 + S1)÷3 ; privé : (T1+T2+T3)÷3)
-- Appréciation par matière sur le bulletin PDF
-- Bulletin PDF sur une seule page, Conduite en dernière ligne
-- Classement des matières par impact sur la moyenne générale (Statistiques)
-- Partage d'un résumé en texte (WhatsApp, SMS…) depuis l'Accueil
-- Export CSV de toutes les notes (Paramètres)
-- Rappels du planning : dans 2 jours (une fois), la veille et le jour même
-- Photo de l'élève sur le bulletin PDF (Paramètres → Photo de l'élève, stockée localement)
-- Notifications : demande d'autorisation guidée, bandeau d'alerte dans Planning, écran « Rappels et notifications » (état de l'autorisation, heure d'envoi, notification de test, conseils batterie)
-- Statistiques : choix de la période, graphique d'évolution note après note avec repères 10/20 et objectif, barres par matière, matière présélectionnée dans les simulateurs
-- Période affichée : Semestre 1 (ou Trimestre 1) tant qu'il n'est pas marqué « terminé » (interrupteur sur l'Accueil) ; le choix d'une période est partagé entre l'Accueil, Mes matières et Statistiques ; « Nouvelle année » remet toutes les périodes à non terminées
-- Dates : sélecteur de calendrier unique (Planning, date de naissance du Profil) au format JJ/MM/AAAA
-- Profil : saisie corrigée (le texte ne s'inversait plus, état local par champ)
-- Identité : icône en N (diagonale cyan, montants blancs) ; écran de lancement FASTEK animé de 3 secondes
-- Années scolaires : « Nouvelle année » archive notes et événements dans un fichier, conserve profil, matières, coefficients et objectifs ; archives consultables, partageables et supprimables
+### Livré
+- Calculs conformes au bulletin officiel (public et privé), tests unitaires
+- Tous les écrans du chapitre 3, y compris notes modifiables, simulateurs, statistiques, bulletin d'une page avec photo et appréciations, archives par année, export CSV, sauvegarde JSON
+- Notifications avec autorisation guidée et notification de test
+- Don en ligne KkiaPay, validé en mode test
+- Identité FASTEK complète : icône N, lancement animé, thèmes
+- Build de test et build de production signé (`.p12`) à chaque push, pages légales dans `docs/`
 
-Aucune fonctionnalité en attente. Pistes futures : restauration d'une archive en un geste depuis l'application, comparaison entre années.
+### À valider sur appareil
+- Notifications : notification de test, puis rappel réel (veille et jour même)
+- Statistiques : graphique et barres avec des données réelles, simulateurs
+- Interrupteur « période terminée » et passage au Semestre 2
+- Bulletin PDF sur téléphone et sur tablette IDINO (Android 11, 32 bits, ~2 Go de RAM), avec beaucoup de matières
+- Premier build de production signé (réduction du code R8 et SDK KkiaPay)
 
-### Fiabilité des données
-- Tests de migration Room et commit du schéma exporté
-- Sauvegarde sur Google Drive (OAuth2, empreinte SHA-1 de la clé de signature)
-- Journal → FastekLog (authority `com.fastek.log.provider`, signature commune des deux apps)
+### Point technique
+Base de données en version 6 (colonnes `photo` et `terminee`) ; migrations 3→4, 4→5 et 5→6 ; bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../6.json`) est à récupérer dans l'artifact `room-schemas` et à commiter. La photo n'est pas incluse dans les sauvegardes JSON.
 
-### Don en ligne
-- Passer en production : variable `KKIAPAY_SANDBOX=false` et clé publique de production
-- Épingler une version stable du SDK KkiaPay à la place de `master-SNAPSHOT`
-- Vérifier les règles de Google Play sur les dons (la politique de confidentialité mentionne déjà KkiaPay)
+---
+
+## 4 bis. Prochaines étapes
 
 ### Sortie publique
-- **Build release signé** : secrets GitHub `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, règles R8/ProGuard, `versionCode`/`versionName`, poids < 50 Mo, test sur Android 7 (API 24)
-- **Textes légaux** : validation par Divin de la politique de confidentialité et des CGU ; adresse web publique si le Play Store l'exige
-- **Test terrain** avec de vrais lycéens, puis correction des retours
+1. Valider le build de production signé et tester l'APK sur un téléphone Android 7 ou 8 et sur un petit modèle
+2. Publier les pages légales (GitHub Pages sur `docs/`) et obtenir l'adresse de la politique de confidentialité
+3. Préparer la fiche de l'application : captures d'écran, description, icône
+4. Test terrain avec de vrais lycéens, puis correction des retours
+5. Publier : Google Play (compte développeur, phases de test imposées par Google ; vérifier les conditions actuelles) ou distribution directe de l'APK
 
-### Plus tard
-- **Version École (V2)** : voir section 6 (projet séparé, MVP hors ligne envisagé en premier)
+### Don en production
+- Activer le compte KkiaPay (documents administratifs : RCCM et IFU pour une entreprise, IFU, justificatif de domicile et pièce d'identité pour un consultant individuel)
+- Passer `KKIAPAY_SANDBOX` à `false` et vérifier la clé publique de production
+- Remplacer `master-SNAPSHOT` par une version fixe du SDK KkiaPay
+- Vérifier les règles de Google Play sur les dons
+- Tant que le compte n'est pas activé : publier avec le don indisponible
+
+### Fiabilité des données
+- Tests de migration Room
+- Sauvegarde sur Google Drive (OAuth2, empreinte SHA-1 de la clé de signature)
+- Journal partagé avec FastekLog (authority `com.fastek.log.provider`, signature commune des deux applications)
+
+### Pistes futures
+- Restauration d'une archive en un geste depuis l'application
+- Comparaison entre années scolaires
+- Version École (V2) : voir le chapitre 6
 
 ---
 
@@ -175,7 +165,7 @@ Aucune fonctionnalité en attente. Pistes futures : restauration d'une archive e
 
 - Email : tgldivin@gmail.com
 - WhatsApp : +229 01 64 40 94 45
-- Don : en ligne via KkiaPay (Mobile Money et carte), plus de numéro affiché
+- Don : en ligne via KkiaPay (Mobile Money et carte), sans numéro affiché
 
 ---
 
