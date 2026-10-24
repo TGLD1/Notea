@@ -37,6 +37,7 @@ android {
         if (!keystoreFile.isNullOrBlank()) {
             create("release") {
                 storeFile = file(keystoreFile)
+                storeType = if (keystoreFile.endsWith(".p12") || keystoreFile.endsWith(".pfx")) "pkcs12" else "jks"
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")

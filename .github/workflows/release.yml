@@ -45,12 +45,16 @@ jobs:
               exit 1
             fi
           done
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/notea-release.jks"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/notea-release.p12"
+          if ! keytool -list -keystore "$RUNNER_TEMP/notea-release.p12" -storetype PKCS12 -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null 2>&1; then
+            echo "::error::Impossible d'ouvrir le keystore : vérifier KEYSTORE_BASE64, KEYSTORE_PASSWORD et KEY_ALIAS (nom exact de la clé)."
+            exit 1
+          fi
 
       - name: Construire l'APK et l'AAB signés
         run: gradle assembleRelease bundleRelease --no-daemon
         env:
-          KEYSTORE_FILE: ${{ runner.temp }}/notea-release.jks
+          KEYSTORE_FILE: ${{ runner.temp }}/notea-release.p12
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
