@@ -1,17 +1,28 @@
 name: Release signée
 
-# Lancement manuel : Actions > Release signée > Run workflow.
+# Se lance à chaque push sur master, ou à la main (Actions > Release signée > Run workflow).
+# Sur un push, le numéro de version est le numéro d'exécution du workflow (toujours croissant),
+# le nom de version est 1.0.0 sauf indication contraire lors d'un lancement manuel.
 on:
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
   workflow_dispatch:
     inputs:
       version_name:
-        description: "Nom de version affiché (ex. 1.0.0)"
-        required: true
+        description: "Nom de version affiché (ex. 1.0.1)"
+        required: false
         default: "1.0.0"
       version_code:
-        description: "Numéro de version (entier, à augmenter à chaque publication)"
-        required: true
-        default: "1"
+        description: "Numéro de version (entier croissant) ; vide = numéro d'exécution"
+        required: false
+        default: ""
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
@@ -58,8 +69,8 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          VERSION_NAME: ${{ inputs.version_name }}
-          VERSION_CODE: ${{ inputs.version_code }}
+          VERSION_NAME: ${{ inputs.version_name || '1.0.0' }}
+          VERSION_CODE: ${{ inputs.version_code || github.run_number }}
           KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
           KKIAPAY_SANDBOX: ${{ vars.KKIAPAY_SANDBOX }}
 
