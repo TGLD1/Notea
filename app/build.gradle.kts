@@ -13,8 +13,10 @@ android {
         applicationId = "com.fastek.notea"
         minSdk = 24        // Android 7.0 — contrainte du cahier des charges
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        // Numéro de version : valeurs par défaut pour le développement ; le workflow « Release »
+        // les fournit pour la publication (VERSION_CODE doit augmenter à chaque mise à jour).
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
+        versionName = System.getenv("VERSION_NAME")?.takeIf { it.isNotBlank() } ?: "0.1.0"
 
         // Clé API PUBLIQUE KkiaPay : injectée à la compilation (secret GitHub KKIAPAY_PUBLIC_KEY
         // ou propriété Gradle kkiapayPublicKey) — jamais écrite dans le code. La clé privée et
@@ -28,9 +30,27 @@ android {
         buildConfigField("boolean", "KKIAPAY_SANDBOX", sandboxKkiapay)
     }
 
+    // Signature de production : uniquement si le workflow Release fournit le keystore.
+    // Le keystore et ses mots de passe ne sont jamais dans le dépôt (secrets GitHub).
+    val keystoreFile = System.getenv("KEYSTORE_FILE")
+    signingConfigs {
+        if (!keystoreFile.isNullOrBlank()) {
+            create("release") {
+                storeFile = file(keystoreFile)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (!keystoreFile.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
