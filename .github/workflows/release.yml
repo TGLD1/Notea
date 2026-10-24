@@ -74,7 +74,7 @@ jobs:
           KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
           KKIAPAY_SANDBOX: ${{ vars.KKIAPAY_SANDBOX }}
 
-      - name: Vérifier le poids de l'APK (limite : 50 Mo)
+      - name: "Vérifier le poids de l'APK (limite de 50 Mo)"
         run: |
           taille=$(stat -c %s app/build/outputs/apk/release/*.apk)
           echo "Poids de l'APK : $((taille / 1024 / 1024)) Mo"
