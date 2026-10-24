@@ -1,0 +1,31 @@
+/* FASTEK — site des applications */
+:root { color-scheme: light dark; --nuit:#1B1040; --violet:#4C1D95; --cyan:#22D3EE; --blanc:#F3F6FC; --texte:#1f1b2e; --fond:#F3F6FC; --carte:#ffffff; --bord:#e0dcf0; }
+@media (prefers-color-scheme: dark) { :root { --texte:#e8e6f0; --fond:#120b2a; --carte:#1c1340; --bord:#33265f; } }
+* { box-sizing:border-box; }
+body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; line-height:1.65; color:var(--texte); background:var(--fond); }
+a { color:var(--violet); }
+@media (prefers-color-scheme: dark) { a { color:var(--cyan); } }
+.entete { background:linear-gradient(180deg,var(--nuit),var(--violet)); color:var(--blanc); padding:20px; }
+.entete .barre { max-width:960px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.marque { font-weight:800; letter-spacing:.2em; font-size:1.15rem; color:var(--blanc); text-decoration:none; }
+.entete nav a { color:var(--blanc); text-decoration:none; margin-left:16px; opacity:.9; font-size:.95rem; }
+.hero { max-width:960px; margin:0 auto; padding:36px 0 44px; }
+.hero h1 { margin:0 0 8px; font-size:clamp(1.7rem,5vw,2.5rem); }
+.hero p { margin:0; max-width:560px; opacity:.92; font-size:1.08rem; }
+main { max-width:960px; margin:0 auto; padding:28px 20px 60px; }
+h2 { color:var(--violet); margin:2rem 0 .6rem; font-size:1.3rem; }
+@media (prefers-color-scheme: dark) { h2 { color:var(--cyan); } }
+.grille { display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); margin-top:12px; }
+.carte { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:20px; }
+.carte h3 { margin:0 0 6px; }
+.carte.attente { opacity:.75; border-style:dashed; }
+.pastille { display:inline-block; font-size:.78rem; padding:2px 10px; border-radius:99px; background:var(--cyan); color:var(--nuit); font-weight:700; }
+.bouton { display:inline-block; margin-top:12px; padding:12px 22px; border-radius:12px; background:var(--violet); color:#fff; text-decoration:none; font-weight:700; }
+.bouton.secondaire { background:transparent; color:var(--violet); border:2px solid var(--violet); }
+@media (prefers-color-scheme: dark) { .bouton.secondaire { color:var(--cyan); border-color:var(--cyan); } }
+.bouton:hover { filter:brightness(1.1); }
+.meta { font-size:.9rem; opacity:.8; margin-top:8px; }
+ol, ul { padding-left:1.3rem; }
+code { background:rgba(127,127,127,.18); padding:1px 6px; border-radius:6px; word-break:break-all; font-size:.88rem; }
+.avis { background:rgba(255,152,0,.14); border-left:4px solid #ff9800; padding:12px 16px; border-radius:8px; }
+footer { text-align:center; font-size:.85rem; opacity:.7; padding:24px 20px; }

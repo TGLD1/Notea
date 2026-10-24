@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notea — Le suivi scolaire des lycéens | FASTEK</title>
+<meta name="description" content="Notea calcule tes moyennes, suit tes objectifs et génère ton bulletin en PDF. Gratuit, hors ligne, sans compte.">
+<meta name="theme-color" content="#1B1040">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="entete">
+  <div class="barre">
+    <a class="marque" href="/">FASTEK</a>
+    <nav><a href="/">Applications</a><a href="/notea/">Notea</a><a href="mailto:tgldivin@gmail.com">Contact</a></nav>
+  </div>
+  <div class="hero">
+    <h1>Notea</h1>
+    <p>Saisis tes notes, suis tes moyennes et atteins tes objectifs. Gratuit, hors ligne, sans compte.</p>
+    <a class="bouton" id="telecharger" href="https://github.com/TGLD1/Notea/releases/latest/download/Notea.apk" style="background:var(--cyan);color:var(--nuit)">Télécharger pour Android</a>
+    <div class="meta" id="infos" style="color:var(--blanc)">Android 7 ou plus · fichier APK</div>
+  </div>
+</header>
+<main>
+  <h2>Ce que fait Notea</h2>
+  <div class="grille">
+    <div class="carte"><h3>Moyennes automatiques</h3><p>Moyenne de chaque matière, moyenne générale et moyenne annuelle selon la méthode officielle, pour les établissements publics (semestres) et privés (trimestres).</p></div>
+    <div class="carte"><h3>Objectifs et simulateurs</h3><p>Fixe ta moyenne cible, découvre la note minimale à viser au prochain devoir et ce qu'il te faut pour passer.</p></div>
+    <div class="carte"><h3>Planning et rappels</h3><p>Ajoute tes devoirs et interrogations : Notea te prévient deux jours avant, la veille et le jour même.</p></div>
+    <div class="carte"><h3>Bulletin en PDF</h3><p>Un bulletin d'une page au modèle officiel, avec photo et appréciations, prêt à partager ou à imprimer.</p></div>
+    <div class="carte"><h3>Statistiques</h3><p>Évolution de ta moyenne, moyennes par matière et matières à surveiller.</p></div>
+    <div class="carte"><h3>Tes données t'appartiennent</h3><p>Tout reste sur ton téléphone. Pas de compte, pas de publicité, aucune donnée envoyée à FASTEK.</p></div>
+  </div>
+
+  <h2>Installer Notea</h2>
+  <ol>
+    <li>Appuie sur « Télécharger pour Android » et ouvre le fichier <code>Notea.apk</code> une fois téléchargé.</li>
+    <li>Si Android le demande, autorise ton navigateur ou ton gestionnaire de fichiers à installer des applications.</li>
+    <li>Ouvre Notea et suis la présentation : la création du profil prend moins d'une minute.</li>
+  </ol>
+  <p class="avis">Notea est distribuée directement par FASTEK en attendant sa publication sur le Play Store. Android peut afficher un avertissement pour toute application installée hors du Play Store : télécharge toujours le fichier depuis cette page ou depuis le dépôt officiel de FASTEK.</p>
+
+  <h2>Vérifier le fichier</h2>
+  <p>Chaque version est signée par FASTEK. Sa somme de contrôle SHA-256 est publiée avec le fichier sur la <a href="https://github.com/TGLD1/Notea/releases/latest">page de la dernière version</a> (fichier <code>Notea.apk.sha256</code>).</p>
+
+  <h2>Informations légales</h2>
+  <ul>
+    <li><a href="/notea/confidentialite.html">Politique de confidentialité</a></li>
+    <li><a href="/notea/conditions.html">Conditions d'utilisation</a></li>
+  </ul>
+
+  <h2>Une question, une suggestion ?</h2>
+  <p><a href="mailto:tgldivin@gmail.com">tgldivin@gmail.com</a> · WhatsApp +229 01 64 40 94 45</p>
+</main>
+<script>
+  // Affiche la version et la taille de la dernière release (silencieux si l'API est indisponible).
+  fetch("https://api.github.com/repos/TGLD1/Notea/releases/latest")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (release) {
+      if (!release) return;
+      var apk = (release.assets || []).filter(function (a) { return a.name === "Notea.apk"; })[0];
+      var date = new Date(release.published_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+      var taille = apk ? " · " + (apk.size / 1048576).toFixed(1).replace(".", ",") + " Mo" : "";
+      document.getElementById("infos").textContent =
+        "Version " + String(release.tag_name).replace(/^v/, "") + " — " + date + taille + " · Android 7 ou plus";
+      if (apk) document.getElementById("telecharger").href = apk.browser_download_url;
+    })
+    .catch(function () {});
+</script>
+<footer>© FASTEK — Ouidah, Bénin · <a href="/notea/confidentialite.html">Confidentialité</a> · <a href="/notea/conditions.html">Conditions</a></footer>
+</body>
+</html>
