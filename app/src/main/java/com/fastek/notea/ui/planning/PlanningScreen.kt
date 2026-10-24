@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import com.fastek.notea.notification.ReglagesRappel
+import com.fastek.notea.ui.commun.BoutonDate
+import com.fastek.notea.ui.commun.ChoixDateEcran
+import com.fastek.notea.ui.commun.FORMAT_DATE_ECRAN
 import com.fastek.notea.ui.parametres.BandeauNotifications
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,7 +46,6 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-private val FORMAT_DATE_ECRAN = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
 @Composable
 fun PlanningScreen(viewModel: PlanningViewModel) {
@@ -52,8 +54,12 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
     var choixDate by remember { mutableStateOf(false) }
 
     if (choixDate) {
-        ChoixDate(
-            dateTexte = etat.dateTexte,
+        val annee = java.time.LocalDate.now().year
+        ChoixDateEcran(
+            titre = "Date de l'événement",
+            valeurInitiale = etat.dateTexte,
+            anneeMin = annee,
+            anneeMax = annee + 2,
             onValider = { viewModel.onDateTexteChange(it); choixDate = false },
             onAnnuler = { choixDate = false }
         )
@@ -80,7 +86,7 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
         )
         Spacer(Modifier.height(8.dp))
 
-        ChampDate(dateTexte = etat.dateTexte, onClick = { choixDate = true })
+        BoutonDate(libelle = "Date", valeur = etat.dateTexte, onClick = { choixDate = true })
         Spacer(Modifier.height(8.dp))
 
         SelecteurMatiereOptionnel(
@@ -140,50 +146,6 @@ fun PlanningScreen(viewModel: PlanningViewModel) {
                     )
                 }
             }
-        }
-    }
-}
-
-/** Bouton date : ouvre le choix de date (affiché à la place du formulaire, sans fenêtre flottante). */
-@Composable
-private fun ChampDate(dateTexte: String, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Text("Date : $dateTexte  (modifier)")
-    }
-}
-
-/** Choix de la date en plein écran dans l'écran Planning (aucune fenêtre flottante). */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ChoixDate(dateTexte: String, onValider: (String) -> Unit, onAnnuler: () -> Unit) {
-    val departMillis = try {
-        LocalDate.parse(dateTexte, FORMAT_DATE_ECRAN).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-    } catch (e: Exception) {
-        null
-    }
-    val etatCalendrier = rememberDatePickerState(initialSelectedDateMillis = departMillis)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Text("Choisir la date", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        DatePicker(state = etatCalendrier, showModeToggle = false)
-        Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(onClick = onAnnuler, modifier = Modifier.weight(1f)) { Text("Annuler") }
-            Button(
-                onClick = {
-                    etatCalendrier.selectedDateMillis?.let { millis ->
-                        val date = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
-                        onValider(date.format(FORMAT_DATE_ECRAN))
-                    } ?: onAnnuler()
-                },
-                modifier = Modifier.weight(1f)
-            ) { Text("Valider") }
         }
     }
 }

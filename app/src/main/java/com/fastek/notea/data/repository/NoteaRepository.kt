@@ -68,6 +68,14 @@ class NoteaRepository(
 
     // --- Periode ---
     fun observerPeriodeDerniereNote(): Flow<Long?> = noteDao.observerPeriodeDerniereNote()
+
+    /** Période choisie à la main, partagée par tous les écrans (null = période par défaut). */
+    val periodeChoisie = kotlinx.coroutines.flow.MutableStateFlow<Int?>(null)
+
+    suspend fun definirPeriodeTerminee(periodeId: Long, terminee: Boolean) {
+        periodeDao.mettreAJourTerminee(periodeId, terminee)
+        if (terminee) periodeChoisie.value = null
+    }
     fun observerPeriodes(eleveId: Long): Flow<List<Periode>> = periodeDao.observerPeriodes(eleveId)
     suspend fun creerPeriode(periode: Periode): Long = periodeDao.inserer(periode)
     suspend fun definirObjectifPeriode(periodeId: Long, objectif: Double) =

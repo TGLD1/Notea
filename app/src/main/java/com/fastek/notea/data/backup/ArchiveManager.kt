@@ -33,6 +33,7 @@ class ArchiveManager(
         database.withTransaction {
             database.noteDao().toutSupprimer()
             database.evenementDao().toutSupprimer()
+            database.periodeDao().reinitialiserTerminees()
             database.eleveDao().mettreAJour(eleve.copy(anneeScolaire = suivante))
         }
         return suivante

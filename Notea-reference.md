@@ -123,7 +123,7 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Planning : le choix de date ne répondait pas (ni calendrier intégré, ni calendrier système) ; remplacé par un calendrier affiché à la place du formulaire, à confirmer
 - Bulletin PDF sur téléphone et tablette IDINO (Android 11, 32 bits, ~2 Go RAM)
 
-⚠️ Point technique : base de données en version 5 (colonne `photo`) ; migrations 3→4 et 4→5 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../5.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
+⚠️ Point technique : base de données en version 5 (colonne `photo`) ; migrations 3→4 et 4→5 en place, bases v1 et v2 réinitialisées (`fallbackToDestructiveMigrationFrom(1, 2)`). Chaque futur changement de schéma exige sa migration. Le schéma exporté (`app/schemas/.../6.json`) est à récupérer dans l'artifact `room-schemas` et à commiter.
 
 ---
 
@@ -143,6 +143,9 @@ Navigation : 3 onglets en bas (Accueil, Matières, Planning) + bouton **⋮** en
 - Photo de l'élève sur le bulletin PDF (Paramètres → Photo de l'élève, stockée localement)
 - Notifications : demande d'autorisation guidée, bandeau d'alerte dans Planning, écran « Rappels et notifications » (état de l'autorisation, heure d'envoi, notification de test, conseils batterie)
 - Statistiques : choix de la période, graphique d'évolution note après note avec repères 10/20 et objectif, barres par matière, matière présélectionnée dans les simulateurs
+- Période affichée : Semestre 1 (ou Trimestre 1) tant qu'il n'est pas marqué « terminé » (interrupteur sur l'Accueil) ; le choix d'une période est partagé entre l'Accueil, Mes matières et Statistiques ; « Nouvelle année » remet toutes les périodes à non terminées
+- Dates : sélecteur de calendrier unique (Planning, date de naissance du Profil) au format JJ/MM/AAAA
+- Profil : saisie corrigée (le texte ne s'inversait plus, état local par champ)
 - Identité : icône en N (diagonale cyan, montants blancs) ; écran de lancement FASTEK animé de 3 secondes
 - Années scolaires : « Nouvelle année » archive notes et événements dans un fichier, conserve profil, matières, coefficients et objectifs ; archives consultables, partageables et supprimables
 

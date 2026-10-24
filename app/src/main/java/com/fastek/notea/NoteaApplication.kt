@@ -19,7 +19,7 @@ class NoteaApplication : Application() {
 
     val database: NoteaDatabase by lazy {
         Room.databaseBuilder(this, NoteaDatabase::class.java, NoteaDatabase.NOM_BASE)
-            .addMigrations(NoteaDatabase.MIGRATION_3_4, NoteaDatabase.MIGRATION_4_5)
+            .addMigrations(NoteaDatabase.MIGRATION_3_4, NoteaDatabase.MIGRATION_4_5, NoteaDatabase.MIGRATION_5_6)
             .fallbackToDestructiveMigrationFrom(1, 2)
             .build()
     }

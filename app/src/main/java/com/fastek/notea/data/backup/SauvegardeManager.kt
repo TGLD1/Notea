@@ -164,14 +164,15 @@ class SauvegardeManager(private val database: NoteaDatabase) {
     )
 
     private fun versJson(p: Periode) = JSONObject().apply {
-        put("id", p.id); put("eleveId", p.eleveId); put("numero", p.numero); put("objectifCible", p.objectifCible)
+        put("id", p.id); put("eleveId", p.eleveId); put("numero", p.numero); put("objectifCible", p.objectifCible); put("terminee", p.terminee)
     }
 
     private fun periodeDepuis(o: JSONObject) = Periode(
         id = o.getLong("id"),
         eleveId = o.getLong("eleveId"),
         numero = o.getInt("numero"),
-        objectifCible = o.getDouble("objectifCible")
+        objectifCible = o.getDouble("objectifCible"),
+        terminee = o.optBoolean("terminee", false)
     )
 
     private fun versJson(m: Matiere) = JSONObject().apply {

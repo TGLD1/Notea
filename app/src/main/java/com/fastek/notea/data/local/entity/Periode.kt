@@ -10,6 +10,7 @@ import androidx.room.PrimaryKey
  *
  * @param numero 1, 2 (public) ou 1, 2, 3 (privé)
  * @param objectifCible objectif de moyenne pour cette période, sur 20 (12.0 par défaut)
+ * @param terminee true quand l'élève a marqué la période comme terminée : l'affichage passe alors à la suivante
  */
 @Entity(
     tableName = "periode",
@@ -27,5 +28,6 @@ data class Periode(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val eleveId: Long,
     val numero: Int,
-    val objectifCible: Double = 12.0
+    val objectifCible: Double = 12.0,
+    val terminee: Boolean = false
 )

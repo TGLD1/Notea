@@ -30,4 +30,10 @@ interface PeriodeDao {
 
     @Insert
     suspend fun insererToutes(periodes: List<Periode>)
+
+    @Query("UPDATE periode SET terminee = :terminee WHERE id = :periodeId")
+    suspend fun mettreAJourTerminee(periodeId: Long, terminee: Boolean)
+
+    @Query("UPDATE periode SET terminee = 0")
+    suspend fun reinitialiserTerminees()
 }

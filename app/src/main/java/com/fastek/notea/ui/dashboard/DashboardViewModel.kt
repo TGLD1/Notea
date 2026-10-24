@@ -3,6 +3,7 @@ package com.fastek.notea.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fastek.notea.data.repository.NoteaRepository
+import com.fastek.notea.data.repository.PeriodeCourante
 import com.fastek.notea.domain.calcul.MoyenneCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class DashboardUiState(
     val chargement: Boolean = true,
@@ -18,6 +20,8 @@ data class DashboardUiState(
     val prenom: String = "",
     val nomPeriode: String = "Semestre",
     val periodeNumero: Int? = null,
+    val periodeId: Long? = null,
+    val periodeTerminee: Boolean = false,
     val periodesDisponibles: List<Int> = emptyList(),
     val moyenneGenerale: Double? = null,
     val objectifPeriode: Double = MoyenneCalculator.OBJECTIF_PAR_DEFAUT,
@@ -25,10 +29,10 @@ data class DashboardUiState(
     val matieres: List<NoteaRepository.MatiereAvecMoyenne> = emptyList()
 )
 
-class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
+class DashboardViewModel(private val repository: NoteaRepository) : ViewModel() {
 
     /** null = pas de choix explicite -> période de la dernière note saisie (sinon la première). */
-    private val _periodeChoisie = MutableStateFlow<Int?>(null)
+    private val _periodeChoisie = repository.periodeChoisie
 
     val uiState: StateFlow<DashboardUiState> = repository.observerProfil()
         .flatMapLatest { profil ->
@@ -37,13 +41,10 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
             } else {
                 combine(
                     repository.observerPeriodes(profil.id),
-                    _periodeChoisie,
-                    repository.observerPeriodeDerniereNote()
-                ) { periodes, choix, derniere -> Triple(periodes, choix, derniere) }
-                    .flatMapLatest { (periodes, choix, derniere) ->
-                        val periodeCourante = periodes.find { it.numero == choix }
-                            ?: periodes.find { it.id == derniere }
-                            ?: periodes.minByOrNull { it.numero }
+                    _periodeChoisie
+                ) { periodes, choix -> periodes to choix }
+                    .flatMapLatest { (periodes, choix) ->
+                        val periodeCourante = PeriodeCourante.choisir(periodes, choix)
 
                         if (periodeCourante == null) {
                             flowOf(
@@ -70,6 +71,8 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
                                     prenom = profil.prenom,
                                     nomPeriode = profil.typeEtablissement.nomPeriode,
                                     periodeNumero = periodeCourante.numero,
+                                    periodeId = periodeCourante.id,
+                                    periodeTerminee = periodeCourante.terminee,
                                     periodesDisponibles = periodes.map { it.numero },
                                     moyenneGenerale = moyenneGenerale,
                                     objectifPeriode = periodeCourante.objectifCible,
@@ -91,5 +94,10 @@ class DashboardViewModel(repository: NoteaRepository) : ViewModel() {
 
     fun selectionnerPeriode(numero: Int) {
         _periodeChoisie.value = numero
+    }
+
+    /** Marque la période affichée comme terminée (ou non) : l'affichage par défaut passe à la suivante. */
+    fun definirPeriodeTerminee(periodeId: Long, terminee: Boolean) {
+        viewModelScope.launch { repository.definirPeriodeTerminee(periodeId, terminee) }
     }
 }

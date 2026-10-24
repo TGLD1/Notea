@@ -3,6 +3,7 @@ package com.fastek.notea.ui.matieres
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fastek.notea.data.repository.NoteaRepository
+import com.fastek.notea.data.repository.PeriodeCourante
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,7 @@ data class MatieresUiState(
 
 class MatieresViewModel(repository: NoteaRepository) : ViewModel() {
 
-    private val _periodeChoisie = MutableStateFlow<Int?>(null)
+    private val _periodeChoisie = repository.periodeChoisie
 
     val uiState: StateFlow<MatieresUiState> = repository.observerProfil()
         .flatMapLatest { profil ->
@@ -36,8 +37,7 @@ class MatieresViewModel(repository: NoteaRepository) : ViewModel() {
                     _periodeChoisie
                 ) { periodes, choix -> periodes to choix }
                     .flatMapLatest { (periodes, choix) ->
-                        val periodeCourante = periodes.find { it.numero == choix }
-                            ?: periodes.maxByOrNull { it.numero }
+                        val periodeCourante = PeriodeCourante.choisir(periodes, choix)
 
                         if (periodeCourante == null) {
                             flowOf(

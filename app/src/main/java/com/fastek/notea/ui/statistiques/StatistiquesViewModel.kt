@@ -7,6 +7,7 @@ import com.fastek.notea.data.local.entity.Note
 import com.fastek.notea.data.local.entity.Periode
 import com.fastek.notea.data.local.entity.TypeNote
 import com.fastek.notea.data.repository.NoteaRepository
+import com.fastek.notea.data.repository.PeriodeCourante
 import com.fastek.notea.domain.calcul.MoyenneCalculator
 import com.fastek.notea.ui.notes.NotesViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +71,7 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
     private val _simulateur = MutableStateFlow(SimulateurState())
 
     /** null = période de la dernière note saisie (sinon la première). */
-    private val _periodeChoisie = MutableStateFlow<Int?>(null)
+    private val _periodeChoisie = repository.periodeChoisie
 
     fun selectionnerPeriode(numero: Int) {
         _periodeChoisie.value = numero
@@ -120,13 +121,10 @@ class StatistiquesViewModel(private val repository: NoteaRepository) : ViewModel
             } else {
                 combine(
                     repository.observerPeriodes(profil.id),
-                    _periodeChoisie,
-                    repository.observerPeriodeDerniereNote()
-                ) { periodes, choix, derniere ->
-                    Triple(periodes, periodes.find { it.numero == choix }
-                        ?: periodes.find { it.id == derniere }
-                        ?: periodes.minByOrNull { it.numero }, derniere)
-                }.flatMapLatest { (periodes, periode, _) ->
+                    _periodeChoisie
+                ) { periodes, choix ->
+                    periodes to PeriodeCourante.choisir(periodes, choix)
+                }.flatMapLatest { (periodes, periode) ->
                     if (periode == null) {
                         flowOf(StatistiquesUiState(chargement = false))
                     } else {

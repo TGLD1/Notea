@@ -22,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -77,6 +78,26 @@ fun DashboardScreen(viewModel: DashboardViewModel) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        etat.periodeId?.let { periodeId ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("$nomPeriode terminé", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "Active cette option à la fin de la période : l'application affichera alors la suivante.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = etat.periodeTerminee,
+                    onCheckedChange = { viewModel.definirPeriodeTerminee(periodeId, it) }
+                )
+            }
         }
 
         Spacer(Modifier.height(24.dp))
