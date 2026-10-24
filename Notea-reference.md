@@ -98,7 +98,7 @@ Moyenne annuelle = (T1 + T2 + T3) ÷ 3
 | **Profil** | Nom, prénom, matricule, date de naissance (calendrier), lieu de naissance, effectif, aptitude EPS, redoublant ; classe, établissement, année et objectif en lecture seule |
 | **Photo de l'élève** | (Paramètres) Photo choisie dans la galerie, réduite à 400 px, conservée dans la mémoire privée, imprimée dans le cadre « Photo » du bulletin |
 | **Années scolaires** | (Paramètres) « Démarrer une nouvelle année » : archive l'année (JSON), efface notes et événements, remet les périodes à non terminées, passe à l'année suivante ; liste des archives avec moyennes, partage et suppression |
-| **Sauvegarde / restauration** | (Paramètres) Export et import d'un fichier JSON local |
+| **Sauvegarde / restauration** | (Paramètres) Sauvegarde automatique par Android dans le compte Google de l'utilisateur (règles dans `res/xml/data_extraction_rules.xml` et `backup_rules.xml`, file technique WorkManager exclue), explication et accès aux réglages ; sauvegarde manuelle en fichier JSON et restauration |
 | **Export CSV** | (Paramètres) Toutes les notes en CSV (séparateur « ; », virgule décimale) |
 | **Rappels et notifications** | (Paramètres) Autorisation guidée, heure d'envoi (6 h à 22 h, 18 h par défaut), notification de test, conseils pour les téléphones qui limitent la batterie. Rappels : deux jours avant (une fois), la veille et le jour même |
 | **Don** | (Paramètres) Montants 500 / 1000 / 2000 / 5000 FCFA ou libre (minimum 100 FCFA), Mobile Money ou carte via KkiaPay, sans compte ; message « momentanément indisponible » si la clé est absente de la compilation |
@@ -151,7 +151,8 @@ Base de données en version 6 (colonnes `photo` et `terminee`) ; migrations 3→
 
 ### Fiabilité des données
 - Tests de migration Room
-- Sauvegarde sur Google Drive (OAuth2, empreinte SHA-1 de la clé de signature)
+- Sauvegarde automatique Android : tester la restauration sur un second appareil via un test interne Google Play
+- Option future : synchronisation directe avec Google Drive (OAuth2, dossier privé de l'application, empreinte SHA-1 de la clé de signature) pour les installations hors Play Store
 - Journal partagé avec FastekLog (authority `com.fastek.log.provider`, signature commune des deux applications)
 
 ### Pistes futures

@@ -44,6 +44,9 @@ object TextesStatiques {
         "téléphone, dans la mémoire de l'application.\n\n" +
         "La photo de l'élève, facultative, est enregistrée dans la mémoire de l'application et sert " +
         "uniquement au bulletin PDF. Les archives des années précédentes restent aussi sur ton téléphone.\n\n" +
+        "Sauvegarde automatique d'Android : si la sauvegarde Google est activée sur ton téléphone, Android " +
+        "enregistre lui-même une copie des données de Notea dans ton compte Google, pour les restaurer sur un " +
+        "nouvel appareil. Cette copie est gérée par Google et ton téléphone ; FASTEK n'y a jamais accès.\n\n" +
         "Si tu exportes une sauvegarde, une archive ou un fichier CSV, il est enregistré ou partagé là où " +
         "tu le choisis toi-même (téléphone, Drive, WhatsApp…) : FASTEK n'y a jamais accès.\n\n" +
         "Don en ligne (facultatif)\n" +

@@ -1,6 +1,8 @@
 package com.fastek.notea.ui.parametres
 
 import android.content.Context
+import android.provider.Settings
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -95,6 +97,36 @@ fun SauvegardeScreen(manager: SauvegardeManager) {
             .padding(16.dp)
     ) {
         Text("Sauvegarde et restauration", style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(12.dp))
+        Text("Sauvegarde automatique", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Notea n'a rien à régler : Android sauvegarde automatiquement tes données dans ton compte Google " +
+                "(environ une fois par jour, quand le téléphone est branché, en veille et connecté à internet). " +
+                "Si tu changes de téléphone ou réinstalles Notea depuis le Play Store avec le même compte Google, " +
+                "tes notes sont restaurées toutes seules. Cette sauvegarde doit être activée dans les réglages Android " +
+                "(Google → Sauvegarde).",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_PRIVACY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (e: Exception) {
+                    message = "Ouvre les réglages Android, puis Google → Sauvegarde."
+                    erreur = false
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Ouvrir les réglages de sauvegarde") }
+
+        Spacer(Modifier.height(20.dp))
+        Text("Sauvegarde manuelle", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Crée un fichier que tu gardes toi-même (téléphone, Drive, WhatsApp) : utile si tu installes Notea " +
+                "sans passer par le Play Store.",
+            style = MaterialTheme.typography.bodyMedium
+        )
         Spacer(Modifier.height(8.dp))
         Text(
             "Enregistre tes données dans un fichier que tu gardes où tu veux (téléphone, Drive, " +

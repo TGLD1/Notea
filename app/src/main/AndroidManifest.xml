@@ -9,6 +9,8 @@
     <application
         android:name=".NoteaApplication"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:label="Notea"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Notea"
