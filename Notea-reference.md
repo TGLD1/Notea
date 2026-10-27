@@ -193,3 +193,17 @@ Base de données en version 6 (colonnes `photo` et `terminee`) ; migrations 3→
 - Recommandation : démarrer par l'option B (hors ligne) comme MVP, l'API venant plus tard si des écoles avec budget/connexion le demandent
 
 Ce projet reste une V2 séparée, à envisager une fois Notea solo terminé et testé en conditions réelles.
+
+## 7. Notea Enseignant (extension pour les professeurs)
+
+Application Android séparée (`com.fastek.notea.enseignant`), développée sur la branche `enseignant` du même dépôt. Le moteur de calcul est celui de Notea, sans aucune règle supplémentaire.
+
+**Principe.** Un professeur enseigne une seule matière (ex. PCT) dans plusieurs classes, jusqu'à 7 ou plus. Il crée ses classes, y inscrit les élèves (nom et prénoms), saisit les notes puis exporte un classeur Excel qui calcule toutes les moyennes.
+
+**Modèle de données** (base Room `notea_enseignant.db`, version 1) : `Professeur`, `Classe` (coefficient de la matière), `Inscrit`, `PeriodeClasse` (clôture indépendante par classe), `Evaluation` (une colonne de la grille : interrogation ou devoir, 2 devoirs au plus par période), `NoteEleve` (case vide = pas de ligne : l'élève absent n'est ni pénalisé ni compté).
+
+**Calculs** (`ClasseCalculator`, qui s'appuie sur `MoyenneCalculator`) : moyenne de période par élève, arrondie à 2 décimales ; moyenne annuelle (public : (2×S2 + S1) ÷ 3 ; privé : (T1 + T2 + T3) ÷ 3) ; rang à la française (les ex æquo partagent le rang) ; moyenne de classe, plus forte et plus faible moyenne, taux de réussite à 10/20, répartition par tranches.
+
+**Classeur Excel** (`ClasseurEnseignant`, écrit sans bibliothèque) : une feuille « Synthèse » puis une feuille par classe. Chaque feuille de classe présente les périodes côte à côte (interrogations, moyenne des interros, devoirs 1 et 2, moyenne sur 20, moyenne × coefficient, rang), puis la moyenne annuelle et son rang, puis les statistiques de la classe. Les cellules contiennent de vraies formules : une correction faite dans Excel recalcule tout. Deux colonnes d'interrogation vierges par période permettent de saisir directement dans le classeur.
+
+**Saisie de liste d'élèves** (`ListeElevesParser`) : collage d'une liste, une ligne par élève, au format « NOM Prénoms » ou séparée par « ; », tabulation ou virgule.
