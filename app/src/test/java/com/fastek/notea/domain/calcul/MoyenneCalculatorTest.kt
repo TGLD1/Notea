@@ -28,7 +28,7 @@ class MoyenneCalculatorTest {
     }
 
     @Test
-    fun `moyenne matiere B (coeff 3) = 2,666...`() {
+    fun `moyenne matiere B (coeff 3) = 2,666 periodique`() {
         val notes = listOf(
             note(TypeNote.INTERROGATION, 5.0),
             note(TypeNote.INTERROGATION, 1.0),
