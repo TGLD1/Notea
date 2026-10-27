@@ -62,6 +62,8 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
         classeId
     }
 
+    suspend fun obtenirClasse(id: Long): Classe? = classeDao.obtenir(id)
+
     suspend fun mettreAJourClasse(classe: Classe) = classeDao.mettreAJour(classe)
 
     suspend fun supprimerClasse(classe: Classe) = classeDao.supprimer(classe)

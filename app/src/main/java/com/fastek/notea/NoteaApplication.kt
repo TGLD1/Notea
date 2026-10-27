@@ -13,6 +13,8 @@ import com.fastek.notea.data.backup.SauvegardeManager
 import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.diagnostic.Journal
+import com.fastek.notea.enseignant.data.EnseignantDatabase
+import com.fastek.notea.enseignant.data.repository.EnseignantRepository
 import com.fastek.notea.notification.RappelWorker
 
 class NoteaApplication : Application() {
@@ -23,6 +25,12 @@ class NoteaApplication : Application() {
             .fallbackToDestructiveMigrationFrom(1, 2)
             .build()
     }
+
+    val enseignantBase: EnseignantDatabase by lazy {
+        Room.databaseBuilder(this, EnseignantDatabase::class.java, EnseignantDatabase.NOM_BASE).build()
+    }
+
+    val enseignantRepository: EnseignantRepository by lazy { EnseignantRepository(enseignantBase) }
 
     val sauvegarde: SauvegardeManager by lazy { SauvegardeManager(database) }
 
