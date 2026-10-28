@@ -54,6 +54,9 @@ class EnseignantViewModel(private val repo: EnseignantRepository) : ViewModel() 
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val totalEleves: StateFlow<Int> = repo.observerNombreEleves()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     private fun professeurActuel(): Professeur? = (etat.value as? EtatProfesseur.Present)?.professeur
 
     fun creerProfesseur(

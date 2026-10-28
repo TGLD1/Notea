@@ -25,3 +25,19 @@ fun libelleEvaluation(evaluation: Evaluation, toutes: List<Evaluation>): String 
     val rang = toutes.filter { it.type == evaluation.type }.indexOfFirst { it.id == evaluation.id } + 1
     return if (evaluation.type == TypeNote.DEVOIR) "Devoir $rang" else "Interrogation $rang"
 }
+
+fun pluriel(nombre: Int, mot: String): String = "$nombre $mot" + if (nombre > 1) "s" else ""
+
+/** Initiales d'un élève : « DOSSOU Jean-Marc » devient « DJ ». */
+fun initiales(nom: String, prenom: String): String =
+    "${nom.trim().firstOrNull()?.uppercaseChar() ?: ""}${prenom.trim().firstOrNull()?.uppercaseChar() ?: ""}"
+
+/** Initiales d'une classe : « 3ème A » devient « 3A », « Terminale D » devient « TD ». */
+fun initialesClasse(nom: String): String {
+    val mots = nom.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        mots.isEmpty() -> "?"
+        mots.size == 1 -> mots[0].take(2).uppercase()
+        else -> mots.take(3).map { it.first().uppercaseChar() }.joinToString("")
+    }
+}

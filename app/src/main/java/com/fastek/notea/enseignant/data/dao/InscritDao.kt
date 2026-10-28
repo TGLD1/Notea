@@ -30,4 +30,7 @@ interface InscritDao {
 
     @Query("SELECT * FROM inscrit")
     suspend fun obtenirTous(): List<Inscrit>
+
+    @Query("SELECT COUNT(*) FROM inscrit")
+    fun observerNombre(): Flow<Int>
 }

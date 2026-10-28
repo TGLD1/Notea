@@ -6,37 +6,36 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fastek.notea.data.backup.SauvegardeInvalideException
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.backup.SauvegardeEnseignant
@@ -47,22 +46,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
-/** Cadre commun des écrans secondaires : barre de titre et bouton « Retour ». */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EcranAvecRetour(titre: String, onRetour: () -> Unit, contenu: @Composable () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(titre) },
-                navigationIcon = { TextButton(onClick = onRetour) { Text("Retour") } }
-            )
-        }
-    ) { marge ->
-        Box(Modifier.padding(marge).fillMaxSize()) { contenu() }
-    }
-}
-
 @Composable
 fun ParametresScreen(
     onProfil: () -> Unit,
@@ -70,27 +53,41 @@ fun ParametresScreen(
     onJournal: () -> Unit,
     onRetour: () -> Unit
 ) {
-    EcranAvecRetour("Réglages", onRetour) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            LigneReglage("Mon profil", "Nom, matière, établissement, année scolaire", onProfil)
-            LigneReglage("Sauvegarde et restauration", "Garder tes classes et tes notes en sécurité", onSauvegarde)
-            LigneReglage("Journal de diagnostic", "À partager si un problème survient", onJournal)
+    EcranAvecEntete("Réglages", onRetour, sousTitre = "Ton profil et tes données") {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            LigneReglage("👤", "Mon profil", "Nom, matière, établissement, année scolaire", onProfil)
+            LigneReglage("💾", "Sauvegarde et restauration", "Garder tes classes et tes notes en sécurité", onSauvegarde)
+            LigneReglage("🩺", "Journal de diagnostic", "À partager si un problème survient", onJournal)
+            Spacer(Modifier.navigationBarsPadding())
         }
     }
 }
 
 @Composable
-private fun LigneReglage(titre: String, detail: String, onClick: () -> Unit) {
-    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp)) {
-        Text(titre, style = MaterialTheme.typography.titleMedium)
-        Text(detail, style = MaterialTheme.typography.bodyMedium)
+private fun LigneReglage(emoji: String, titre: String, detail: String, onClick: () -> Unit) {
+    CarteDouce(Modifier.fillMaxWidth(), onClick = onClick) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer).padding(12.dp)
+            ) { Text(emoji, fontSize = 22.sp) }
+            Column(Modifier.padding(start = 14.dp).weight(1f)) {
+                Text(titre, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    detail, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.outline)
+        }
     }
-    HorizontalDivider()
 }
 
 @Composable
 fun JournalEcran(onRetour: () -> Unit) {
-    EcranAvecRetour("Journal de diagnostic", onRetour) { JournalScreen() }
+    EcranAvecEntete("Journal de diagnostic", onRetour) { JournalScreen() }
 }
 
 @Composable
@@ -101,37 +98,35 @@ fun ProfilScreen(professeur: Professeur, onEnregistrer: (Professeur) -> Unit, on
     var etablissement by remember { mutableStateOf(professeur.etablissement) }
     var annee by remember { mutableStateOf(professeur.anneeScolaire) }
 
-    EcranAvecRetour("Mon profil", onRetour) {
+    EcranAvecEntete("Mon profil", onRetour, sousTitre = professeur.matiere) {
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = nom, onValueChange = { nom = it }, label = { Text("Nom") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = prenom, onValueChange = { prenom = it }, label = { Text("Prénoms") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = matiere, onValueChange = { matiere = it }, label = { Text("Matière enseignée") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = etablissement, onValueChange = { etablissement = it }, label = { Text("Établissement") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = annee, onValueChange = { annee = it }, label = { Text("Année scolaire") },
-                singleLine = true, modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                "Type d'établissement : ${if (professeur.typeEtablissement.nombrePeriodes == 2) "public (2 semestres)" else "privé (3 trimestres)"}. " +
-                    "Il ne peut pas être changé une fois les classes créées.",
-                style = MaterialTheme.typography.bodySmall
-            )
-            Button(
+            CarteDouce(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TitreSection("IDENTITÉ")
+                    Champ(nom, { nom = it }, "Nom")
+                    Champ(prenom, { prenom = it }, "Prénoms")
+                }
+            }
+            CarteDouce(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TitreSection("ENSEIGNEMENT")
+                    Champ(matiere, { matiere = it }, "Matière enseignée")
+                    Champ(etablissement, { etablissement = it }, "Établissement")
+                    Champ(annee, { annee = it }, "Année scolaire")
+                    Text(
+                        "Type d'établissement : " +
+                            (if (professeur.typeEtablissement.nombrePeriodes == 2) "public (2 semestres)" else "privé (3 trimestres)") +
+                            ". Il ne peut pas être changé une fois les classes créées.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            BoutonPlein(
+                "Enregistrer",
                 enabled = nom.isNotBlank() && matiere.isNotBlank() && annee.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
@@ -143,7 +138,8 @@ fun ProfilScreen(professeur: Professeur, onEnregistrer: (Professeur) -> Unit, on
                     )
                     onRetour()
                 }
-            ) { Text("Enregistrer") }
+            )
+            Spacer(Modifier.navigationBarsPadding().height(8.dp))
         }
     }
 }
@@ -199,59 +195,72 @@ fun SauvegardeEcran(manager: SauvegardeEnseignant, onRetour: () -> Unit) {
         ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) fichierARestaurer = uri }
 
-    EcranAvecRetour("Sauvegarde et restauration", onRetour) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-            Text("Sauvegarde automatique", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Android sauvegarde automatiquement les données de l'application dans ton compte Google " +
-                    "(environ une fois par jour, téléphone branché, en veille et connecté à internet). " +
-                    "Cette option doit être activée dans les réglages Android (Google → Sauvegarde).",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    try {
-                        context.startActivity(Intent(Settings.ACTION_PRIVACY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    } catch (e: Exception) {
-                        erreur = false
-                        message = "Ouvre les réglages Android, puis Google → Sauvegarde."
-                    }
+    EcranAvecEntete("Sauvegarde", onRetour, sousTitre = "Tes classes et tes notes en sécurité") {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CarteDouce(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("☁️  Sauvegarde automatique", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Android sauvegarde les données de l'application dans ton compte Google (environ une fois par jour, " +
+                            "téléphone branché, en veille et connecté à internet). Cette option doit être activée dans les " +
+                            "réglages Android (Google → Sauvegarde).",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    BoutonContour(
+                        "Ouvrir les réglages de sauvegarde",
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            try {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_PRIVACY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            } catch (e: Exception) {
+                                erreur = false
+                                message = "Ouvre les réglages Android, puis Google → Sauvegarde."
+                            }
+                        }
+                    )
                 }
-            ) { Text("Ouvrir les réglages de sauvegarde") }
-
-            Spacer(Modifier.height(20.dp))
-            Text("Sauvegarde manuelle", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Enregistre toutes tes classes, tes élèves et leurs notes dans un fichier que tu gardes où tu veux " +
-                    "(téléphone, Drive, WhatsApp…). En cas de changement de téléphone, tu les retrouves en restaurant ce fichier.",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(Modifier.height(8.dp))
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { lanceurExport.launch("notea-enseignant-sauvegarde-${LocalDate.now()}.json") }
-            ) { Text("Enregistrer une sauvegarde") }
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { lanceurImport.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*")) }
-            ) { Text("Restaurer depuis un fichier") }
-
+            }
+            CarteDouce(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("📁  Sauvegarde manuelle", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Enregistre toutes tes classes, tes élèves et leurs notes dans un fichier que tu gardes où tu veux " +
+                            "(téléphone, Drive, WhatsApp…). En cas de changement de téléphone, tu les retrouves en restaurant ce fichier.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    BoutonPlein(
+                        "Enregistrer une sauvegarde",
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { lanceurExport.launch("notea-enseignant-sauvegarde-${LocalDate.now()}.json") }
+                    )
+                    BoutonContour(
+                        "Restaurer depuis un fichier",
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            lanceurImport.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*"))
+                        }
+                    )
+                }
+            }
             message?.let {
-                Spacer(Modifier.height(12.dp))
                 Text(it, color = if (erreur) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             }
+            Spacer(Modifier.navigationBarsPadding().height(8.dp))
         }
     }
 
     fichierARestaurer?.let { uri ->
-        AlertDialog(
-            onDismissRequest = { fichierARestaurer = null },
-            title = { Text("Restaurer cette sauvegarde ?") },
-            text = { Text("Toutes les classes, tous les élèves et toutes les notes actuels seront remplacés par ceux du fichier.") },
-            confirmButton = {
+        Dialogue(
+            titre = "Restaurer cette sauvegarde ?",
+            onFermer = { fichierARestaurer = null },
+            confirmer = {
                 TextButton(onClick = {
                     fichierARestaurer = null
                     scope.launch {
@@ -261,7 +270,9 @@ fun SauvegardeEcran(manager: SauvegardeEnseignant, onRetour: () -> Unit) {
                     }
                 }) { Text("Restaurer") }
             },
-            dismissButton = { TextButton(onClick = { fichierARestaurer = null }) { Text("Annuler") } }
-        )
+            annuler = { TextButton(onClick = { fichierARestaurer = null }) { Text("Annuler") } }
+        ) {
+            Text("Toutes les classes, tous les élèves et toutes les notes actuels seront remplacés par ceux du fichier.")
+        }
     }
 }

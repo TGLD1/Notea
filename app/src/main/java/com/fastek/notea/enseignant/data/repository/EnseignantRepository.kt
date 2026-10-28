@@ -77,6 +77,8 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
 
     fun observerInscrits(classeId: Long): Flow<List<Inscrit>> = inscritDao.observerInscrits(classeId)
 
+    fun observerNombreEleves(): Flow<Int> = inscritDao.observerNombre()
+
     suspend fun ajouterInscrit(classeId: Long, nom: String, prenom: String, matricule: String = ""): Long =
         inscritDao.inserer(Inscrit(classeId = classeId, nom = nom.trim(), prenom = prenom.trim(), matricule = matricule.trim()))
 

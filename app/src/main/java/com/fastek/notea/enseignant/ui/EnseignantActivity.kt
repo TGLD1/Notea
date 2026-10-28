@@ -3,12 +3,14 @@ package com.fastek.notea.enseignant.ui
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,15 +32,25 @@ import androidx.navigation.navArgument
 import com.fastek.notea.NoteaApplication
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
 import com.fastek.notea.ui.intro.SplashFastek
-import com.fastek.notea.ui.theme.NoteaTheme
 import kotlinx.coroutines.launch
 
 class EnseignantActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        // Plein écran : l'en-tête dégradé passe sous la barre d'état ; icônes de la barre d'état toujours claires.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
         val app = application as NoteaApplication
-        setContent { EnseignantApp(app) }
+        setContent {
+            val sombre = isSystemInDarkTheme()
+            SideEffect {
+                WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !sombre
+            }
+            EnseignantApp(app)
+        }
     }
 }
 
@@ -51,7 +64,7 @@ private fun EnseignantApp(app: NoteaApplication) {
     // Animation FASTEK à chaque lancement à froid (conservée à la rotation de l'écran).
     var splashActif by rememberSaveable { mutableStateOf(true) }
 
-    NoteaTheme {
+    EnseignantTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             if (splashActif) {
                 SplashFastek(onTermine = { splashActif = false })
