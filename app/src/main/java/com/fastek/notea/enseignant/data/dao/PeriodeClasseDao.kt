@@ -23,4 +23,10 @@ interface PeriodeClasseDao {
 
     @Update
     suspend fun mettreAJour(periode: PeriodeClasse)
+
+    @Query("SELECT * FROM periode_classe")
+    suspend fun obtenirToutes(): List<PeriodeClasse>
+
+    @Insert
+    suspend fun insererToutes(periodes: List<PeriodeClasse>)
 }

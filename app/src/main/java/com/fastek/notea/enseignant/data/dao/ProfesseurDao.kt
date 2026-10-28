@@ -20,4 +20,14 @@ interface ProfesseurDao {
 
     @Update
     suspend fun mettreAJour(professeur: Professeur)
+
+    @Query("SELECT * FROM professeur")
+    suspend fun obtenirTous(): List<Professeur>
+
+    @Insert
+    suspend fun insererTous(professeurs: List<Professeur>)
+
+    /** Supprime aussi, en cascade, les classes, élèves, évaluations et notes. */
+    @Query("DELETE FROM professeur")
+    suspend fun toutSupprimer()
 }

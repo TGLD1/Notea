@@ -71,6 +71,10 @@ class EnseignantViewModel(private val repo: EnseignantRepository) : ViewModel() 
         }
     }
 
+    fun mettreAJourProfesseur(professeur: Professeur) {
+        viewModelScope.launch { repo.mettreAJourProfesseur(professeur) }
+    }
+
     fun creerClasse(nom: String, coefficient: Int) {
         val professeur = professeurActuel() ?: return
         viewModelScope.launch { repo.creerClasse(professeur, nom, coefficient) }

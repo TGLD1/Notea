@@ -39,7 +39,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccueilScreen(vm: EnseignantViewModel, professeur: Professeur, onOuvrirClasse: (Long) -> Unit) {
+fun AccueilScreen(
+    vm: EnseignantViewModel,
+    professeur: Professeur,
+    onOuvrirClasse: (Long) -> Unit,
+    onParametres: () -> Unit
+) {
     val classes by vm.classes.collectAsState()
     val contexte = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -52,8 +57,9 @@ fun AccueilScreen(vm: EnseignantViewModel, professeur: Professeur, onOuvrirClass
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mes classes · ${professeur.matiere}") },
+                title = { Text("Mes classes") },
                 actions = {
+                    TextButton(onClick = onParametres) { Text("Réglages") }
                     TextButton(
                         enabled = !exportEnCours && classes.isNotEmpty(),
                         onClick = {
@@ -85,6 +91,11 @@ fun AccueilScreen(vm: EnseignantViewModel, professeur: Professeur, onOuvrirClass
         }
     ) { marge ->
         Column(Modifier.padding(marge).fillMaxSize()) {
+            Text(
+                "${professeur.matiere} · ${professeur.anneeScolaire}",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+            )
             message?.let {
                 Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
             }

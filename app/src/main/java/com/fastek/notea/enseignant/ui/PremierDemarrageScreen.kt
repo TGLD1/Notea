@@ -1,5 +1,8 @@
 package com.fastek.notea.enseignant.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +40,8 @@ internal fun anneeScolaireCourante(aujourdhui: LocalDate = LocalDate.now()): Str
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PremierDemarrageScreen(
+    erreurRestauration: String?,
+    onRestaurer: (Uri) -> Unit,
     onValider: (nom: String, prenom: String, matiere: String, type: TypeEtablissement, annee: String, etablissement: String) -> Unit
 ) {
     var nom by rememberSaveable { mutableStateOf("") }
@@ -44,6 +50,9 @@ fun PremierDemarrageScreen(
     var etablissement by rememberSaveable { mutableStateOf("") }
     var annee by rememberSaveable { mutableStateOf(anneeScolaireCourante()) }
     var type by rememberSaveable { mutableStateOf(TypeEtablissement.PUBLIC) }
+    val lanceurImport = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) onRestaurer(uri) }
 
     Column(
         Modifier
@@ -102,5 +111,10 @@ fun PremierDemarrageScreen(
             enabled = nom.isNotBlank() && matiere.isNotBlank() && annee.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) { Text("Commencer") }
+        OutlinedButton(
+            onClick = { lanceurImport.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*")) },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Restaurer une sauvegarde") }
+        erreurRestauration?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
 }

@@ -27,4 +27,7 @@ interface InscritDao {
 
     @Delete
     suspend fun supprimer(inscrit: Inscrit)
+
+    @Query("SELECT * FROM inscrit")
+    suspend fun obtenirTous(): List<Inscrit>
 }

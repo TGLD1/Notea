@@ -13,10 +13,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -28,19 +30,24 @@ import com.fastek.notea.NoteaApplication
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
 import com.fastek.notea.ui.intro.SplashFastek
 import com.fastek.notea.ui.theme.NoteaTheme
+import kotlinx.coroutines.launch
 
 class EnseignantActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        val repo = (application as NoteaApplication).enseignantRepository
-        setContent { EnseignantApp(repo) }
+        val app = application as NoteaApplication
+        setContent { EnseignantApp(app) }
     }
 }
 
 @Composable
-private fun EnseignantApp(repo: EnseignantRepository) {
+private fun EnseignantApp(app: NoteaApplication) {
+    val repo = app.enseignantRepository
     val vm: EnseignantViewModel = viewModel(factory = EnseignantViewModelFactory(repo))
+    val contexte = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var erreurRestauration by remember { mutableStateOf<String?>(null) }
     // Animation FASTEK à chaque lancement à froid (conservée à la rotation de l'écran).
     var splashActif by rememberSaveable { mutableStateOf(true) }
 
@@ -55,11 +62,17 @@ private fun EnseignantApp(repo: EnseignantRepository) {
                         CircularProgressIndicator()
                     }
                     is EtatProfesseur.Absent -> PremierDemarrageScreen(
+                        erreurRestauration = erreurRestauration,
+                        onRestaurer = { uri ->
+                            scope.launch {
+                                erreurRestauration = restaurerEnseignantDepuisFichier(contexte, app.sauvegardeEnseignant, uri)
+                            }
+                        },
                         onValider = { nom, prenom, matiere, type, annee, etablissement ->
                             vm.creerProfesseur(nom, prenom, matiere, type, annee, etablissement)
                         }
                     )
-                    is EtatProfesseur.Present -> Navigation(vm, repo, e)
+                    is EtatProfesseur.Present -> Navigation(vm, repo, app, e)
                 }
             }
         }
@@ -67,11 +80,42 @@ private fun EnseignantApp(repo: EnseignantRepository) {
 }
 
 @Composable
-private fun Navigation(vm: EnseignantViewModel, repo: EnseignantRepository, etat: EtatProfesseur.Present) {
+private fun Navigation(
+    vm: EnseignantViewModel,
+    repo: EnseignantRepository,
+    app: NoteaApplication,
+    etat: EtatProfesseur.Present
+) {
     val nav = rememberNavController()
     NavHost(navController = nav, startDestination = "accueil") {
         composable("accueil") {
-            AccueilScreen(vm = vm, professeur = etat.professeur, onOuvrirClasse = { id -> nav.navigate("classe/$id") })
+            AccueilScreen(
+                vm = vm,
+                professeur = etat.professeur,
+                onOuvrirClasse = { id -> nav.navigate("classe/$id") },
+                onParametres = { nav.navigate("parametres") }
+            )
+        }
+        composable("parametres") {
+            ParametresScreen(
+                onProfil = { nav.navigate("parametres/profil") },
+                onSauvegarde = { nav.navigate("parametres/sauvegarde") },
+                onJournal = { nav.navigate("parametres/journal") },
+                onRetour = { nav.popBackStack() }
+            )
+        }
+        composable("parametres/profil") {
+            ProfilScreen(
+                professeur = etat.professeur,
+                onEnregistrer = vm::mettreAJourProfesseur,
+                onRetour = { nav.popBackStack() }
+            )
+        }
+        composable("parametres/sauvegarde") {
+            SauvegardeEcran(manager = app.sauvegardeEnseignant, onRetour = { nav.popBackStack() })
+        }
+        composable("parametres/journal") {
+            JournalEcran(onRetour = { nav.popBackStack() })
         }
         composable("classe/{id}", arguments = listOf(navArgument("id") { type = NavType.LongType })) { entree ->
             val id = entree.arguments?.getLong("id") ?: 0L

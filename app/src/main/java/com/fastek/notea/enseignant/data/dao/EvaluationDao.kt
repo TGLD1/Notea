@@ -28,4 +28,10 @@ interface EvaluationDao {
 
     @Delete
     suspend fun supprimer(evaluation: Evaluation)
+
+    @Query("SELECT * FROM evaluation")
+    suspend fun obtenirToutes(): List<Evaluation>
+
+    @Insert
+    suspend fun insererToutes(evaluations: List<Evaluation>)
 }

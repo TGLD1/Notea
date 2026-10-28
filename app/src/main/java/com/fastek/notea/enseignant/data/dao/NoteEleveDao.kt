@@ -27,4 +27,10 @@ interface NoteEleveDao {
 
     @Query("DELETE FROM note_eleve WHERE evaluationId = :evaluationId AND inscritId = :inscritId")
     suspend fun effacer(evaluationId: Long, inscritId: Long)
+
+    @Query("SELECT * FROM note_eleve")
+    suspend fun obtenirToutes(): List<NoteEleve>
+
+    @Insert
+    suspend fun insererToutes(notes: List<NoteEleve>)
 }

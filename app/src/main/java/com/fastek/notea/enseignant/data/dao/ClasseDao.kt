@@ -27,4 +27,10 @@ interface ClasseDao {
 
     @Delete
     suspend fun supprimer(classe: Classe)
+
+    @Query("SELECT * FROM classe")
+    suspend fun obtenirToutes(): List<Classe>
+
+    @Insert
+    suspend fun insererToutes(classes: List<Classe>)
 }
