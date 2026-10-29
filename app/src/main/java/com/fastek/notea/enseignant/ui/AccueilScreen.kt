@@ -52,6 +52,7 @@ fun AccueilScreen(
 ) {
     val classes by vm.classes.collectAsState()
     val totalEleves by vm.totalEleves.collectAsState()
+    val erreurVm by vm.erreur.collectAsState()
     val contexte = LocalContext.current
     val scope = rememberCoroutineScope()
     var creation by remember { mutableStateOf(false) }
@@ -99,6 +100,7 @@ fun AccueilScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 112.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                erreurVm?.let { texte -> item { BandeauErreur(texte, onFermer = vm::effacerErreur) } }
                 message?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
                 if (classes.isEmpty()) {
                     item {
@@ -193,6 +195,19 @@ private fun CarteClasse(
                     DropdownMenuItem(text = { Text("Supprimer") }, onClick = { menu = false; onSupprimer() })
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BandeauErreur(texte: String, onFermer: () -> Unit) {
+    CarteDouce(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                texte, modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium
+            )
+            TextButton(onClick = onFermer) { Text("OK") }
         }
     }
 }

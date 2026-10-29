@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
+import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.entity.Classe
 import com.fastek.notea.enseignant.data.entity.Evaluation
 import com.fastek.notea.enseignant.data.entity.Inscrit
@@ -59,36 +60,53 @@ class EnseignantViewModel(private val repo: EnseignantRepository) : ViewModel() 
 
     private fun professeurActuel(): Professeur? = (etat.value as? EtatProfesseur.Present)?.professeur
 
-    fun creerProfesseur(
-        nom: String, prenom: String, matiere: String,
-        type: TypeEtablissement, anneeScolaire: String, etablissement: String
-    ) {
+    /** Dernier message d'erreur à montrer à l'écran (null s'il n'y en a pas). */
+    val erreur = MutableStateFlow<String?>(null)
+
+    fun effacerErreur() {
+        erreur.value = null
+    }
+
+    /** Exécute une action en base ; en cas d'échec, l'erreur est écrite au journal et montrée à l'écran. */
+    private fun executer(action: String, bloc: suspend () -> Unit) {
         viewModelScope.launch {
-            repo.creerProfesseur(
-                Professeur(
-                    nom = nom.trim(), prenom = prenom.trim(), matiere = matiere.trim(),
-                    typeEtablissement = type, anneeScolaire = anneeScolaire.trim(),
-                    etablissement = etablissement.trim()
-                )
-            )
+            try {
+                bloc()
+                Journal.ok(action)
+            } catch (e: Exception) {
+                Journal.erreur(action, e)
+                erreur.value = "Action impossible (${e.message ?: e.javaClass.simpleName})"
+            }
         }
     }
 
-    fun mettreAJourProfesseur(professeur: Professeur) {
-        viewModelScope.launch { repo.mettreAJourProfesseur(professeur) }
+    fun creerProfesseur(
+        nom: String, prenom: String, matiere: String,
+        type: TypeEtablissement, anneeScolaire: String, etablissement: String
+    ) = executer("profil.creation") {
+        repo.creerProfesseur(
+            Professeur(
+                nom = nom.trim(), prenom = prenom.trim(), matiere = matiere.trim(),
+                typeEtablissement = type, anneeScolaire = anneeScolaire.trim(),
+                etablissement = etablissement.trim()
+            )
+        )
     }
 
-    fun creerClasse(nom: String, coefficient: Int) {
-        val professeur = professeurActuel() ?: return
-        viewModelScope.launch { repo.creerClasse(professeur, nom, coefficient) }
+    fun mettreAJourProfesseur(professeur: Professeur) = executer("profil.modification") {
+        repo.mettreAJourProfesseur(professeur)
     }
 
-    fun modifierClasse(classe: Classe, nom: String, coefficient: Int) {
-        viewModelScope.launch { repo.mettreAJourClasse(classe.copy(nom = nom.trim(), coefficient = coefficient)) }
+    fun creerClasse(nom: String, coefficient: Int) = executer("classe.creation") {
+        repo.creerClasseDuProfesseur(nom, coefficient)
     }
 
-    fun supprimerClasse(classe: Classe) {
-        viewModelScope.launch { repo.supprimerClasse(classe) }
+    fun modifierClasse(classe: Classe, nom: String, coefficient: Int) = executer("classe.modification") {
+        repo.mettreAJourClasse(classe.copy(nom = nom.trim(), coefficient = coefficient))
+    }
+
+    fun supprimerClasse(classe: Classe) = executer("classe.suppression") {
+        repo.supprimerClasse(classe)
     }
 
     fun effectif(classeId: Long): Flow<Int> = repo.observerInscrits(classeId).map { it.size }

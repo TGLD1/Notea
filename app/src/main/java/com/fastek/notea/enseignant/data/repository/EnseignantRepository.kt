@@ -62,6 +62,13 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
         classeId
     }
 
+    /** Crée une classe pour le professeur enregistré : le profil est relu en base au moment de l'ajout. */
+    suspend fun creerClasseDuProfesseur(nom: String, coefficient: Int = 1): Long = db.withTransaction {
+        val professeur = professeurDao.obtenir()
+            ?: throw IllegalStateException("Profil introuvable : crée d'abord ton profil.")
+        creerClasse(professeur, nom, coefficient)
+    }
+
     suspend fun obtenirClasse(id: Long): Classe? = classeDao.obtenir(id)
 
     suspend fun mettreAJourClasse(classe: Classe) = classeDao.mettreAJour(classe)
