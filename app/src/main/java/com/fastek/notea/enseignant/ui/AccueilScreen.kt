@@ -61,6 +61,11 @@ fun AccueilScreen(
     var message by remember { mutableStateOf<String?>(null) }
     var exportEnCours by remember { mutableStateOf(false) }
 
+    fun ouvrirCreation() {
+        Journal.ok("ui.nouvelleClasse")
+        creation = true
+    }
+
     fun exporter() {
         scope.launch {
             exportEnCours = true
@@ -106,10 +111,16 @@ fun AccueilScreen(
                     item {
                         EtatVide(
                             "📚", "Aucune classe pour le moment",
-                            "Crée ta première classe avec le bouton en bas, puis ajoute tes élèves."
+                            "Crée ta première classe, puis ajoute tes élèves."
                         )
                     }
+                    item {
+                        BoutonPlein("＋  Créer ma première classe", onClick = ::ouvrirCreation, modifier = Modifier.fillMaxWidth())
+                    }
                 } else {
+                    item {
+                        BoutonPlein("＋  Nouvelle classe", onClick = ::ouvrirCreation, modifier = Modifier.fillMaxWidth())
+                    }
                     item { TitreSection("MES CLASSES") }
                     items(classes, key = { it.id }) { classe ->
                         val effectif by remember(classe.id) { vm.effectif(classe.id) }.collectAsState(initial = 0)
@@ -127,8 +138,8 @@ fun AccueilScreen(
         }
 
         ExtendedFloatingActionButton(
-            onClick = { creation = true },
-            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(16.dp),
+            onClick = ::ouvrirCreation,
+            modifier = Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 28.dp),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             shape = CircleShape

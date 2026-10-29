@@ -1,10 +1,12 @@
 package com.fastek.notea.enseignant.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,15 +19,18 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ColorScheme
@@ -39,6 +44,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -425,7 +431,10 @@ fun Champ(
     )
 }
 
-/** Boîte de dialogue aux coins arrondis, sur fond de carte. */
+/**
+ * Boîte de dialogue affichée DANS la fenêtre de l'application (fond assombri + carte arrondie) :
+ * elle ne dépend pas d'une fenêtre système séparée, donc s'affiche de la même façon sur tous les téléphones.
+ */
 @Composable
 fun Dialogue(
     titre: String,
@@ -434,13 +443,34 @@ fun Dialogue(
     annuler: (@Composable () -> Unit)? = null,
     contenu: @Composable () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onFermer,
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(28.dp),
-        title = { Text(titre, style = MaterialTheme.typography.titleLarge) },
-        text = contenu,
-        confirmButton = confirmer,
-        dismissButton = annuler
-    )
+    BackHandler(onBack = onFermer)
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.55f))
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onFermer)
+            .imePadding()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier
+                .widthIn(max = 420.dp)
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {}),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 8.dp
+        ) {
+            Column(Modifier.padding(24.dp)) {
+                Text(titre, style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(16.dp))
+                Box(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { contenu() }
+                Spacer(Modifier.height(20.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    annuler?.invoke()
+                    confirmer()
+                }
+            }
+        }
+    }
 }
