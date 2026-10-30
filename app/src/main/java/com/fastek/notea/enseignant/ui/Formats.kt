@@ -41,3 +41,20 @@ fun initialesClasse(nom: String): String {
         else -> mots.take(3).map { it.first().uppercaseChar() }.joinToString("")
     }
 }
+
+/**
+ * Filtre la saisie d'une note sur 20 au fil de la frappe : chiffres seulement, un seul séparateur
+ * (virgule ou point), deux décimales au plus, et jamais plus de 20. Une frappe qui ferait dépasser
+ * 20 (ou qui est invalide) est ignorée : la saisie [precedent] est conservée.
+ */
+fun filtrerSaisieNote(saisi: String, precedent: String): String {
+    val propre = saisi.filter { it.isDigit() || it == ',' || it == '.' }
+    if (propre.isEmpty()) return ""
+    val normal = propre.replace(',', '.')
+    if (normal.count { it == '.' } > 1) return precedent
+    val entiere = normal.substringBefore('.')
+    val decimale = if ('.' in normal) normal.substringAfter('.') else ""
+    if (entiere.isEmpty() || entiere.length > 2 || decimale.length > 2) return precedent
+    val valeur = (entiere + if ('.' in normal) ".$decimale" else "").toDoubleOrNull() ?: return precedent
+    return if (valeur > 20.0) precedent else propre
+}

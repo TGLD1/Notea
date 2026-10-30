@@ -469,12 +469,13 @@ private fun SaisieRapide(
                     OutlinedTextField(
                         value = texte,
                         onValueChange = { saisi ->
-                            val propre = saisi.filter { it.isDigit() || it == ',' || it == '.' }
+                            // La frappe qui ferait dépasser 20 est ignorée : impossible de saisir plus de 20.
+                            val propre = filtrerSaisieNote(saisi, texte)
                             textes[inscrit.id] = propre
                             val v = propre.replace(',', '.').toDoubleOrNull()
                             when {
                                 propre.isEmpty() -> onSaisir(evaluation.id, inscrit.id, null)
-                                v != null && v <= 20.0 -> onSaisir(evaluation.id, inscrit.id, v)
+                                v != null -> onSaisir(evaluation.id, inscrit.id, v)
                                 else -> Unit
                             }
                         },
