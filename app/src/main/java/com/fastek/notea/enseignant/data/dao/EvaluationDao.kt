@@ -34,4 +34,7 @@ interface EvaluationDao {
 
     @Insert
     suspend fun insererToutes(evaluations: List<Evaluation>)
+
+    @Query("SELECT * FROM evaluation WHERE classeId = :classeId")
+    fun observerEvaluationsClasse(classeId: Long): Flow<List<Evaluation>>
 }

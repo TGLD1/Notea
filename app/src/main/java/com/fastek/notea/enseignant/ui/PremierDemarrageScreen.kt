@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fastek.notea.data.local.entity.TypeEtablissement
+import com.fastek.notea.domain.reference.MatieresReference
 import java.time.LocalDate
 
 /** Année scolaire en cours : de septembre à décembre « 2026-2027 », de janvier à août « 2025-2026 ». */
@@ -60,10 +61,12 @@ fun PremierDemarrageScreen(
     var etablissement by rememberSaveable { mutableStateOf("") }
     var annee by rememberSaveable { mutableStateOf(anneeScolaireCourante()) }
     var type by rememberSaveable { mutableStateOf(TypeEtablissement.PUBLIC) }
+    var choixMatiere by rememberSaveable { mutableStateOf(false) }
     val lanceurImport = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) onRestaurer(uri) }
 
+    Box(Modifier.fillMaxSize()) {
     Column(
         Modifier
             .fillMaxSize()
@@ -99,7 +102,7 @@ fun PremierDemarrageScreen(
             CarteDouce(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TitreSection("TON ENSEIGNEMENT")
-                    Champ(matiere, { matiere = it }, "Matière enseignée (ex. PCT)", keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next))
+                    ChampChoix("Matière enseignée", matiere, onClick = { choixMatiere = true })
                     Champ(etablissement, { etablissement = it }, "Établissement (facultatif)", keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next))
                     Champ(annee, { annee = it }, "Année scolaire", keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done))
                 }
@@ -132,6 +135,16 @@ fun PremierDemarrageScreen(
             erreurRestauration?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Spacer(Modifier.navigationBarsPadding().height(8.dp))
         }
+    }
+    if (choixMatiere) {
+        ListeChoix(
+            titre = "Matière enseignée",
+            options = MatieresReference.LISTE,
+            selection = matiere,
+            onChoisir = { matiere = it; choixMatiere = false },
+            onFermer = { choixMatiere = false }
+        )
+    }
     }
 }
 

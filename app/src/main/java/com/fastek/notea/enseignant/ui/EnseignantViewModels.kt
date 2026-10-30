@@ -13,10 +13,12 @@ import com.fastek.notea.enseignant.data.entity.NoteEleve
 import com.fastek.notea.enseignant.data.entity.PeriodeClasse
 import com.fastek.notea.enseignant.data.entity.Professeur
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
+import com.fastek.notea.enseignant.domain.ApercuClasse
 import com.fastek.notea.enseignant.domain.ClasseCalculator
 import com.fastek.notea.enseignant.domain.EleveNotes
 import com.fastek.notea.enseignant.domain.ListeElevesParser
 import com.fastek.notea.enseignant.domain.NoteSaisie
+import com.fastek.notea.enseignant.domain.calculerApercu
 import com.fastek.notea.enseignant.domain.ResultatPeriode
 import com.fastek.notea.enseignant.domain.LigneResultat
 import com.fastek.notea.enseignant.export.ClasseurExport
@@ -110,6 +112,14 @@ class EnseignantViewModel(private val repo: EnseignantRepository) : ViewModel() 
     }
 
     fun effectif(classeId: Long): Flow<Int> = repo.observerInscrits(classeId).map { it.size }
+
+    /** Effectif, moyenne de classe et avancement de la saisie d'une classe, mis à jour en direct. */
+    fun apercu(classeId: Long): Flow<ApercuClasse> = combine(
+        repo.observerInscrits(classeId),
+        repo.observerPeriodes(classeId),
+        repo.observerEvaluationsClasse(classeId),
+        repo.observerNotesClasse(classeId)
+    ) { inscrits, periodes, evaluations, notes -> calculerApercu(inscrits, periodes, evaluations, notes) }
 
     suspend fun preparerExport(): ClasseurExport? {
         val professeur = professeurActuel() ?: return null

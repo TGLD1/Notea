@@ -33,4 +33,10 @@ interface NoteEleveDao {
 
     @Insert
     suspend fun insererToutes(notes: List<NoteEleve>)
+
+    @Query(
+        "SELECT n.* FROM note_eleve n INNER JOIN evaluation e ON e.id = n.evaluationId " +
+            "WHERE e.classeId = :classeId"
+    )
+    fun observerNotesClasse(classeId: Long): Flow<List<NoteEleve>>
 }

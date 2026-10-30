@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fastek.notea.data.backup.SauvegardeInvalideException
 import com.fastek.notea.diagnostic.Journal
+import com.fastek.notea.domain.reference.MatieresReference
 import com.fastek.notea.enseignant.data.backup.SauvegardeEnseignant
 import com.fastek.notea.enseignant.data.entity.Professeur
 import com.fastek.notea.ui.parametres.JournalScreen
@@ -97,6 +98,7 @@ fun ProfilScreen(professeur: Professeur, onEnregistrer: (Professeur) -> Unit, on
     var matiere by remember { mutableStateOf(professeur.matiere) }
     var etablissement by remember { mutableStateOf(professeur.etablissement) }
     var annee by remember { mutableStateOf(professeur.anneeScolaire) }
+    var choixMatiere by remember { mutableStateOf(false) }
 
     EcranAvecEntete("Mon profil", onRetour, sousTitre = professeur.matiere) {
         Column(
@@ -113,7 +115,7 @@ fun ProfilScreen(professeur: Professeur, onEnregistrer: (Professeur) -> Unit, on
             CarteDouce(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TitreSection("ENSEIGNEMENT")
-                    Champ(matiere, { matiere = it }, "Matière enseignée")
+                    ChampChoix("Matière enseignée", matiere, onClick = { choixMatiere = true })
                     Champ(etablissement, { etablissement = it }, "Établissement")
                     Champ(annee, { annee = it }, "Année scolaire")
                     Text(
@@ -141,6 +143,16 @@ fun ProfilScreen(professeur: Professeur, onEnregistrer: (Professeur) -> Unit, on
             )
             Spacer(Modifier.navigationBarsPadding().height(8.dp))
         }
+    }
+
+    if (choixMatiere) {
+        ListeChoix(
+            titre = "Matière enseignée",
+            options = (MatieresReference.LISTE + matiere).filter { it.isNotBlank() }.distinct(),
+            selection = matiere,
+            onChoisir = { matiere = it; choixMatiere = false },
+            onFermer = { choixMatiere = false }
+        )
     }
 }
 

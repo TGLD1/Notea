@@ -108,6 +108,10 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
 
     fun observerNotes(periodeId: Long): Flow<List<NoteEleve>> = noteDao.observerNotesPeriode(periodeId)
 
+    fun observerEvaluationsClasse(classeId: Long): Flow<List<Evaluation>> = evaluationDao.observerEvaluationsClasse(classeId)
+
+    fun observerNotesClasse(classeId: Long): Flow<List<NoteEleve>> = noteDao.observerNotesClasse(classeId)
+
     /**
      * Ajoute une évaluation à une période. Retourne son identifiant, ou null si la période
      * compte déjà 2 devoirs.

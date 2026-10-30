@@ -35,12 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.entity.Classe
 import com.fastek.notea.enseignant.data.entity.Professeur
+import com.fastek.notea.enseignant.domain.ApercuClasse
 import kotlinx.coroutines.launch
 
 @Composable
@@ -123,9 +125,11 @@ fun AccueilScreen(
                     }
                     item { TitreSection("MES CLASSES") }
                     items(classes, key = { it.id }) { classe ->
-                        val effectif by remember(classe.id) { vm.effectif(classe.id) }.collectAsState(initial = 0)
+                        val apercu by remember(classe.id) { vm.apercu(classe.id) }
+                            .collectAsState(initial = ApercuClasse.VIDE)
                         CarteClasse(
-                            classe = classe, effectif = effectif,
+                            classe = classe, apercu = apercu,
+                            prefixePeriode = professeur.typeEtablissement.nomPeriode.take(1),
                             onOuvrir = { onOuvrirClasse(classe.id) },
                             onModifier = { edition = classe },
                             onSupprimer = { suppression = classe }
@@ -175,7 +179,8 @@ fun AccueilScreen(
 @Composable
 private fun CarteClasse(
     classe: Classe,
-    effectif: Int,
+    apercu: ApercuClasse,
+    prefixePeriode: String,
     onOuvrir: () -> Unit,
     onModifier: () -> Unit,
     onSupprimer: () -> Unit
@@ -186,18 +191,49 @@ private fun CarteClasse(
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Avatar(initialesClasse(classe.nom), couleur, 52.dp)
             Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(classe.nom, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    pluriel(effectif, "élève") + " · coef. ${classe.coefficient}",
+                    pluriel(apercu.effectif, "élève") + " · coef. ${classe.coefficient}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (apercu.effectif > 0) {
+                    ProgressionFine(
+                        fraction = apercu.elevesNotes.toFloat() / apercu.effectif,
+                        couleur = if (apercu.elevesNotes == apercu.effectif) Couleurs.Succes else couleur
+                    )
+                    Text(
+                        if (apercu.elevesNotes == 0) "Aucune moyenne pour l'instant"
+                        else "${apercu.elevesNotes}/${apercu.effectif} élèves notés",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (apercu.moyenne != null) {
+                val teinte = Couleurs.pourMoyenne(apercu.moyenne)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        Modifier.clip(CircleShape).background(teinte.copy(alpha = 0.14f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            formaterMoyenne(apercu.moyenne), color = teinte,
+                            fontWeight = FontWeight.Bold, fontSize = 16.sp
+                        )
+                    }
+                    Text(
+                        "moy. $prefixePeriode${apercu.numeroPeriode ?: ""}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             Box {
                 Text(
                     "⋮",
-                    modifier = Modifier.clip(CircleShape).clickable { menu = true }.padding(horizontal = 14.dp, vertical = 6.dp),
+                    modifier = Modifier.clip(CircleShape).clickable { menu = true }.padding(horizontal = 12.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
