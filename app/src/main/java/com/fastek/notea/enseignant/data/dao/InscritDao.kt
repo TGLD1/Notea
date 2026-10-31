@@ -33,4 +33,8 @@ interface InscritDao {
 
     @Query("SELECT COUNT(*) FROM inscrit")
     fun observerNombre(): Flow<Int>
+
+    /** Supprime tous les élèves ; leurs notes partent en cascade. */
+    @Query("DELETE FROM inscrit")
+    suspend fun toutSupprimer()
 }

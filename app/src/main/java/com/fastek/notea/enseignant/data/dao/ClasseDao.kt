@@ -33,4 +33,8 @@ interface ClasseDao {
 
     @Insert
     suspend fun insererToutes(classes: List<Classe>)
+
+    /** Supprime toutes les classes ; élèves, notes, cours et rappels partent en cascade. */
+    @Query("DELETE FROM classe")
+    suspend fun toutSupprimer()
 }

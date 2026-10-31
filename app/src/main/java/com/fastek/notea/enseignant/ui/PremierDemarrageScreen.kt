@@ -149,7 +149,7 @@ fun PremierDemarrageScreen(
 }
 
 @Composable
-private fun ChoixType(titre: String, detail: String, choisi: Boolean, onClick: () -> Unit) {
+internal fun ChoixType(titre: String, detail: String, choisi: Boolean, onClick: () -> Unit) {
     val primaire = MaterialTheme.colorScheme.primary
     Surface(
         shape = RoundedCornerShape(16.dp),

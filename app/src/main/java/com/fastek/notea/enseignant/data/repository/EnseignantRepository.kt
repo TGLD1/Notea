@@ -42,6 +42,8 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
 
     fun observerProfesseur(): Flow<Professeur?> = professeurDao.observer()
 
+    suspend fun obtenirProfesseur(): Professeur? = professeurDao.obtenir()
+
     suspend fun creerProfesseur(professeur: Professeur): Long = professeurDao.inserer(professeur)
 
     suspend fun mettreAJourProfesseur(professeur: Professeur) = professeurDao.mettreAJour(professeur)
@@ -185,6 +187,28 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
     suspend fun mettreAJourRappel(rappel: Rappel) = rappelDao.mettreAJour(rappel)
 
     suspend fun supprimerRappel(rappel: Rappel) = rappelDao.supprimer(rappel)
+
+    // --- Nouvelle année scolaire ----------------------------------------------------------------
+
+    /**
+     * Efface les données de l'année écoulée et passe le profil à [nouvelleAnnee].
+     * Avec [garderClasses], les classes (noms, coefficients), l'emploi du temps et les rappels sont conservés ;
+     * seuls les élèves, les évaluations et les notes sont effacés. Sinon tout est effacé sauf le profil.
+     * Retourne les identifiants des rappels supprimés, pour couper leurs alarmes.
+     */
+    suspend fun nouvelleAnnee(professeur: Professeur, nouvelleAnnee: String, garderClasses: Boolean): List<Long> =
+        db.withTransaction {
+            val rappelsSupprimes = if (garderClasses) emptyList() else db.rappelDao().obtenirTous().map { it.id }
+            if (garderClasses) {
+                inscritDao.toutSupprimer()
+                evaluationDao.toutSupprimer()
+                periodeDao.reinitialiserTerminees()
+            } else {
+                classeDao.toutSupprimer()
+            }
+            professeurDao.mettreAJour(professeur.copy(anneeScolaire = nouvelleAnnee))
+            rappelsSupprimes
+        }
 
     // --- Export -----------------------------------------------------------------------------
 

@@ -21,12 +21,23 @@ suspend fun creerFichierExcel(context: Context, export: ClasseurExport): File = 
     }
 }
 
-fun partagerExcel(context: Context, fichier: File) {
-    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", fichier)
+fun partagerExcel(context: Context, fichier: File) = partagerFichier(context, fichier, TYPE_XLSX, "Partager le classeur Excel")
+
+/** Partage un fichier de l'application : il est d'abord copié dans le dossier « exports » du cache, déjà déclaré au FileProvider. */
+fun partagerFichier(context: Context, fichier: File, typeMime: String, titre: String) {
+    val dossier = File(context.cacheDir, "exports").apply { mkdirs() }
+    val copie = File(dossier, fichier.name)
+    if (copie.absolutePath != fichier.absolutePath) fichier.copyTo(copie, overwrite = true)
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", copie)
     val intent = Intent(Intent.ACTION_SEND).apply {
-        type = TYPE_XLSX
+        type = typeMime
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(intent, "Partager le classeur Excel"))
+    context.startActivity(Intent.createChooser(intent, titre))
 }
+
+fun partagerSauvegarde(context: Context, fichier: File) =
+    partagerFichier(context, fichier, "application/json", "Partager la sauvegarde")
+
+fun typeExcel(): String = TYPE_XLSX

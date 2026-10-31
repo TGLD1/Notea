@@ -51,6 +51,8 @@ import java.time.LocalDate
 @Composable
 fun ParametresScreen(
     onProfil: () -> Unit,
+    onAnnee: () -> Unit,
+    onArchives: () -> Unit,
     onSauvegarde: () -> Unit,
     onJournal: () -> Unit,
     onRetour: () -> Unit
@@ -61,6 +63,8 @@ fun ParametresScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             LigneReglage("👤", "Mon profil", "Nom, matière, établissement, année scolaire", onProfil)
+            LigneReglage("🎓", "Nouvelle année scolaire", "Archiver l'année écoulée et repartir à zéro", onAnnee)
+            LigneReglage("📦", "Archives", "Retrouver, partager ou restaurer les années passées", onArchives)
             LigneReglage("💾", "Sauvegarde et restauration", "Garder tes classes et tes notes en sécurité", onSauvegarde)
             LigneReglage("🩺", "Journal de diagnostic", "À partager si un problème survient", onJournal)
             Spacer(Modifier.navigationBarsPadding())
@@ -163,6 +167,18 @@ suspend fun restaurerEnseignantDepuisFichier(context: Context, manager: Sauvegar
         val contenu = withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
         } ?: throw SauvegardeInvalideException("Impossible d'ouvrir le fichier.")
+        restaurerEnseignantDepuisTexte(context, manager, contenu)
+    } catch (e: SauvegardeInvalideException) {
+        Journal.erreur("sauvegarde.restauration", e)
+        e.message
+    } catch (e: Exception) {
+        Journal.erreur("sauvegarde.restauration", e)
+        "Erreur lors de la restauration : ${e.message}"
+    }
+
+/** Remplace les données par celles de la sauvegarde [contenu] et reprogramme les rappels. Null si réussi. */
+suspend fun restaurerEnseignantDepuisTexte(context: Context, manager: SauvegardeEnseignant, contenu: String): String? =
+    try {
         val anciensRappels = manager.idsRappels()
         manager.restaurer(contenu)
         anciensRappels.forEach { RappelScheduler.annuler(context, it) }

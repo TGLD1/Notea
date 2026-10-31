@@ -14,6 +14,7 @@ import com.fastek.notea.data.local.NoteaDatabase
 import com.fastek.notea.data.repository.NoteaRepository
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.EnseignantDatabase
+import com.fastek.notea.enseignant.data.backup.ArchivesEnseignant
 import com.fastek.notea.enseignant.data.backup.SauvegardeEnseignant
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
 import com.fastek.notea.notification.RappelWorker
@@ -36,6 +37,10 @@ class NoteaApplication : Application() {
     val enseignantRepository: EnseignantRepository by lazy { EnseignantRepository(enseignantBase) }
 
     val sauvegardeEnseignant: SauvegardeEnseignant by lazy { SauvegardeEnseignant(enseignantBase) }
+
+    val archivesEnseignant: ArchivesEnseignant by lazy {
+        ArchivesEnseignant(File(filesDir, "archives_enseignant"), sauvegardeEnseignant, enseignantRepository)
+    }
 
     val sauvegarde: SauvegardeManager by lazy { SauvegardeManager(database) }
 

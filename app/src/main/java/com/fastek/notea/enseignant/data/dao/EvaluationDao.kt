@@ -37,4 +37,7 @@ interface EvaluationDao {
 
     @Query("SELECT * FROM evaluation WHERE classeId = :classeId")
     fun observerEvaluationsClasse(classeId: Long): Flow<List<Evaluation>>
+
+    @Query("DELETE FROM evaluation")
+    suspend fun toutSupprimer()
 }

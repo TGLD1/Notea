@@ -124,6 +124,8 @@ private fun Navigation(
         composable("parametres") {
             ParametresScreen(
                 onProfil = { nav.navigate("parametres/profil") },
+                onAnnee = { nav.navigate("parametres/annee") },
+                onArchives = { nav.navigate("parametres/archives") },
                 onSauvegarde = { nav.navigate("parametres/sauvegarde") },
                 onJournal = { nav.navigate("parametres/journal") },
                 onRetour = { nav.popBackStack() }
@@ -135,6 +137,12 @@ private fun Navigation(
                 onEnregistrer = vm::mettreAJourProfesseur,
                 onRetour = { nav.popBackStack() }
             )
+        }
+        composable("parametres/annee") {
+            NouvelleAnneeScreen(professeur = etat.professeur, app = app, onRetour = { nav.popBackStack() })
+        }
+        composable("parametres/archives") {
+            ArchivesScreen(app = app, onRetour = { nav.popBackStack() })
         }
         composable("parametres/sauvegarde") {
             SauvegardeEcran(manager = app.sauvegardeEnseignant, onRetour = { nav.popBackStack() })

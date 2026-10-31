@@ -49,6 +49,27 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
         }.toString(2)
     }
 
+    data class Resume(val anneeScolaire: String, val matiere: String, val classes: Int, val eleves: Int, val notes: Int)
+
+    /** Résumé d'un fichier de sauvegarde (null s'il n'est pas lisible), sans rien modifier. */
+    fun resumer(contenu: String): Resume? = try {
+        val racine = JSONObject(contenu)
+        if (racine.optString("format") != FORMAT) {
+            null
+        } else {
+            val professeur = racine.getJSONArray("professeurs").optJSONObject(0)
+            Resume(
+                anneeScolaire = professeur?.optString("anneeScolaire").orEmpty(),
+                matiere = professeur?.optString("matiere").orEmpty(),
+                classes = racine.getJSONArray("classes").length(),
+                eleves = racine.getJSONArray("inscrits").length(),
+                notes = racine.getJSONArray("notes").length()
+            )
+        }
+    } catch (e: JSONException) {
+        null
+    }
+
     /** Identifiants des rappels actuels : à passer au planificateur pour couper leurs alarmes avant une restauration. */
     suspend fun idsRappels(): List<Long> = db.rappelDao().obtenirTous().map { it.id }
 

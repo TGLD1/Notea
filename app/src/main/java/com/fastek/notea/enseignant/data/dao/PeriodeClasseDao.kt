@@ -29,4 +29,7 @@ interface PeriodeClasseDao {
 
     @Insert
     suspend fun insererToutes(periodes: List<PeriodeClasse>)
+
+    @Query("UPDATE periode_classe SET terminee = 0")
+    suspend fun reinitialiserTerminees()
 }
