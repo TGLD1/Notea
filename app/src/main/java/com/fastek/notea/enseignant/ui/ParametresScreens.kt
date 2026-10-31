@@ -50,6 +50,7 @@ import java.time.LocalDate
 
 @Composable
 fun ParametresScreen(
+    onDon: () -> Unit,
     onProfil: () -> Unit,
     onAnnee: () -> Unit,
     onArchives: () -> Unit,
@@ -62,6 +63,7 @@ fun ParametresScreen(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            LigneReglage("💜", "Soutenir Notea", "Un don volontaire par Mobile Money ou carte", onDon)
             LigneReglage("👤", "Mon profil", "Nom, matière, établissement, année scolaire", onProfil)
             LigneReglage("🎓", "Nouvelle année scolaire", "Archiver l'année écoulée et repartir à zéro", onAnnee)
             LigneReglage("📦", "Archives", "Retrouver, partager ou restaurer les années passées", onArchives)

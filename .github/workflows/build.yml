@@ -35,6 +35,20 @@ jobs:
             echo "::notice::Clé KkiaPay transmise (${#KKIAPAY_PUBLIC_KEY} caractères)."
           fi
 
+      - name: Vérifier la clé FedaPay
+        env:
+          FEDAPAY_PUBLIC_KEY: ${{ secrets.FEDAPAY_SANDBOX_PUBLIC_KEY || secrets.FEDAPAY_PUBLIC_KEY || vars.FEDAPAY_PUBLIC_KEY }}
+        run: |
+          if [ -z "$FEDAPAY_PUBLIC_KEY" ]; then
+            echo "::warning::Clé FedaPay ABSENTE : créer le secret FEDAPAY_PUBLIC_KEY (clé publique live) et, pour les tests, FEDAPAY_SANDBOX_PUBLIC_KEY (clé publique sandbox)."
+          else
+            case "$FEDAPAY_PUBLIC_KEY" in
+              sk_*) echo "::error::Le secret FedaPay contient une clé SECRÈTE (sk_). Mets la clé PUBLIQUE (pk_)." ; exit 1 ;;
+              pk_live_*) echo "::notice::Clé FedaPay LIVE transmise : les dons du APK debug seront de vrais paiements." ;;
+              *) echo "::notice::Clé FedaPay sandbox transmise (paiements de test)." ;;
+            esac
+          fi
+
       - name: Tests unitaires
         run: gradle testDebugUnitTest --no-daemon
         continue-on-error: true
@@ -44,6 +58,7 @@ jobs:
         env:
           KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
           KKIAPAY_SANDBOX: ${{ vars.KKIAPAY_SANDBOX }}
+          FEDAPAY_PUBLIC_KEY: ${{ secrets.FEDAPAY_SANDBOX_PUBLIC_KEY || secrets.FEDAPAY_PUBLIC_KEY || vars.FEDAPAY_PUBLIC_KEY }}
 
       - name: Publier l'APK comme artifact
         uses: actions/upload-artifact@v4

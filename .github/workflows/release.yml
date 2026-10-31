@@ -101,6 +101,7 @@ jobs:
           VERSION_CODE: ${{ steps.version.outputs.code }}
           KKIAPAY_PUBLIC_KEY: ${{ secrets.KKIAPAY_PUBLIC_KEY || vars.KKIAPAY_PUBLIC_KEY }}
           KKIAPAY_SANDBOX: ${{ vars.KKIAPAY_SANDBOX }}
+          FEDAPAY_PUBLIC_KEY: ${{ secrets.FEDAPAY_PUBLIC_KEY || vars.FEDAPAY_PUBLIC_KEY }}
 
       - name: "Vérifier le poids de l'APK (limite de 50 Mo)"
         run: |

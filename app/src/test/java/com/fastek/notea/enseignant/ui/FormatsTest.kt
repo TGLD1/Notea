@@ -50,3 +50,22 @@ class FormatsTest {
         assertEquals("", filtrerNombreBorne("", "5", 23))
     }
 }
+
+class DonTest {
+
+    @Test
+    fun `environnement deduit de la cle publique`() {
+        assertEquals("live", environnementFedaPay("pk_live_abc"))
+        assertEquals("sandbox", environnementFedaPay("pk_sandbox_abc"))
+        assertEquals("sandbox", environnementFedaPay(""))
+    }
+
+    @Test
+    fun `la page de paiement contient la cle le montant et l'environnement`() {
+        val page = pageFedaPay("pk_sandbox_abc", 1500)
+        assertEquals(true, page.contains("public_key: 'pk_sandbox_abc'"))
+        assertEquals(true, page.contains("amount: 1500"))
+        assertEquals(true, page.contains("environment: 'sandbox'"))
+        assertEquals(true, page.contains("cdn.fedapay.com/checkout.js"))
+    }
+}

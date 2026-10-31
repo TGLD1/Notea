@@ -123,6 +123,7 @@ private fun Navigation(
         }
         composable("parametres") {
             ParametresScreen(
+                onDon = { nav.navigate("parametres/don") },
                 onProfil = { nav.navigate("parametres/profil") },
                 onAnnee = { nav.navigate("parametres/annee") },
                 onArchives = { nav.navigate("parametres/archives") },
@@ -137,6 +138,9 @@ private fun Navigation(
                 onEnregistrer = vm::mettreAJourProfesseur,
                 onRetour = { nav.popBackStack() }
             )
+        }
+        composable("parametres/don") {
+            DonScreen(onRetour = { nav.popBackStack() })
         }
         composable("parametres/annee") {
             NouvelleAnneeScreen(professeur = etat.professeur, app = app, onRetour = { nav.popBackStack() })

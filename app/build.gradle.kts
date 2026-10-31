@@ -28,6 +28,17 @@ android {
         val sandboxKkiapay = System.getenv("KKIAPAY_SANDBOX")?.takeIf { it.isNotBlank() } ?: "true"
         buildConfigField("String", "KKIAPAY_PUBLIC_KEY", "\"$cleKkiapay\"")
         buildConfigField("boolean", "KKIAPAY_SANDBOX", sandboxKkiapay)
+
+        // Clé API PUBLIQUE FedaPay (pk_live_… ou pk_sandbox_…) : injectée à la compilation (secret GitHub
+        // FEDAPAY_PUBLIC_KEY ou propriété Gradle fedapayPublicKey). La clé SECRÈTE (sk_…) ne doit jamais
+        // entrer dans l'application : la compilation s'arrête si elle y est mise par erreur.
+        val cleFedapay = (project.findProperty("fedapayPublicKey") as String?)
+            ?: System.getenv("FEDAPAY_PUBLIC_KEY")
+            ?: ""
+        require(!cleFedapay.trim().startsWith("sk_")) {
+            "FEDAPAY_PUBLIC_KEY contient une clé SECRÈTE (sk_…). Utilise la clé PUBLIQUE (pk_…)."
+        }
+        buildConfigField("String", "FEDAPAY_PUBLIC_KEY", "\"${cleFedapay.trim()}\"")
     }
 
     // Signature de production : uniquement si le workflow Release fournit le keystore.
