@@ -66,3 +66,9 @@ fun filtrerNombreBorne(saisi: String, precedent: String, maximum: Int): String {
     if (chiffres.length > 2) return precedent
     return if (chiffres.toInt() > maximum) precedent else chiffres
 }
+
+/** Intitulé court d'une colonne de tableau : « I1 », « I2 », « D1 »… selon le type et le rang dans la période. */
+fun libelleCourtEvaluation(evaluation: Evaluation, toutes: List<Evaluation>): String {
+    val rang = toutes.filter { it.type == evaluation.type }.indexOfFirst { it.id == evaluation.id } + 1
+    return (if (evaluation.type == TypeNote.DEVOIR) "D" else "I") + rang
+}

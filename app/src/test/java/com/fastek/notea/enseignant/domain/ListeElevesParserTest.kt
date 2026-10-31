@@ -43,4 +43,27 @@ class ListeElevesParserTest {
     fun `un seul mot`() {
         assertEquals(listOf(EleveLu("DOSSOU", "")), ListeElevesParser.analyser("DOSSOU"))
     }
+
+    @Test
+    fun `ligne d'en-tete ignoree`() {
+        val liste = ListeElevesParser.analyser("N°;Nom;Prénoms\n1;DOSSOU;Jean\n2;AGBO;Marie")
+        assertEquals(listOf(EleveLu("DOSSOU", "Jean"), EleveLu("AGBO", "Marie")), liste)
+        assertEquals(listOf(EleveLu("DOSSOU", "Jean")), ListeElevesParser.analyser("Nom et Prénoms\nDOSSOU Jean"))
+        assertEquals(listOf(EleveLu("Dossou", "Jean")), ListeElevesParser.analyser("Nom;Prénoms\nDossou;Jean"))
+    }
+
+    @Test
+    fun `premiere colonne numerique numero d'ordre ou matricule`() {
+        val liste = ListeElevesParser.analyser("12;DOSSOU;Jean\n20250123;AGBO;Marie")
+        assertEquals(EleveLu("DOSSOU", "Jean"), liste[0])
+        assertEquals(EleveLu("AGBO", "Marie", "20250123"), liste[1])
+    }
+
+    @Test
+    fun `un eleve nomme comme un mot d'en-tete n'est pas ignore s'il n'est pas seul sur la ligne`() {
+        assertEquals(
+            listOf(EleveLu("DOSSOU", "Jean"), EleveLu("NOM", "Paul")),
+            ListeElevesParser.analyser("DOSSOU Jean\nNOM Paul")
+        )
+    }
 }

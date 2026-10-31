@@ -1,6 +1,8 @@
 package com.fastek.notea.enseignant.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -23,6 +25,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
@@ -39,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,11 +50,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fastek.notea.data.local.entity.TypeNote
@@ -59,6 +66,9 @@ import com.fastek.notea.enseignant.data.entity.Inscrit
 import com.fastek.notea.enseignant.data.entity.NoteEleve
 import com.fastek.notea.enseignant.data.entity.PeriodeClasse
 import com.fastek.notea.enseignant.domain.ListeElevesParser
+import com.fastek.notea.enseignant.importation.ResultatImport
+import com.fastek.notea.enseignant.importation.lireFichierListe
+import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
 private val FORMAT_DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -101,7 +111,7 @@ fun ClasseScreen(vm: ClasseViewModel, onRetour: () -> Unit) {
                 }
             }
             OngletsPilules(
-                titres = listOf("Élèves", "Notes", "Stats"),
+                titres = listOf("Élèves", "Notes", "Tableau", "Stats"),
                 selection = onglet,
                 onChoisir = { onglet = it },
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
@@ -118,6 +128,7 @@ fun ClasseScreen(vm: ClasseViewModel, onRetour: () -> Unit) {
                 when (onglet) {
                     0 -> ElevesTab(inscrits, vm)
                     1 -> NotesTab(evaluations, notes, inscrits.size, vm, onSaisir = { enSaisie = it })
+                    2 -> GrilleTab(inscrits, evaluations, notes, resultats, onSaisir = vm::saisirNote)
                     else -> StatsTab(resultats)
                 }
             }
@@ -149,14 +160,48 @@ private fun ElevesTab(inscrits: List<Inscrit>, vm: ClasseViewModel) {
     var ajout by remember { mutableStateOf(false) }
     var collage by remember { mutableStateOf(false) }
     var edition by remember { mutableStateOf<Inscrit?>(null) }
+    var texteImporte by remember { mutableStateOf("") }
+    var messageImport by remember { mutableStateOf<String?>(null) }
+    val contexte = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val lanceurImport = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                when (val resultat = lireFichierListe(contexte, uri)) {
+                    is ResultatImport.Texte -> {
+                        messageImport = null
+                        texteImporte = resultat.contenu
+                        collage = true
+                    }
+                    is ResultatImport.Erreur -> messageImport = resultat.message
+                }
+            }
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            BoutonPlein("＋  Ajouter", { ajout = true }, Modifier.weight(1f))
-            BoutonContour("Coller une liste", { collage = true }, Modifier.weight(1f))
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                BoutonPlein("＋  Ajouter", { ajout = true }, Modifier.weight(1f))
+                BoutonContour("Coller une liste", { texteImporte = ""; collage = true }, Modifier.weight(1f))
+            }
+            BoutonContour(
+                "Importer un fichier CSV ou Excel",
+                {
+                    messageImport = null
+                    lanceurImport.launch(
+                        arrayOf(
+                            "text/csv", "text/plain",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "application/vnd.ms-excel", "*/*"
+                        )
+                    )
+                },
+                Modifier.fillMaxWidth()
+            )
+            messageImport?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
         }
         if (inscrits.isEmpty()) {
             EtatVide(
@@ -209,6 +254,7 @@ private fun ElevesTab(inscrits: List<Inscrit>, vm: ClasseViewModel) {
     }
     if (collage) {
         CollageDialog(
+            texteInitial = texteImporte,
             onAjouter = { texte -> vm.ajouterListe(texte) { collage = false } },
             onFermer = { collage = false }
         )
@@ -250,11 +296,11 @@ private fun EleveDialog(
 }
 
 @Composable
-private fun CollageDialog(onAjouter: (String) -> Unit, onFermer: () -> Unit) {
-    var texte by remember { mutableStateOf("") }
+private fun CollageDialog(texteInitial: String, onAjouter: (String) -> Unit, onFermer: () -> Unit) {
+    var texte by remember { mutableStateOf(texteInitial) }
     val nombre = remember(texte) { ListeElevesParser.analyser(texte).size }
     Dialogue(
-        titre = "Coller une liste",
+        titre = if (texteInitial.isBlank()) "Coller une liste" else "Liste importée",
         onFermer = onFermer,
         confirmer = { TextButton(enabled = nombre > 0, onClick = { onAjouter(texte) }) { Text("Ajouter") } },
         annuler = { TextButton(onClick = onFermer) { Text("Annuler") } }
@@ -612,4 +658,150 @@ private fun Indicateur(libelle: String, valeur: String, couleur: Color, modifier
             )
         }
     }
+}
+
+// --- Tableau complet des notes ---------------------------------------------------------------------
+
+private val LARGEUR_NOM = 132.dp
+private val LARGEUR_CELLULE = 64.dp
+
+/**
+ * Toutes les notes de la période dans un tableau : une ligne par élève, une colonne par évaluation,
+ * puis la moyenne et le rang. Les notes se corrigent directement dans les cases ; le tableau défile
+ * horizontalement (le nom de l'élève reste visible) et s'enregistre au fil de la frappe.
+ */
+@Composable
+private fun GrilleTab(
+    inscrits: List<Inscrit>,
+    evaluations: List<Evaluation>,
+    notes: List<NoteEleve>,
+    resultats: ResultatsUi,
+    onSaisir: (evaluationId: Long, inscritId: Long, valeur: Double?) -> Unit
+) {
+    if (inscrits.isEmpty() || evaluations.isEmpty()) {
+        EtatVide(
+            "🧮", "Le tableau est vide",
+            "Ajoute des élèves et au moins une évaluation : toutes les notes apparaîtront ici, modifiables d'un coup d'œil."
+        )
+        return
+    }
+    val defilement = rememberScrollState()
+    val focus = LocalFocusManager.current
+    val notesParCase = remember(notes) { notes.associate { (it.evaluationId to it.inscritId) to it.valeur } }
+    val lignesParEleve = remember(resultats) { resultats.lignes.associateBy { it.inscrit.id } }
+    // Texte en cours de frappe : il masque la valeur enregistrée pour ne pas effacer « 12, » pendant qu'on tape « 12,5 ».
+    val saisies = remember(evaluations.map { it.id }) { mutableStateMapOf<Pair<Long, Long>, String>() }
+
+    Column(Modifier.fillMaxSize()) {
+        Text(
+            "I = interrogation · D = devoir · touche une case pour corriger la note",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Élève", Modifier.width(LARGEUR_NOM), style = MaterialTheme.typography.labelMedium)
+            Row(Modifier.weight(1f).horizontalScroll(defilement)) {
+                evaluations.forEach { ev ->
+                    val couleur = if (ev.type == TypeNote.DEVOIR) Couleurs.VioletVif else Couleurs.Cyan
+                    Column(Modifier.width(LARGEUR_CELLULE), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            libelleCourtEvaluation(ev, evaluations), color = couleur,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        Text(
+                            ev.date.format(DateTimeFormatter.ofPattern("dd/MM")),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Text("Moy.", Modifier.width(LARGEUR_CELLULE), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge)
+                Text("Rang", Modifier.width(LARGEUR_CELLULE), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge)
+            }
+        }
+        HorizontalDivider()
+        LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
+            itemsIndexed(inscrits, key = { _, i -> i.id }) { index, inscrit ->
+                val ligne = lignesParEleve[inscrit.id]?.ligne
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(48.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(Modifier.width(LARGEUR_NOM), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "${index + 1}.", Modifier.width(28.dp), style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                        Text(
+                            nomComplet(inscrit), style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Row(Modifier.weight(1f).horizontalScroll(defilement), verticalAlignment = Alignment.CenterVertically) {
+                        evaluations.forEach { ev ->
+                            val cle = ev.id to inscrit.id
+                            val texte = saisies[cle] ?: notesParCase[cle]?.let { formaterNote(it) }.orEmpty()
+                            CelluleNote(
+                                texte = texte,
+                                onChange = { saisi ->
+                                    val propre = filtrerSaisieNote(saisi, texte)
+                                    saisies[cle] = propre
+                                    val v = propre.replace(',', '.').toDoubleOrNull()
+                                    when {
+                                        propre.isEmpty() -> onSaisir(ev.id, inscrit.id, null)
+                                        v != null -> onSaisir(ev.id, inscrit.id, v)
+                                        else -> Unit
+                                    }
+                                },
+                                onSuivant = { focus.moveFocus(FocusDirection.Down) }
+                            )
+                        }
+                        val moyenne = ligne?.moyenne
+                        val teinte = Couleurs.pourMoyenne(moyenne)
+                        Box(Modifier.width(LARGEUR_CELLULE), contentAlignment = Alignment.Center) {
+                            if (moyenne != null) {
+                                Box(
+                                    Modifier.clip(CircleShape).background(teinte.copy(alpha = 0.14f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(formaterMoyenne(moyenne), color = teinte, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                }
+                            } else {
+                                Text("—", color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                        Text(
+                            ligne?.rang?.toString() ?: "—", Modifier.width(LARGEUR_CELLULE),
+                            textAlign = TextAlign.Center, style = MaterialTheme.typography.titleSmall
+                        )
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun CelluleNote(texte: String, onChange: (String) -> Unit, onSuivant: () -> Unit) {
+    val valeur = texte.replace(',', '.').toDoubleOrNull()
+    val couleur = if (valeur != null) Couleurs.pourMoyenne(valeur) else MaterialTheme.colorScheme.onSurfaceVariant
+    BasicTextField(
+        value = texte,
+        onValueChange = onChange,
+        singleLine = true,
+        textStyle = MaterialTheme.typography.titleSmall.copy(textAlign = TextAlign.Center, color = couleur),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(onNext = { onSuivant() }),
+        modifier = Modifier.width(LARGEUR_CELLULE).padding(horizontal = 3.dp).height(36.dp),
+        decorationBox = { champ ->
+            Box(
+                Modifier.fillMaxSize().clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) { champ() }
+        }
+    )
 }

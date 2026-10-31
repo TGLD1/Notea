@@ -15,20 +15,41 @@ object ListeElevesParser {
 
     private val NUMERO_DEBUT = Regex("^\\s*\\d+\\s*[.)\\-:]\\s*")
 
-    fun analyser(texte: String): List<EleveLu> =
-        texte.lineSequence()
+    /** Mots d'une ligne d'en-tête de tableau (« N° ; Nom ; Prénoms ») : cette ligne n'est pas un élève. */
+    private val MOTS_ENTETE = setOf(
+        "n°", "n", "no", "numero", "numéro", "nom", "noms", "prenom", "prénom", "prenoms", "prénoms",
+        "et", "eleve", "élève", "eleves", "élèves", "matricule", "liste", "classe", "sexe"
+    )
+
+    fun analyser(texte: String): List<EleveLu> {
+        val lignes = texte.lineSequence()
             .map { it.replace(NUMERO_DEBUT, "").trim() }
             .filter { it.isNotEmpty() }
-            .mapNotNull { analyserLigne(it) }
             .toList()
+        val utiles = if (lignes.isNotEmpty() && estEntete(lignes.first())) lignes.drop(1) else lignes
+        return utiles.mapNotNull { analyserLigne(it) }
+    }
+
+    private fun estEntete(ligne: String): Boolean {
+        val cellules = ligne.split(';', '\t', ',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+        return cellules.isNotEmpty() && cellules.all { cellule ->
+            cellule.split(' ').filter { it.isNotEmpty() }.all { it in MOTS_ENTETE }
+        }
+    }
 
     private fun analyserLigne(ligne: String): EleveLu? {
         val separateur = listOf(';', '\t', ',').firstOrNull { ligne.contains(it) }
         if (separateur != null) {
-            val parties = ligne.split(separateur).map { it.trim() }
+            val parties = ligne.split(separateur).map { it.trim() }.toMutableList()
+            // Première colonne numérique : numéro d'ordre (3 chiffres au plus) ou matricule (davantage).
+            var matricule = ""
+            if (parties.size >= 2 && parties[0].isNotEmpty() && parties[0].all { it.isDigit() }) {
+                val numero = parties.removeAt(0)
+                if (numero.length > 3) matricule = numero
+            }
             val nom = parties.getOrNull(0).orEmpty()
             if (nom.isEmpty()) return null
-            return EleveLu(nom, parties.getOrNull(1).orEmpty(), parties.getOrNull(2).orEmpty())
+            return EleveLu(nom, parties.getOrNull(1).orEmpty(), parties.getOrNull(2).orEmpty().ifEmpty { matricule })
         }
         val mots = ligne.split(Regex("\\s+")).filter { it.isNotEmpty() }
         if (mots.isEmpty()) return null

@@ -51,6 +51,21 @@ class FormatsTest {
     }
 }
 
+class LibellesTest {
+
+    private fun evaluation(id: Long, type: com.fastek.notea.data.local.entity.TypeNote) = com.fastek.notea.enseignant.data.entity.Evaluation(
+        id = id, classeId = 1, periodeId = 1, type = type, date = java.time.LocalDate.of(2026, 10, 1)
+    )
+
+    @Test
+    fun `intitules courts des colonnes du tableau`() {
+        val interro = com.fastek.notea.data.local.entity.TypeNote.INTERROGATION
+        val devoir = com.fastek.notea.data.local.entity.TypeNote.DEVOIR
+        val toutes = listOf(evaluation(1, interro), evaluation(2, devoir), evaluation(3, interro), evaluation(4, devoir))
+        assertEquals(listOf("I1", "D1", "I2", "D2"), toutes.map { libelleCourtEvaluation(it, toutes) })
+    }
+}
+
 class DonTest {
 
     @Test
