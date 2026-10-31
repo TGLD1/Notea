@@ -58,3 +58,11 @@ fun filtrerSaisieNote(saisi: String, precedent: String): String {
     val valeur = (entiere + if ('.' in normal) ".$decimale" else "").toDoubleOrNull() ?: return precedent
     return if (valeur > 20.0) precedent else propre
 }
+
+/** Saisie d'un nombre entier à 2 chiffres au plus, jamais supérieur à [maximum] (heures : 23, minutes : 59). */
+fun filtrerNombreBorne(saisi: String, precedent: String, maximum: Int): String {
+    val chiffres = saisi.filter { it.isDigit() }
+    if (chiffres.isEmpty()) return ""
+    if (chiffres.length > 2) return precedent
+    return if (chiffres.toInt() > maximum) precedent else chiffres
+}

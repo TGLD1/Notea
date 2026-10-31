@@ -4,11 +4,13 @@ import androidx.room.withTransaction
 import com.fastek.notea.data.local.entity.TypeNote
 import com.fastek.notea.enseignant.data.EnseignantDatabase
 import com.fastek.notea.enseignant.data.entity.Classe
+import com.fastek.notea.enseignant.data.entity.Creneau
 import com.fastek.notea.enseignant.data.entity.Evaluation
 import com.fastek.notea.enseignant.data.entity.Inscrit
 import com.fastek.notea.enseignant.data.entity.NoteEleve
 import com.fastek.notea.enseignant.data.entity.PeriodeClasse
 import com.fastek.notea.enseignant.data.entity.Professeur
+import com.fastek.notea.enseignant.data.entity.Rappel
 import com.fastek.notea.enseignant.domain.EleveLu
 import com.fastek.notea.enseignant.export.ClasseExport
 import com.fastek.notea.enseignant.export.ClasseurExport
@@ -33,6 +35,8 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
     private val periodeDao = db.periodeClasseDao()
     private val evaluationDao = db.evaluationDao()
     private val noteDao = db.noteEleveDao()
+    private val creneauDao = db.creneauDao()
+    private val rappelDao = db.rappelDao()
 
     // --- Profil -----------------------------------------------------------------------------
 
@@ -150,6 +154,37 @@ class EnseignantRepository(private val db: EnseignantDatabase) {
         noteDao.enregistrer(NoteEleve(evaluationId = evaluationId, inscritId = inscritId, valeur = valeur))
         return true
     }
+
+    // --- Emploi du temps et rappels -----------------------------------------------------------
+
+    fun observerCreneaux(): Flow<List<Creneau>> = creneauDao.observerTous()
+
+    fun observerRappels(): Flow<List<Rappel>> = rappelDao.observerTous()
+
+    suspend fun obtenirCreneaux(): List<Creneau> = creneauDao.obtenirTous()
+
+    suspend fun obtenirCreneau(id: Long): Creneau? = creneauDao.obtenir(id)
+
+    suspend fun creerCreneau(creneau: Creneau): Long = creneauDao.inserer(creneau)
+
+    suspend fun mettreAJourCreneau(creneau: Creneau) = creneauDao.mettreAJour(creneau)
+
+    /** Supprime le cours et ses rappels ; retourne les identifiants des rappels supprimés (pour couper leurs alarmes). */
+    suspend fun supprimerCreneau(creneau: Creneau): List<Long> = db.withTransaction {
+        val ids = rappelDao.obtenirDuCreneau(creneau.id).map { it.id }
+        creneauDao.supprimer(creneau)
+        ids
+    }
+
+    suspend fun rappelsDuCreneau(creneauId: Long): List<Rappel> = rappelDao.obtenirDuCreneau(creneauId)
+
+    suspend fun obtenirRappel(id: Long): Rappel? = rappelDao.obtenir(id)
+
+    suspend fun creerRappel(rappel: Rappel): Long = rappelDao.inserer(rappel)
+
+    suspend fun mettreAJourRappel(rappel: Rappel) = rappelDao.mettreAJour(rappel)
+
+    suspend fun supprimerRappel(rappel: Rappel) = rappelDao.supprimer(rappel)
 
     // --- Export -----------------------------------------------------------------------------
 

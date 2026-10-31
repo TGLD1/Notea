@@ -1,5 +1,6 @@
 package com.fastek.notea.enseignant.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.entity.Classe
+import com.fastek.notea.enseignant.data.entity.Creneau
 import com.fastek.notea.enseignant.data.entity.Evaluation
 import com.fastek.notea.enseignant.data.entity.Inscrit
 import com.fastek.notea.enseignant.data.entity.NoteEleve
@@ -55,6 +57,9 @@ class EnseignantViewModel(private val repo: EnseignantRepository) : ViewModel() 
         .flatMapLatest { e ->
             if (e is EtatProfesseur.Present) repo.observerClasses(e.professeur.id) else flowOf(emptyList())
         }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val creneaux: StateFlow<List<Creneau>> = repo.observerCreneaux()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val totalEleves: StateFlow<Int> = repo.observerNombreEleves()
@@ -234,12 +239,15 @@ class ClasseViewModel(private val repo: EnseignantRepository, private val classe
 
 class EnseignantViewModelFactory(
     private val repo: EnseignantRepository,
-    private val classeId: Long = 0
+    private val classeId: Long = 0,
+    private val contexte: Context? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
         modelClass.isAssignableFrom(EnseignantViewModel::class.java) -> EnseignantViewModel(repo) as T
         modelClass.isAssignableFrom(ClasseViewModel::class.java) -> ClasseViewModel(repo, classeId) as T
+        modelClass.isAssignableFrom(EmploiViewModel::class.java) ->
+            EmploiViewModel(repo, requireNotNull(contexte).applicationContext) as T
         else -> throw IllegalArgumentException("ViewModel inconnu : ${modelClass.name}")
     }
 }

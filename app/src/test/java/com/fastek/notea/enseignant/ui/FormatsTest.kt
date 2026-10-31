@@ -38,4 +38,15 @@ class FormatsTest {
         assertEquals("10,33", formaterMoyenne(10.3333))
         assertEquals("—", formaterMoyenne(null))
     }
+
+    @Test
+    fun `heures et minutes bornees`() {
+        assertEquals("2", filtrerNombreBorne("2", "", 23))
+        assertEquals("2", filtrerNombreBorne("25", "2", 23))
+        assertEquals("23", filtrerNombreBorne("23", "2", 23))
+        assertEquals("5", filtrerNombreBorne("5", "", 59))
+        assertEquals("12", filtrerNombreBorne("123", "12", 59))
+        assertEquals("", filtrerNombreBorne("a", "", 23))
+        assertEquals("", filtrerNombreBorne("", "5", 23))
+    }
 }

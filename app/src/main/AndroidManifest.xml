@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Rappels de cours à l'heure près, et reprogrammation après un redémarrage -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Uniquement pour le don en ligne (KkiaPay) : le reste de l'application fonctionne hors ligne. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -25,6 +28,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".enseignant.rappel.RappelReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".enseignant.rappel.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Écran élève de Notea, conservé le temps de la migration vers la version enseignant -->
         <activity

@@ -41,20 +41,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.entity.Classe
+import com.fastek.notea.enseignant.data.entity.Creneau
 import com.fastek.notea.enseignant.data.entity.Professeur
 import com.fastek.notea.enseignant.domain.ApercuClasse
+import com.fastek.notea.enseignant.domain.EmploiDuTemps
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @Composable
 fun AccueilScreen(
     vm: EnseignantViewModel,
     professeur: Professeur,
     onOuvrirClasse: (Long) -> Unit,
-    onParametres: () -> Unit
+    onParametres: () -> Unit,
+    onEmploiDuTemps: () -> Unit
 ) {
     val classes by vm.classes.collectAsState()
     val totalEleves by vm.totalEleves.collectAsState()
     val erreurVm by vm.erreur.collectAsState()
+    val creneaux by vm.creneaux.collectAsState()
     val contexte = LocalContext.current
     val scope = rememberCoroutineScope()
     var creation by remember { mutableStateOf(false) }
@@ -123,6 +128,7 @@ fun AccueilScreen(
                     item {
                         BoutonPlein("＋  Nouvelle classe", onClick = ::ouvrirCreation, modifier = Modifier.fillMaxWidth())
                     }
+                    item { CarteEmploiDuTemps(creneaux, classes.associate { it.id to it.nom }, onEmploiDuTemps) }
                     item { TitreSection("MES CLASSES") }
                     items(classes, key = { it.id }) { classe ->
                         val apercu by remember(classe.id) { vm.apercu(classe.id) }
@@ -242,6 +248,35 @@ private fun CarteClasse(
                     DropdownMenuItem(text = { Text("Supprimer") }, onClick = { menu = false; onSupprimer() })
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CarteEmploiDuTemps(creneaux: List<Creneau>, noms: Map<Long, String>, onOuvrir: () -> Unit) {
+    val prochain = remember(creneaux) { EmploiDuTemps.prochainCours(creneaux, LocalDateTime.now()) }
+    val detail = when {
+        creneaux.isEmpty() -> "Ajoute tes cours et tes rappels de cours."
+        prochain == null -> pluriel(creneaux.size, "cours") + " par semaine"
+        prochain.enCours ->
+            "En cours : ${noms[prochain.creneau.classeId] ?: "cours"} · jusqu'à ${EmploiDuTemps.heure(prochain.creneau.fin)}"
+        else ->
+            "Prochain : ${noms[prochain.creneau.classeId] ?: "cours"} · " +
+                "${EmploiDuTemps.JOURS_COURTS[prochain.creneau.jour - 1]} ${EmploiDuTemps.heure(prochain.creneau.debut)}"
+    }
+    CarteDouce(Modifier.fillMaxWidth(), onClick = onOuvrir) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer).padding(12.dp)
+            ) { Text("📅", fontSize = 22.sp) }
+            Column(Modifier.padding(start = 14.dp).weight(1f)) {
+                Text("Emploi du temps", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    detail, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.outline)
         }
     }
 }

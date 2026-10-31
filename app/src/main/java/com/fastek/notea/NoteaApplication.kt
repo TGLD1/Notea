@@ -28,7 +28,9 @@ class NoteaApplication : Application() {
     }
 
     val enseignantBase: EnseignantDatabase by lazy {
-        Room.databaseBuilder(this, EnseignantDatabase::class.java, EnseignantDatabase.NOM_BASE).build()
+        Room.databaseBuilder(this, EnseignantDatabase::class.java, EnseignantDatabase.NOM_BASE)
+            .addMigrations(EnseignantDatabase.MIGRATION_1_2)
+            .build()
     }
 
     val enseignantRepository: EnseignantRepository by lazy { EnseignantRepository(enseignantBase) }

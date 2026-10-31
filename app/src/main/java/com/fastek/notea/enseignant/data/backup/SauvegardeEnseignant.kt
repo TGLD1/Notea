@@ -6,11 +6,13 @@ import com.fastek.notea.data.local.entity.TypeEtablissement
 import com.fastek.notea.data.local.entity.TypeNote
 import com.fastek.notea.enseignant.data.EnseignantDatabase
 import com.fastek.notea.enseignant.data.entity.Classe
+import com.fastek.notea.enseignant.data.entity.Creneau
 import com.fastek.notea.enseignant.data.entity.Evaluation
 import com.fastek.notea.enseignant.data.entity.Inscrit
 import com.fastek.notea.enseignant.data.entity.NoteEleve
 import com.fastek.notea.enseignant.data.entity.PeriodeClasse
 import com.fastek.notea.enseignant.data.entity.Professeur
+import com.fastek.notea.enseignant.data.entity.Rappel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -30,6 +32,8 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
         val inscrits = db.inscritDao().obtenirTous()
         val evaluations = db.evaluationDao().obtenirToutes()
         val notes = db.noteEleveDao().obtenirToutes()
+        val creneaux = db.creneauDao().obtenirTous()
+        val rappels = db.rappelDao().obtenirTous()
         return JSONObject().apply {
             put("format", FORMAT)
             put("version", VERSION_FORMAT)
@@ -40,8 +44,13 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
             put("inscrits", JSONArray().apply { inscrits.forEach { put(versJson(it)) } })
             put("evaluations", JSONArray().apply { evaluations.forEach { put(versJson(it)) } })
             put("notes", JSONArray().apply { notes.forEach { put(versJson(it)) } })
+            put("creneaux", JSONArray().apply { creneaux.forEach { put(versJson(it)) } })
+            put("rappels", JSONArray().apply { rappels.forEach { put(versJson(it)) } })
         }.toString(2)
     }
+
+    /** Identifiants des rappels actuels : à passer au planificateur pour couper leurs alarmes avant une restauration. */
+    suspend fun idsRappels(): List<Long> = db.rappelDao().obtenirTous().map { it.id }
 
     /** Remplace toutes les données par celles du fichier. Lève [SauvegardeInvalideException] si invalide. */
     suspend fun restaurer(contenu: String) {
@@ -54,6 +63,8 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
             db.inscritDao().insererTous(d.inscrits)
             db.evaluationDao().insererToutes(d.evaluations)
             db.noteEleveDao().insererToutes(d.notes)
+            db.creneauDao().insererTous(d.creneaux)
+            db.rappelDao().insererTous(d.rappels)
         }
     }
 
@@ -63,7 +74,9 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
         val periodes: List<PeriodeClasse>,
         val inscrits: List<Inscrit>,
         val evaluations: List<Evaluation>,
-        val notes: List<NoteEleve>
+        val notes: List<NoteEleve>,
+        val creneaux: List<Creneau>,
+        val rappels: List<Rappel>
     )
 
     private fun lire(contenu: String): Donnees {
@@ -83,20 +96,26 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
             val inscrits = racine.getJSONArray("inscrits").objets().map { inscritDepuis(it) }
             val evaluations = racine.getJSONArray("evaluations").objets().map { evaluationDepuis(it) }
             val notes = racine.getJSONArray("notes").objets().map { noteDepuis(it) }
+            // Les sauvegardes de la version 1 n'ont ni cours ni rappels.
+            val creneaux = racine.optJSONArray("creneaux")?.objets()?.map { creneauDepuis(it) }.orEmpty()
+            val rappels = racine.optJSONArray("rappels")?.objets()?.map { rappelDepuis(it) }.orEmpty()
 
             val idProfesseurs = professeurs.map { it.id }.toSet()
             val idClasses = classes.map { it.id }.toSet()
             val idPeriodes = periodes.map { it.id }.toSet()
             val idInscrits = inscrits.map { it.id }.toSet()
             val idEvaluations = evaluations.map { it.id }.toSet()
+            val idCreneaux = creneaux.map { it.id }.toSet()
             val coherent = classes.all { it.professeurId in idProfesseurs } &&
                 periodes.all { it.classeId in idClasses } &&
                 inscrits.all { it.classeId in idClasses } &&
                 evaluations.all { it.classeId in idClasses && it.periodeId in idPeriodes } &&
-                notes.all { it.evaluationId in idEvaluations && it.inscritId in idInscrits }
+                notes.all { it.evaluationId in idEvaluations && it.inscritId in idInscrits } &&
+                creneaux.all { it.classeId in idClasses } &&
+                rappels.all { it.creneauId in idCreneaux }
             if (!coherent) throw SauvegardeInvalideException("La sauvegarde est incohérente ou endommagée.")
 
-            return Donnees(professeurs, classes, periodes, inscrits, evaluations, notes)
+            return Donnees(professeurs, classes, periodes, inscrits, evaluations, notes, creneaux, rappels)
         } catch (e: SauvegardeInvalideException) {
             throw e
         } catch (e: JSONException) {
@@ -186,8 +205,37 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
         valeur = o.getDouble("valeur")
     )
 
+    private fun versJson(c: Creneau) = JSONObject().apply {
+        put("id", c.id); put("classeId", c.classeId); put("jour", c.jour)
+        put("debut", c.debut); put("fin", c.fin); put("salle", c.salle)
+    }
+
+    private fun creneauDepuis(o: JSONObject) = Creneau(
+        id = o.getLong("id"),
+        classeId = o.getLong("classeId"),
+        jour = o.getInt("jour"),
+        debut = o.getInt("debut"),
+        fin = o.getInt("fin"),
+        salle = o.optString("salle", "")
+    )
+
+    private fun versJson(r: Rappel) = JSONObject().apply {
+        put("id", r.id); put("creneauId", r.creneauId); put("texte", r.texte); put("minutes", r.minutes)
+        put("sonore", r.sonore); put("hebdomadaire", r.hebdomadaire); put("actif", r.actif)
+    }
+
+    private fun rappelDepuis(o: JSONObject) = Rappel(
+        id = o.getLong("id"),
+        creneauId = o.getLong("creneauId"),
+        texte = o.getString("texte"),
+        minutes = o.getInt("minutes"),
+        sonore = o.getBoolean("sonore"),
+        hebdomadaire = o.getBoolean("hebdomadaire"),
+        actif = o.getBoolean("actif")
+    )
+
     companion object {
         const val FORMAT = "notea-enseignant-sauvegarde"
-        const val VERSION_FORMAT = 1
+        const val VERSION_FORMAT = 2
     }
 }

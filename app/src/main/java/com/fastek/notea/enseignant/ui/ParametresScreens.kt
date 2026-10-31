@@ -41,6 +41,7 @@ import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.domain.reference.MatieresReference
 import com.fastek.notea.enseignant.data.backup.SauvegardeEnseignant
 import com.fastek.notea.enseignant.data.entity.Professeur
+import com.fastek.notea.enseignant.rappel.RappelScheduler
 import com.fastek.notea.ui.parametres.JournalScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -162,7 +163,10 @@ suspend fun restaurerEnseignantDepuisFichier(context: Context, manager: Sauvegar
         val contenu = withContext(Dispatchers.IO) {
             context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
         } ?: throw SauvegardeInvalideException("Impossible d'ouvrir le fichier.")
+        val anciensRappels = manager.idsRappels()
         manager.restaurer(contenu)
+        anciensRappels.forEach { RappelScheduler.annuler(context, it) }
+        RappelScheduler.replanifierTout(context)
         Journal.ok("sauvegarde.restauration")
         null
     } catch (e: SauvegardeInvalideException) {

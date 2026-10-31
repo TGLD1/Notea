@@ -31,7 +31,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.fastek.notea.NoteaApplication
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
+import com.fastek.notea.enseignant.rappel.RappelScheduler
 import com.fastek.notea.ui.intro.SplashFastek
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EnseignantActivity : AppCompatActivity() {
@@ -44,6 +47,10 @@ class EnseignantActivity : AppCompatActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
         val app = application as NoteaApplication
+        // Reprogramme les rappels de cours (l'autorisation des alarmes précises a pu changer depuis).
+        CoroutineScope(Dispatchers.IO).launch {
+            runCatching { RappelScheduler.replanifierTout(applicationContext) }
+        }
         setContent {
             val sombre = isSystemInDarkTheme()
             SideEffect {
@@ -106,8 +113,13 @@ private fun Navigation(
                 vm = vm,
                 professeur = etat.professeur,
                 onOuvrirClasse = { id -> nav.navigate("classe/$id") },
-                onParametres = { nav.navigate("parametres") }
+                onParametres = { nav.navigate("parametres") },
+                onEmploiDuTemps = { nav.navigate("emploi-du-temps") }
             )
+        }
+        composable("emploi-du-temps") {
+            val emploiVm: EmploiViewModel = viewModel(key = "emploi", factory = EnseignantViewModelFactory(repo, contexte = app))
+            EmploiDuTempsScreen(vm = emploiVm, onRetour = { nav.popBackStack() })
         }
         composable("parametres") {
             ParametresScreen(
