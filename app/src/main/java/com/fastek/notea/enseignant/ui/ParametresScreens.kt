@@ -49,26 +49,28 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 @Composable
-fun ParametresScreen(
-    onDon: () -> Unit,
-    onProfil: () -> Unit,
-    onAnnee: () -> Unit,
-    onArchives: () -> Unit,
-    onSauvegarde: () -> Unit,
-    onJournal: () -> Unit,
-    onRetour: () -> Unit
-) {
-    EcranAvecEntete("Réglages", onRetour, sousTitre = "Ton profil et tes données") {
+fun ParametresScreen(onNaviguer: (String) -> Unit, onRetour: () -> Unit) {
+    EcranAvecEntete("Réglages", onRetour, sousTitre = "Ton profil, tes données et l'aide") {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            LigneReglage("💜", "Soutenir Notea", "Un don volontaire par Mobile Money ou carte", onDon)
-            LigneReglage("👤", "Mon profil", "Nom, matière, établissement, année scolaire", onProfil)
-            LigneReglage("🎓", "Nouvelle année scolaire", "Archiver l'année écoulée et repartir à zéro", onAnnee)
-            LigneReglage("📦", "Archives", "Retrouver, partager ou restaurer les années passées", onArchives)
-            LigneReglage("💾", "Sauvegarde et restauration", "Garder tes classes et tes notes en sécurité", onSauvegarde)
-            LigneReglage("🩺", "Journal de diagnostic", "À partager si un problème survient", onJournal)
+            TitreSection("MES DONNÉES")
+            LigneReglage("👤", "Mon profil", "Nom, matière, établissement, année scolaire") { onNaviguer("parametres/profil") }
+            LigneReglage("🎓", "Nouvelle année scolaire", "Archiver l'année écoulée et repartir à zéro") { onNaviguer("parametres/annee") }
+            LigneReglage("📦", "Archives", "Retrouver, partager ou restaurer les années passées") { onNaviguer("parametres/archives") }
+            LigneReglage("💾", "Sauvegarde et restauration", "Garder tes classes et tes notes en sécurité") { onNaviguer("parametres/sauvegarde") }
+
+            TitreSection("AIDE ET INFORMATIONS", Modifier.padding(top = 8.dp))
+            LigneReglage("🧮", "Comment sont calculées les moyennes", "Les règles de calcul, le rang, la moyenne annuelle") { onNaviguer("parametres/texte/calcul") }
+            LigneReglage("ℹ️", "À propos", "Notea Enseignant et FASTEK") { onNaviguer("parametres/texte/apropos") }
+            LigneReglage("🔒", "Confidentialité", "Où sont tes données et celles de tes élèves") { onNaviguer("parametres/texte/confidentialite") }
+            LigneReglage("📜", "Conditions d'utilisation", "Ce que tu acceptes en utilisant l'application") { onNaviguer("parametres/texte/conditions") }
+            LigneReglage("✉️", "Nous contacter", "Une question, une idée, un problème") { onNaviguer("parametres/contact") }
+
+            TitreSection("SOUTIEN", Modifier.padding(top = 8.dp))
+            LigneReglage("💜", "Soutenir Notea", "Un don volontaire par Mobile Money ou carte") { onNaviguer("parametres/don") }
+            LigneReglage("🩺", "Journal de diagnostic", "À partager si un problème survient") { onNaviguer("parametres/journal") }
             Spacer(Modifier.navigationBarsPadding())
         }
     }

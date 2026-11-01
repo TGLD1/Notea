@@ -123,14 +123,15 @@ private fun Navigation(
         }
         composable("parametres") {
             ParametresScreen(
-                onDon = { nav.navigate("parametres/don") },
-                onProfil = { nav.navigate("parametres/profil") },
-                onAnnee = { nav.navigate("parametres/annee") },
-                onArchives = { nav.navigate("parametres/archives") },
-                onSauvegarde = { nav.navigate("parametres/sauvegarde") },
-                onJournal = { nav.navigate("parametres/journal") },
+                onNaviguer = { route -> nav.navigate(route) },
                 onRetour = { nav.popBackStack() }
             )
+        }
+        composable("parametres/texte/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { entree ->
+            PageTexteScreen(identifiant = entree.arguments?.getString("id").orEmpty(), onRetour = { nav.popBackStack() })
+        }
+        composable("parametres/contact") {
+            ContactScreen(onJournal = { nav.navigate("parametres/journal") }, onRetour = { nav.popBackStack() })
         }
         composable("parametres/profil") {
             ProfilScreen(
