@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.fastek.notea.NoteaApplication
-import com.fastek.notea.data.backup.ArchiveManager
 import com.fastek.notea.diagnostic.Journal
 import com.fastek.notea.enseignant.data.backup.ArchivesEnseignant
 import com.fastek.notea.enseignant.data.entity.Professeur
 import com.fastek.notea.enseignant.data.repository.EnseignantRepository
+import com.fastek.notea.enseignant.domain.AnneeScolaire
 import com.fastek.notea.enseignant.rappel.RappelScheduler
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -51,7 +51,7 @@ suspend fun passerALaNouvelleAnnee(
 ): String? = try {
     val professeur = repo.obtenirProfesseur() ?: throw IllegalStateException("Profil introuvable.")
     archives.archiver(professeur)
-    val suivante = ArchiveManager.anneeSuivante(professeur.anneeScolaire)
+    val suivante = AnneeScolaire.suivante(professeur.anneeScolaire)
     val rappelsSupprimes = repo.nouvelleAnnee(professeur, suivante, garderClasses)
     rappelsSupprimes.forEach { RappelScheduler.annuler(context, it) }
     Journal.ok("annee.nouvelle", suivante)
@@ -65,7 +65,7 @@ suspend fun passerALaNouvelleAnnee(
 fun NouvelleAnneeScreen(professeur: Professeur, app: NoteaApplication, onRetour: () -> Unit) {
     val contexte = LocalContext.current
     val scope = rememberCoroutineScope()
-    val suivante = remember(professeur.anneeScolaire) { ArchiveManager.anneeSuivante(professeur.anneeScolaire) }
+    val suivante = remember(professeur.anneeScolaire) { AnneeScolaire.suivante(professeur.anneeScolaire) }
     var garderClasses by remember { mutableStateOf(true) }
     var confirmation by remember { mutableStateOf(false) }
     var enCours by remember { mutableStateOf(false) }

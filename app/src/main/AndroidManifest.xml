@@ -6,7 +6,7 @@
     <!-- Rappels de cours à l'heure près, et reprogrammation après un redémarrage -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- Uniquement pour le don en ligne (KkiaPay) : le reste de l'application fonctionne hors ligne. -->
+    <!-- Uniquement pour le don en ligne (FedaPay) : le reste de l'application fonctionne hors ligne. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -43,12 +43,6 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
-
-        <!-- Écran élève de Notea, conservé le temps de la migration vers la version enseignant -->
-        <activity
-            android:name=".ui.MainActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Notea.Splash" />
 
         <!-- Partage des classeurs Excel et des fichiers exportés (WhatsApp, e-mail, Drive...) -->
         <provider

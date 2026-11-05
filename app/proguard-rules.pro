@@ -1,15 +1,10 @@
-# Règles ProGuard/R8 spécifiques à Notea.
+# Paiement FedaPay : le formulaire de paiement appelle ces méthodes depuis JavaScript ;
+# sans cette règle la réduction du code les renomme et le résultat du paiement n'arrive plus.
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class com.fastek.notea.enseignant.ui.PontFedaPay { *; }
 
-# SDK de paiement KkiaPay (réflexion et classes sérialisées)
--keep class co.opensi.kkiapay.** { *; }
--dontwarn co.opensi.kkiapay.**
-
-# Dépendances du SDK KkiaPay (réseau, sérialisation) : pas d'avertissement bloquant à la réduction.
--dontwarn okhttp3.**
--dontwarn okio.**
--dontwarn retrofit2.**
--dontwarn com.google.gson.**
--dontwarn javax.annotation.**
 -keepattributes Signature, *Annotation*, InnerClasses, EnclosingMethod
 
 # Fichier de correspondance lisible pour les rapports de plantage.

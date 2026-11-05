@@ -1,6 +1,6 @@
 package com.fastek.notea.enseignant.data.backup
 
-import com.fastek.notea.data.backup.ArchiveManager
+import com.fastek.notea.enseignant.domain.AnneeScolaire
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -15,8 +15,8 @@ class ArchivesEnseignantTest {
 
     @Test
     fun `annee suivante`() {
-        assertEquals("2027-2028", ArchiveManager.anneeSuivante("2026-2027"))
-        assertEquals("2027/2028", ArchiveManager.anneeSuivante("2026/2027"))
-        assertEquals("annee inconnue", ArchiveManager.anneeSuivante("annee inconnue"))
+        assertEquals("2027-2028", AnneeScolaire.suivante("2026-2027"))
+        assertEquals("2027/2028", AnneeScolaire.suivante("2026/2027"))
+        assertEquals("annee inconnue", AnneeScolaire.suivante("annee inconnue"))
     }
 }
