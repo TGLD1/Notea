@@ -3,6 +3,7 @@ package com.fastek.notea.enseignant.ui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,8 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.fastek.notea.R
 
 /** Page d'information : une carte par rubrique. */
 @Composable
@@ -37,6 +41,16 @@ fun PageTexteScreen(identifiant: String, onRetour: () -> Unit) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (identifiant == "apropos") {
+                CarteDouce(Modifier.fillMaxWidth()) {
+                    Image(
+                        painter = painterResource(R.drawable.logo_fastek),
+                        contentDescription = "FASTEK",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth().padding(20.dp)
+                    )
+                }
+            }
             page.sections.forEach { section ->
                 CarteDouce(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -88,7 +102,7 @@ fun ContactScreen(onJournal: () -> Unit, onRetour: () -> Unit) {
                 onClick = {
                     ouvrir(
                         Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${TextesEnseignant.EMAIL}"))
-                            .putExtra(Intent.EXTRA_SUBJECT, "Notea Enseignant"),
+                            .putExtra(Intent.EXTRA_SUBJECT, "NoteaTrick"),
                         "Aucune application d'e-mail trouvée. Écris à ${TextesEnseignant.EMAIL}."
                     )
                 }

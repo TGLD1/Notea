@@ -3,9 +3,9 @@
     <!-- Thème de l'application après l'écran de démarrage. -->
     <style name="Theme.Notea" parent="Theme.AppCompat.Light.NoActionBar" />
 
-    <!-- Écran de démarrage : fond violet FASTEK + logo Notea. -->
+    <!-- Écran de démarrage : fond blanc + emblème FASTEK. -->
     <style name="Theme.Notea.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/marque_violet</item>
+        <item name="windowSplashScreenBackground">@color/splash_fond</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.Notea</item>
     </style>

@@ -57,7 +57,7 @@ internal fun pageFedaPay(clePublique: String, montant: Int): String = """
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  html, body { margin: 0; height: 100%; background: #F4F2FC; color: #4A4660;
+  html, body { margin: 0; height: 100%; background: #F3F6FC; color: #475069;
     font-family: sans-serif; display: flex; align-items: center; justify-content: center; text-align: center; }
 </style>
 <script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
@@ -73,7 +73,7 @@ internal fun pageFedaPay(clePublique: String, montant: Int): String = """
         locale: 'fr',
         transaction: {
           amount: $montant,
-          description: 'Don à FASTEK pour Notea Enseignant',
+          description: 'Don à FASTEK pour NoteaTrick',
           custom_metadata: { app: 'notea-enseignant', type: 'don' }
         },
         onComplete: function (resp) {
@@ -157,16 +157,16 @@ fun DonScreen(onRetour: () -> Unit) {
     val montantValide = montant in MONTANT_MINIMUM..MONTANT_MAXIMUM
     val configure = BuildConfig.FEDAPAY_PUBLIC_KEY.isNotBlank()
 
-    EcranAvecEntete("Soutenir Notea", onRetour, sousTitre = "Un don volontaire, quand tu veux") {
+    EcranAvecEntete("Soutenir NoteaTrick", onRetour, sousTitre = "Un don volontaire, quand tu veux") {
         Column(
             Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             CarteDouce(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("💜  Notea reste gratuit", style = MaterialTheme.typography.titleMedium)
+                    Text("💜  NoteaTrick reste gratuit", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Notea Enseignant est offert aux professeurs. Si l'application t'aide, un don volontaire " +
+                        "NoteaTrick est offert aux professeurs. Si l'application t'aide, un don volontaire " +
                             "finance la suite du développement : nouvelles fonctions, serveur, assistance.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -212,7 +212,7 @@ fun DonScreen(onRetour: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                "Le paiement est traité par FedaPay (Mobile Money et carte). Notea ne voit et ne garde aucune information de paiement.",
+                "Le paiement est traité par FedaPay (Mobile Money et carte). NoteaTrick ne voit et ne garde aucune information de paiement.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

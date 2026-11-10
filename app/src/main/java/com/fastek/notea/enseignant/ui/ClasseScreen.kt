@@ -401,7 +401,7 @@ private fun CarteEvaluation(
     onSupprimer: () -> Unit
 ) {
     val estDevoir = evaluation.type == TypeNote.DEVOIR
-    val couleur = if (estDevoir) Couleurs.VioletVif else Couleurs.Cyan
+    val couleur = if (estDevoir) Couleurs.Orange else Couleurs.BleuVif
     var menu by remember { mutableStateOf(false) }
     val fraction = if (effectif == 0) 0f else saisies.toFloat() / effectif
     CarteDouce(Modifier.fillMaxWidth(), onClick = onSaisir) {
@@ -554,7 +554,7 @@ private fun StatsTab(resultats: ResultatsUi) {
         )
     }
     val tranches = listOf("0 à 5", "5 à 10", "10 à 15", "15 à 20")
-    val couleursTranches = listOf(Couleurs.Danger, Couleurs.Alerte, Couleurs.CyanClair, Couleurs.Succes)
+    val couleursTranches = listOf(Couleurs.Danger, Couleurs.Alerte, Couleurs.BleuVif, Couleurs.Succes)
     val maximum = (s.repartition.maxOrNull() ?: 1).coerceAtLeast(1)
 
     LazyColumn(
@@ -580,7 +580,7 @@ private fun StatsTab(resultats: ResultatsUi) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Indicateur("Plus forte", formaterMoyenne(s.plusForte), Couleurs.Succes, Modifier.weight(1f))
                 Indicateur("Plus faible", formaterMoyenne(s.plusFaible), Couleurs.Danger, Modifier.weight(1f))
-                Indicateur("Réussite", formaterTaux(s.tauxReussite), Couleurs.VioletVif, Modifier.weight(1f))
+                Indicateur("Réussite", formaterTaux(s.tauxReussite), Couleurs.BleuVif, Modifier.weight(1f))
             }
         }
         item {
@@ -703,7 +703,7 @@ private fun GrilleTab(
             Text("Élève", Modifier.width(LARGEUR_NOM), style = MaterialTheme.typography.labelMedium)
             Row(Modifier.weight(1f).horizontalScroll(defilement)) {
                 evaluations.forEach { ev ->
-                    val couleur = if (ev.type == TypeNote.DEVOIR) Couleurs.VioletVif else Couleurs.Cyan
+                    val couleur = if (ev.type == TypeNote.DEVOIR) Couleurs.Orange else Couleurs.BleuVif
                     Column(Modifier.width(LARGEUR_CELLULE), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             libelleCourtEvaluation(ev, evaluations), color = couleur,

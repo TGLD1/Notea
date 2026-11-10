@@ -62,13 +62,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Palette FASTEK de Notea Enseignant : violet nuit, cyan, et trois couleurs de résultat. */
+/** Palette FASTEK de NoteaTrick, tirée du logo : bleu nuit, bleu, orange, et trois couleurs de résultat. */
 object Couleurs {
-    val VioletNuit = Color(0xFF1B1040)
-    val Violet = Color(0xFF4C1D95)
-    val VioletVif = Color(0xFF6D28D9)
-    val Cyan = Color(0xFF0E7490)
-    val CyanClair = Color(0xFF22D3EE)
+    val Marine = Color(0xFF0B2A6B)
+    val Bleu = Color(0xFF1246B8)
+    val BleuVif = Color(0xFF2563EB)
+    val Orange = Color(0xFFFF7A00)
+    val OrangeClair = Color(0xFFFFA94D)
 
     val Succes = Color(0xFF16A34A)
     val Alerte = Color(0xFFD97706)
@@ -76,8 +76,8 @@ object Couleurs {
     val Neutre = Color(0xFF8B87A3)
 
     private val Avatars = listOf(
-        Color(0xFF6D28D9), Color(0xFF0E7490), Color(0xFFDB2777), Color(0xFFD97706),
-        Color(0xFF16A34A), Color(0xFF2563EB), Color(0xFF9333EA), Color(0xFF0D9488)
+        Color(0xFF2563EB), Color(0xFF0E7490), Color(0xFFDB2777), Color(0xFFEA580C),
+        Color(0xFF16A34A), Color(0xFF4F46E5), Color(0xFF9333EA), Color(0xFF0D9488)
     )
 
     /** Une couleur stable pour un texte (classe, élève). */
@@ -92,32 +92,32 @@ object Couleurs {
     }
 
     val Degrade: Brush
-        get() = Brush.linearGradient(listOf(VioletNuit, Violet, VioletVif))
+        get() = Brush.linearGradient(listOf(Marine, Bleu, BleuVif))
 }
 
 private val SchemaClair = lightColorScheme(
-    primary = Couleurs.Violet, onPrimary = Color.White,
-    primaryContainer = Color(0xFFEDE9FE), onPrimaryContainer = Couleurs.VioletNuit,
-    secondary = Couleurs.Cyan, onSecondary = Color.White,
-    secondaryContainer = Color(0xFFCFFAFE), onSecondaryContainer = Color(0xFF083344),
-    tertiary = Couleurs.Cyan,
-    background = Color(0xFFF4F2FC), onBackground = Couleurs.VioletNuit,
-    surface = Color.White, onSurface = Couleurs.VioletNuit,
-    surfaceVariant = Color(0xFFEAE6F7), onSurfaceVariant = Color(0xFF4A4660),
-    outline = Color(0xFF8B87A3), outlineVariant = Color(0xFFDDD8F0),
+    primary = Couleurs.Bleu, onPrimary = Color.White,
+    primaryContainer = Color(0xFFE3ECFF), onPrimaryContainer = Couleurs.Marine,
+    secondary = Color(0xFFC25400), onSecondary = Color.White,
+    secondaryContainer = Color(0xFFFFE8D1), onSecondaryContainer = Color(0xFF4A2000),
+    tertiary = Color(0xFFC25400),
+    background = Color(0xFFF3F6FC), onBackground = Couleurs.Marine,
+    surface = Color.White, onSurface = Couleurs.Marine,
+    surfaceVariant = Color(0xFFE6ECF8), onSurfaceVariant = Color(0xFF475069),
+    outline = Color(0xFF8792A8), outlineVariant = Color(0xFFD5DCEB),
     error = Couleurs.Danger
 )
 
 private val SchemaSombre = darkColorScheme(
-    primary = Color(0xFFB9AEDD), onPrimary = Couleurs.VioletNuit,
-    primaryContainer = Color(0xFF3B2A7A), onPrimaryContainer = Color(0xFFEDE9FE),
-    secondary = Couleurs.CyanClair, onSecondary = Color(0xFF083344),
-    secondaryContainer = Color(0xFF155E75), onSecondaryContainer = Color(0xFFCFFAFE),
-    tertiary = Couleurs.CyanClair,
-    background = Color(0xFF120B2E), onBackground = Color(0xFFF3F6FC),
-    surface = Color(0xFF1F1550), onSurface = Color(0xFFF3F6FC),
-    surfaceVariant = Color(0xFF2B1F5C), onSurfaceVariant = Color(0xFFB9AEDD),
-    outline = Color(0xFF8B87A3), outlineVariant = Color(0xFF3A2E73),
+    primary = Color(0xFF8FB2FF), onPrimary = Couleurs.Marine,
+    primaryContainer = Color(0xFF1D3C8C), onPrimaryContainer = Color(0xFFE3ECFF),
+    secondary = Color(0xFFFFB066), onSecondary = Color(0xFF3A1A00),
+    secondaryContainer = Color(0xFF7A3A00), onSecondaryContainer = Color(0xFFFFE8D1),
+    tertiary = Color(0xFFFFB066),
+    background = Color(0xFF0A1530), onBackground = Color(0xFFF3F6FC),
+    surface = Color(0xFF12214A), onSurface = Color(0xFFF3F6FC),
+    surfaceVariant = Color(0xFF1C2D5E), onSurfaceVariant = Color(0xFFB6C3E6),
+    outline = Color(0xFF7C8AAE), outlineVariant = Color(0xFF2C3F78),
     error = Color(0xFFF87171)
 )
 
@@ -164,7 +164,7 @@ fun CarteDouce(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, con
     }
 }
 
-/** Bandeau dégradé violet nuit, sous la barre d'état, aux coins inférieurs arrondis. */
+/** Bandeau dégradé bleu nuit, sous la barre d'état, aux coins inférieurs arrondis. */
 @Composable
 fun EnTete(
     titre: String,

@@ -194,9 +194,9 @@ Base de données en version 6 (colonnes `photo` et `terminee`) ; migrations 3→
 
 Ce projet reste une V2 séparée, à envisager une fois Notea solo terminé et testé en conditions réelles.
 
-## 7. Notea Enseignant (extension pour les professeurs)
+## 7. NoteaTrick (version enseignant de Notea)
 
-Application Android séparée (`com.fastek.notea.enseignant`), développée sur la branche `enseignant` du même dépôt. Le moteur de calcul est celui de Notea, sans aucune règle supplémentaire.
+Application Android séparée (`com.fastek.noteatrick`), développée sur la branche `enseignant` du même dépôt. Le moteur de calcul est celui de Notea, sans aucune règle supplémentaire.
 
 **Principe.** Un professeur enseigne une seule matière (ex. PCT) dans plusieurs classes, jusqu'à 7 ou plus. Il crée ses classes, y inscrit les élèves (nom et prénoms), saisit les notes puis exporte un classeur Excel qui calcule toutes les moyennes.
 
@@ -212,7 +212,7 @@ Application Android séparée (`com.fastek.notea.enseignant`), développée sur 
 
 **Réglages** : modification du profil (nom, matière, établissement, année scolaire ; le type public ou privé reste fixe une fois les classes créées), sauvegarde et restauration JSON de toutes les classes, élèves et notes (fichier à garder où l'on veut, restauration possible dès le premier démarrage), journal de diagnostic. La sauvegarde automatique Android couvre aussi la base de l'application enseignant.
 
-**Design de Notea Enseignant** (`enseignant.ui.Design`) : identité FASTEK en plein écran — en-têtes en dégradé violet nuit (#1B1040 → #4C1D95 → #6D28D9) sous la barre d'état, coins arrondis, cartes blanches à ombre légère sur fond lavande clair (thème sombre inclus), avatars d'initiales colorés, sélecteurs à pastilles, anneau de moyenne sur 20, barres de progression et de répartition, médailles pour les trois premiers du classement. Les moyennes sont colorées selon l'objectif par défaut de Notea : rouge sous 10, ambre de 10 à 12, vert à partir de 12 ; les interrogations sont cyan et les devoirs violets.
+**Design de Notea Enseignant** (`enseignant.ui.Design`) : identité FASTEK en plein écran — en-têtes en dégradé bleu nuit (#0B2A6B → #1246B8 → #2563EB) sous la barre d'état, coins arrondis, cartes blanches à ombre légère sur fond lavande clair (thème sombre inclus), avatars d'initiales colorés, sélecteurs à pastilles, anneau de moyenne sur 20, barres de progression et de répartition, médailles pour les trois premiers du classement. Les moyennes sont colorées selon l'objectif par défaut de Notea : rouge sous 10, ambre de 10 à 12, vert à partir de 12 ; les interrogations sont cyan et les devoirs violets.
 
 **Accueil** : chaque carte de classe affiche l'effectif, le coefficient, la moyenne de classe de la période la plus récente contenant des notes (pastille colorée, « moy. S2 ») et l'avancement de la saisie (élèves ayant une moyenne). **Matière** : choisie dans la liste de Notea (`MatieresReference`), jamais saisie à la main, au premier démarrage comme dans le profil.
 
@@ -227,3 +227,7 @@ Application Android séparée (`com.fastek.notea.enseignant`), développée sur 
 **Aide, textes légaux et contact** : les Réglages sont regroupés en trois rubriques (Mes données ; Aide et informations ; Soutien). « Comment sont calculées les moyennes » explique les règles (moyenne de période, absent, moyenne annuelle, rang, statistiques, classeur Excel). « À propos », « Confidentialité » (données hors ligne, responsabilité sur les données des élèves, sauvegarde Android, exports, alarmes, paiement FedaPay) et « Conditions d'utilisation » sont écrits pour les professeurs. « Nous contacter » ouvre l'e-mail ou WhatsApp et renvoie vers le journal de diagnostic.
 
 **Code de la branche enseignant** : l'ancien code de l'application élève (écrans, base de données, bulletin PDF, rappels, SDK de paiement KkiaPay, tâches de fond WorkManager) a été retiré de cette branche. Il ne reste de Notea que le moteur de calcul des moyennes (`MoyenneCalculator`), les convertisseurs de base de données, la liste des matières, le journal de diagnostic et l'animation de lancement FASTEK. Le code de l'application élève reste intact sur la branche principale.
+
+**Noms des applications** : la version élève s'appelle **FastNotea** et la version enseignant **NoteaTrick**, pour que les deux noms soient distincts et faciles à trouver dans les moteurs de recherche et les boutiques d'applications. L'écran de lancement de chaque application affiche la signature **TGLD**. NoteaTrick est publiée à part : les étiquettes `trick-vX.Y.Z` produisent `NoteaTrick.apk`, sans jamais devenir la « dernière release » de FastNotea.
+
+**Identité visuelle** : l'application suit le logo FASTEK (bleu nuit et orange). L'écran de lancement montre le logo sur fond blanc, un trait orange, le nom du produit puis la signature TGLD ; l'icône reprend l'emblème « F » sur un fond orange très clair pour NoteaTrick (bleu très clair pour FastNotea), avec une version monochrome pour les icônes thématiques d'Android 13. Dans l'application, les interrogations sont bleues et les devoirs orange.
