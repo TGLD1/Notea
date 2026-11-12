@@ -1,0 +1,4 @@
+# Ancienne adresse de Notea : redirection permanente vers FastNotea
+/notea           /fastnotea/            301!
+/notea/          /fastnotea/            301!
+/notea/*         /fastnotea/:splat      301!

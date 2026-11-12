@@ -114,27 +114,27 @@ jobs:
       - name: Préparer les fichiers à distribuer
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/release/*.apk dist/Notea.apk
-          cp dist/Notea.apk "dist/Notea-${{ steps.version.outputs.nom }}.apk"
-          (cd dist && sha256sum Notea.apk > Notea.apk.sha256)
-          cat dist/Notea.apk.sha256
+          cp app/build/outputs/apk/release/*.apk dist/FastNotea.apk
+          cp dist/FastNotea.apk "dist/FastNotea-${{ steps.version.outputs.nom }}.apk"
+          (cd dist && sha256sum FastNotea.apk > FastNotea.apk.sha256)
+          cat dist/FastNotea.apk.sha256
 
       - name: Publier l'APK signé (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: notea-release-apk
+          name: fastnotea-release-apk
           path: dist/*
 
       - name: Publier l'AAB (Google Play)
         uses: actions/upload-artifact@v4
         with:
-          name: notea-release-aab
+          name: fastnotea-release-aab
           path: app/build/outputs/bundle/release/*.aab
 
       - name: Publier le fichier de correspondance R8
         uses: actions/upload-artifact@v4
         with:
-          name: notea-mapping
+          name: fastnotea-mapping
           path: app/build/outputs/mapping/release/mapping.txt
           if-no-files-found: warn
 
@@ -145,14 +145,14 @@ jobs:
           NOM: ${{ steps.version.outputs.nom }}
         run: |
           ETIQUETTE="v$NOM"
-          FICHIERS=(dist/Notea.apk "dist/Notea-$NOM.apk" dist/Notea.apk.sha256)
+          FICHIERS=(dist/FastNotea.apk "dist/FastNotea-$NOM.apk" dist/FastNotea.apk.sha256)
           if gh release view "$ETIQUETTE" > /dev/null 2>&1; then
             gh release upload "$ETIQUETTE" "${FICHIERS[@]}" --clobber
           else
             gh release create "$ETIQUETTE" "${FICHIERS[@]}" \
               --target "$GITHUB_SHA" \
-              --title "Notea $NOM" \
-              --notes "Notea $NOM — application de suivi scolaire FASTEK. Téléchargez Notea.apk, puis ouvrez-le sur votre téléphone Android (7 ou plus). La somme de contrôle SHA-256 est fournie dans Notea.apk.sha256." \
+              --title "FastNotea $NOM" \
+              --notes "FastNotea $NOM — application de suivi scolaire FASTEK pour les élèves béninois. Téléchargez FastNotea.apk, puis ouvrez-le sur votre téléphone Android (7 ou plus). La somme de contrôle SHA-256 est fournie dans FastNotea.apk.sha256." \
               --latest
           fi
           echo "Release publiée : https://github.com/${{ github.repository }}/releases/tag/$ETIQUETTE"

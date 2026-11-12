@@ -52,11 +52,11 @@ fun OnboardingScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Text("Bienvenue sur Notea", style = MaterialTheme.typography.headlineSmall)
+            Text("Bienvenue sur FastNotea", style = MaterialTheme.typography.headlineSmall)
         }
         item {
             TextButton(onClick = { lanceurImport.launch(arrayOf("*/*")) }) {
-                Text("Restaurer une sauvegarde Notea")
+                Text("Restaurer une sauvegarde FastNotea")
             }
             erreurRestauration?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }

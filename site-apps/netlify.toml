@@ -1,5 +1,8 @@
 [build]
   publish = "."
+  # Remplace __SITE_URL__ par l'adresse principale du site (variable URL fournie par Netlify, domaine personnalisé compris)
+  # dans les adresses canoniques, les images de partage, le plan du site et robots.txt.
+  command = "sed -i \"s|__SITE_URL__|$URL|g\" index.html fastnotea/*.html noteatrick/*.html sitemap.xml robots.txt"
 
 [[headers]]
   for = "/*"
@@ -7,3 +10,13 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

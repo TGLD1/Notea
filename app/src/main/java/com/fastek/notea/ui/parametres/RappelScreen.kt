@@ -50,7 +50,7 @@ fun RappelScreen() {
         Text("Rappels", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Chaque jour à l'heure choisie, Notea te prévient des événements du planning : deux jours avant " +
+            "Chaque jour à l'heure choisie, FastNotea te prévient des événements du planning : deux jours avant " +
                 "(une seule fois), la veille et le jour même.",
             style = MaterialTheme.typography.bodyMedium
         )
@@ -104,7 +104,7 @@ fun RappelScreen() {
                 resultatTest = if (envoyee) {
                     "Notification envoyée. Si tu ne la vois pas, vérifie le mode « Ne pas déranger »."
                 } else {
-                    "Impossible : les notifications sont désactivées pour Notea."
+                    "Impossible : les notifications sont désactivées pour FastNotea."
                 }
             }
         ) { Text("Envoyer une notification de test") }
@@ -117,7 +117,7 @@ fun RappelScreen() {
         Text("Si les rappels n'arrivent pas", style = MaterialTheme.typography.titleMedium)
         Text(
             "Certains téléphones (Tecno, Infinix, Xiaomi, Huawei…) arrêtent les applications en arrière-plan pour " +
-                "économiser la batterie. Dans les réglages de batterie, retire les restrictions pour Notea et " +
+                "économiser la batterie. Dans les réglages de batterie, retire les restrictions pour FastNotea et " +
                 "autorise son démarrage automatique.",
             style = MaterialTheme.typography.bodyMedium
         )

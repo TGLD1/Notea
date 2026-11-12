@@ -433,7 +433,7 @@ object BulletinPdfGenerator {
                 color = GRIS_TEXTE
             }
             canvas.drawText(
-                "Généré par Notea (FASTEK) — calculs indicatifs ; se référer au bulletin officiel de l'établissement.",
+                "Généré par FastNotea (FASTEK) — calculs indicatifs ; se référer au bulletin officiel de l'établissement.",
                 MARGE, HAUTEUR_PAGE - 24f, pied
             )
             canvas.drawText("Page $numero", MARGE + LARGEUR - 32f, HAUTEUR_PAGE - 24f, pied)

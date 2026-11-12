@@ -96,10 +96,10 @@ class MainActivity : AppCompatActivity() {
             Kkiapay.get().requestPayment(
                 this,
                 montant,
-                reason = "Don à FASTEK pour Notea",
+                reason = "Don à FASTEK pour FastNotea",
                 api_key = BuildConfig.KKIAPAY_PUBLIC_KEY,
                 sandbox = BuildConfig.KKIAPAY_SANDBOX,
-                name = "Donateur Notea",
+                name = "Donateur FastNotea",
                 partnerId = "notea-don",
                 phone = "",
                 email = "",
@@ -206,7 +206,7 @@ private fun NoteaApp(app: NoteaApplication) {
                 true -> NoteaNavHost(factory, app.repository, app.sauvegarde, app.archives, onDon = { montant -> (contexte as? MainActivity)?.lancerDon(montant) })
             }
             if (splashActif) {
-                SplashFastek(onTermine = { splashActif = false })
+                SplashFastek(produit = "FastNotea", onTermine = { splashActif = false })
             }
         }
     }
@@ -236,7 +236,7 @@ private fun NoteaNavHost(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notea") },
+                title = { Text("FastNotea") },
                 actions = {
                     TextButton(onClick = { menuOuvert = true }) {
                         Text("⋮", style = MaterialTheme.typography.titleLarge)
@@ -324,7 +324,7 @@ private fun NoteaNavHost(
                     if (route == "signaler-probleme") {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:tgldivin@gmail.com")
-                            putExtra(Intent.EXTRA_SUBJECT, "Problème avec Notea")
+                            putExtra(Intent.EXTRA_SUBJECT, "Problème avec FastNotea")
                         }
                         context.startActivity(intent)
                     } else {

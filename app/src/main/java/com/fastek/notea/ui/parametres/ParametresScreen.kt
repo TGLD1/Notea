@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 
 private val OPTIONS = listOf(
     "profil" to "Profil",
-    "presentation" to "Présentation de Notea",
+    "presentation" to "Présentation de FastNotea",
     "bulletin" to "Bulletin scolaire (PDF)",
     "photo" to "Photo de l'élève",
     "archives" to "Années scolaires et archives",

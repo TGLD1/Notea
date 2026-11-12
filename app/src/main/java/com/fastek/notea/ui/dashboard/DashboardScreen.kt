@@ -230,7 +230,7 @@ private fun AlerteMatieres(matieres: List<NoteaRepository.MatiereAvecMoyenne>, m
 /** Résumé en texte (WhatsApp, SMS…) : moyenne générale et moyenne de chaque matière notée. */
 private fun partagerResume(contexte: Context, etat: DashboardUiState) {
     val texte = buildString {
-        append("Notea — ${etat.nomPeriode} ${etat.periodeNumero ?: ""}\n")
+        append("FastNotea — ${etat.nomPeriode} ${etat.periodeNumero ?: ""}\n")
         append("Moyenne générale : ${String.format("%.2f", etat.moyenneGenerale ?: 0.0)}/20")
         append(" (objectif ${etat.objectifPeriode.toInt()}/20)\n\n")
         etat.matieres.filter { it.moyenne != null }.forEach {

@@ -100,9 +100,9 @@ fun SauvegardeScreen(manager: SauvegardeManager) {
         Spacer(Modifier.height(12.dp))
         Text("Sauvegarde automatique", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Notea n'a rien à régler : Android sauvegarde automatiquement tes données dans ton compte Google " +
+            "FastNotea n'a rien à régler : Android sauvegarde automatiquement tes données dans ton compte Google " +
                 "(environ une fois par jour, quand le téléphone est branché, en veille et connecté à internet). " +
-                "Si tu changes de téléphone ou réinstalles Notea depuis le Play Store avec le même compte Google, " +
+                "Si tu changes de téléphone ou réinstalles FastNotea depuis le Play Store avec le même compte Google, " +
                 "tes notes sont restaurées toutes seules. Cette sauvegarde doit être activée dans les réglages Android " +
                 "(Google → Sauvegarde).",
             style = MaterialTheme.typography.bodyMedium
@@ -123,7 +123,7 @@ fun SauvegardeScreen(manager: SauvegardeManager) {
         Spacer(Modifier.height(20.dp))
         Text("Sauvegarde manuelle", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Crée un fichier que tu gardes toi-même (téléphone, Drive, WhatsApp) : utile si tu installes Notea " +
+            "Crée un fichier que tu gardes toi-même (téléphone, Drive, WhatsApp) : utile si tu installes FastNotea " +
                 "sans passer par le Play Store.",
             style = MaterialTheme.typography.bodyMedium
         )

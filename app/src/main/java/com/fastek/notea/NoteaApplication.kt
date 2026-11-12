@@ -64,7 +64,7 @@ class NoteaApplication : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal = NotificationChannel(
                 RappelWorker.CANAL_ID,
-                "Rappels Notea",
+                "Rappels FastNotea",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply { description = "Rappels pour les événements du planning" }
             getSystemService(NotificationManager::class.java).createNotificationChannel(canal)

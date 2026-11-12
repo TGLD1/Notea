@@ -50,7 +50,7 @@ private class Diapositive(val symbole: String, val titre: String, val texte: Str
 private val DIAPOSITIVES = listOf(
     Diapositive(
         "🧮", "Tes moyennes, calculées pour toi",
-        "Saisis tes devoirs et tes interrogations : Notea calcule automatiquement la moyenne de " +
+        "Saisis tes devoirs et tes interrogations : FastNotea calcule automatiquement la moyenne de " +
             "chaque matière, ta moyenne générale et ta moyenne annuelle, selon la méthode officielle."
     ),
     Diapositive(
@@ -60,7 +60,7 @@ private val DIAPOSITIVES = listOf(
     ),
     Diapositive(
         "📅", "Planning et rappels",
-        "Ajoute tes devoirs et interrogations à venir. Notea te prévient deux jours avant, la veille " +
+        "Ajoute tes devoirs et interrogations à venir. FastNotea te prévient deux jours avant, la veille " +
             "et le jour même, à l'heure que tu choisis."
     ),
     Diapositive(

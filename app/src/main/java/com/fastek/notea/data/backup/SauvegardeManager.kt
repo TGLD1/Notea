@@ -103,11 +103,11 @@ class SauvegardeManager(private val database: NoteaDatabase) {
         try {
             val racine = JSONObject(contenu)
             if (racine.optString("format") != FORMAT) {
-                throw SauvegardeInvalideException("Ce fichier n'est pas une sauvegarde Notea.")
+                throw SauvegardeInvalideException("Ce fichier n'est pas une sauvegarde FastNotea.")
             }
             if (racine.optInt("version", 0) > VERSION_FORMAT) {
                 throw SauvegardeInvalideException(
-                    "Cette sauvegarde vient d'une version plus récente de Notea. Mets l'application à jour."
+                    "Cette sauvegarde vient d'une version plus récente de FastNotea. Mets l'application à jour."
                 )
             }
             val eleves = racine.getJSONArray("eleves").objets().map { eleveDepuis(it) }

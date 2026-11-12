@@ -67,11 +67,11 @@ object NotificationsHelper {
     }
 
     /** Affiche la notification de rappel du planning. Retourne false si les notifications sont désactivées. */
-    fun afficherRappel(context: Context, lignes: List<String>): Boolean = afficher(context, ID_RAPPEL, "Notea — Rappel du planning", lignes)
+    fun afficherRappel(context: Context, lignes: List<String>): Boolean = afficher(context, ID_RAPPEL, "FastNotea — Rappel du planning", lignes)
 
     /** Notification d'essai pour vérifier que tout fonctionne. */
     fun afficherTest(context: Context): Boolean =
-        afficher(context, ID_TEST, "Notea — Test", listOf("Les rappels du planning fonctionnent sur cet appareil."))
+        afficher(context, ID_TEST, "FastNotea — Test", listOf("Les rappels du planning fonctionnent sur cet appareil."))
 
     private fun afficher(context: Context, id: Int, titre: String, lignes: List<String>): Boolean {
         if (!activees(context)) return false

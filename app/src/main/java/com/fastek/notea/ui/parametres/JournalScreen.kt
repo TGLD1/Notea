@@ -100,7 +100,7 @@ fun JournalScreen() {
 private fun partagerJournal(context: Context, texte: String) {
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Journal Notea")
+        putExtra(Intent.EXTRA_SUBJECT, "Journal FastNotea")
         putExtra(Intent.EXTRA_TEXT, texte.takeLast(30_000))
     }
     context.startActivity(Intent.createChooser(intent, "Partager le journal"))

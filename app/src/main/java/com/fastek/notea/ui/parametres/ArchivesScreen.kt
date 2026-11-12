@@ -107,7 +107,7 @@ fun ArchivesScreen(archives: ArchiveManager) {
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            "Pour retrouver une année archivée dans Notea, partage le fichier d'archive puis utilise " +
+            "Pour retrouver une année archivée dans FastNotea, partage le fichier d'archive puis utilise " +
                 "Paramètres → Sauvegarde et restauration.",
             style = MaterialTheme.typography.bodySmall
         )
