@@ -35,7 +35,7 @@ data class StatistiquesClasse(
 data class ResultatPeriode(val lignes: List<LigneResultat>, val stats: StatistiquesClasse)
 
 /**
- * Calculs de classe de Notea Enseignant. Les moyennes d'élève viennent du moteur de Notea
+ * Calculs de classe de NoteaTrick. Les moyennes d'élève viennent du moteur de Notea
  * ([MoyenneCalculator]) sans aucune règle supplémentaire : une seule matière, donc la moyenne
  * de la période d'un élève est sa moyenne dans la matière du professeur.
  */

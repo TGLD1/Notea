@@ -10,7 +10,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.fastek.notea.enseignant"
+        applicationId = "com.fastek.noteatrick"
         minSdk = 24        // Android 7.0 — contrainte du cahier des charges
         targetSdk = 34
         // Numéro de version : valeurs par défaut pour le développement ; le workflow « Release »

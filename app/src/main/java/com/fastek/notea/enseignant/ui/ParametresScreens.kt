@@ -63,13 +63,13 @@ fun ParametresScreen(onNaviguer: (String) -> Unit, onRetour: () -> Unit) {
 
             TitreSection("AIDE ET INFORMATIONS", Modifier.padding(top = 8.dp))
             LigneReglage("🧮", "Comment sont calculées les moyennes", "Les règles de calcul, le rang, la moyenne annuelle") { onNaviguer("parametres/texte/calcul") }
-            LigneReglage("ℹ️", "À propos", "Notea Enseignant et FASTEK") { onNaviguer("parametres/texte/apropos") }
+            LigneReglage("ℹ️", "À propos", "NoteaTrick et FASTEK") { onNaviguer("parametres/texte/apropos") }
             LigneReglage("🔒", "Confidentialité", "Où sont tes données et celles de tes élèves") { onNaviguer("parametres/texte/confidentialite") }
             LigneReglage("📜", "Conditions d'utilisation", "Ce que tu acceptes en utilisant l'application") { onNaviguer("parametres/texte/conditions") }
             LigneReglage("✉️", "Nous contacter", "Une question, une idée, un problème") { onNaviguer("parametres/contact") }
 
             TitreSection("SOUTIEN", Modifier.padding(top = 8.dp))
-            LigneReglage("💜", "Soutenir Notea", "Un don volontaire par Mobile Money ou carte") { onNaviguer("parametres/don") }
+            LigneReglage("💜", "Soutenir NoteaTrick", "Un don volontaire par Mobile Money ou carte") { onNaviguer("parametres/don") }
             LigneReglage("🩺", "Journal de diagnostic", "À partager si un problème survient") { onNaviguer("parametres/journal") }
             Spacer(Modifier.navigationBarsPadding())
         }
@@ -274,7 +274,7 @@ fun SauvegardeEcran(manager: SauvegardeEnseignant, onRetour: () -> Unit) {
                     BoutonPlein(
                         "Enregistrer une sauvegarde",
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { lanceurExport.launch("notea-enseignant-sauvegarde-${LocalDate.now()}.json") }
+                        onClick = { lanceurExport.launch("noteatrick-sauvegarde-${LocalDate.now()}.json") }
                     )
                     BoutonContour(
                         "Restaurer depuis un fichier",

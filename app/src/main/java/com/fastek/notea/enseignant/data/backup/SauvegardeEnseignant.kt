@@ -19,7 +19,7 @@ import org.json.JSONObject
 import java.time.LocalDate
 
 /**
- * Sauvegarde et restauration 100 % locales de Notea Enseignant : toutes les classes, tous les élèves
+ * Sauvegarde et restauration 100 % locales de NoteaTrick : toutes les classes, tous les élèves
  * et toutes les notes sont écrits dans un fichier JSON. La restauration remplace l'intégralité des
  * données en une seule transaction : si le fichier est invalide, rien n'est modifié.
  */
@@ -104,11 +104,11 @@ class SauvegardeEnseignant(private val db: EnseignantDatabase) {
         try {
             val racine = JSONObject(contenu)
             if (racine.optString("format") != FORMAT) {
-                throw SauvegardeInvalideException("Ce fichier n'est pas une sauvegarde de Notea Enseignant.")
+                throw SauvegardeInvalideException("Ce fichier n'est pas une sauvegarde de NoteaTrick.")
             }
             if (racine.optInt("version", 0) > VERSION_FORMAT) {
                 throw SauvegardeInvalideException(
-                    "Cette sauvegarde vient d'une version plus récente de Notea Enseignant. Mets l'application à jour."
+                    "Cette sauvegarde vient d'une version plus récente de NoteaTrick. Mets l'application à jour."
                 )
             }
             val professeurs = racine.getJSONArray("professeurs").objets().map { professeurDepuis(it) }

@@ -16,7 +16,7 @@ private const val TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spr
 suspend fun creerFichierExcel(context: Context, export: ClasseurExport): File = withContext(Dispatchers.IO) {
     val dossier = File(context.cacheDir, "exports").apply { mkdirs() }
     val base = "${export.matiere}_${export.anneeScolaire}".replace(Regex("[^\\p{L}\\p{N}_-]+"), "_")
-    File(dossier, "Notea_$base.xlsx").also { fichier ->
+    File(dossier, "NoteaTrick_$base.xlsx").also { fichier ->
         FileOutputStream(fichier).use { ClasseurEnseignant.ecrire(export, it) }
     }
 }

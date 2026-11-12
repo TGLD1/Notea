@@ -80,7 +80,7 @@ fun NouvelleAnneeScreen(professeur: Professeur, app: NoteaApplication, onRetour:
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("📦  D'abord, une archive", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "Avant d'effacer quoi que ce soit, Notea enregistre l'année ${professeur.anneeScolaire} : " +
+                        "Avant d'effacer quoi que ce soit, NoteaTrick enregistre l'année ${professeur.anneeScolaire} : " +
                             "une sauvegarde complète (restaurable) et le classeur Excel avec toutes les moyennes. " +
                             "Tu les retrouveras dans « Archives ».",
                         style = MaterialTheme.typography.bodyMedium,

@@ -74,7 +74,7 @@ private fun EnseignantApp(app: NoteaApplication) {
     EnseignantTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             if (splashActif) {
-                SplashFastek(onTermine = { splashActif = false })
+                SplashFastek(produit = "NoteaTrick", onTermine = { splashActif = false })
             } else {
                 val etat by vm.etat.collectAsState()
                 when (val e = etat) {

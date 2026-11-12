@@ -4,7 +4,7 @@ data class SectionTexte(val titre: String?, val texte: String)
 
 data class PageTexte(val titre: String, val sousTitre: String, val sections: List<SectionTexte>)
 
-/** Textes d'information de Notea Enseignant : à propos, calculs, confidentialité, conditions d'utilisation. */
+/** Textes d'information de NoteaTrick : à propos, calculs, confidentialité, conditions d'utilisation. */
 object TextesEnseignant {
 
     const val EMAIL = "tgldivin@gmail.com"
@@ -15,11 +15,11 @@ object TextesEnseignant {
 
     fun page(identifiant: String): PageTexte? = when (identifiant) {
         "apropos" -> PageTexte(
-            "À propos", "Notea Enseignant",
+            "À propos", "NoteaTrick",
             listOf(
                 SectionTexte(
                     null,
-                    "Notea Enseignant est l'application des professeurs de la famille Notea. Elle sert à créer tes classes, " +
+                    "NoteaTrick est l'application des professeurs de la famille FASTEK. Elle sert à créer tes classes, " +
                         "inscrire tes élèves, saisir leurs notes, obtenir automatiquement les moyennes, les rangs et les " +
                         "statistiques, tenir ton emploi du temps avec des rappels pendant tes cours, et exporter un classeur Excel."
                 ),
@@ -29,13 +29,13 @@ object TextesEnseignant {
                 ),
                 SectionTexte(
                     "Qui la développe",
-                    "Notea est conçue et développée par Divin, fondateur de FASTEK, à Ouidah (Bénin).\n\n" +
+                    "NoteaTrick est conçue et développée par Divin, fondateur de FASTEK, à Ouidah (Bénin).\n\n" +
                         "Pour toute question, suggestion ou signalement :\nE-mail : $EMAIL\nWhatsApp : $WHATSAPP_AFFICHE"
                 )
             )
         )
         "calcul" -> PageTexte(
-            "Comment sont calculées les moyennes", "Les règles de Notea",
+            "Comment sont calculées les moyennes", "Les règles de NoteaTrick",
             listOf(
                 SectionTexte(
                     "Moyenne d'une période",
@@ -81,7 +81,7 @@ object TextesEnseignant {
             listOf(
                 SectionTexte(
                     "Tout reste sur ton téléphone",
-                    "Notea Enseignant fonctionne hors ligne. Tes classes, les noms de tes élèves, leurs notes, ton emploi du " +
+                    "NoteaTrick fonctionne hors ligne. Tes classes, les noms de tes élèves, leurs notes, ton emploi du " +
                         "temps et tes rappels sont stockés uniquement dans la mémoire de l'application, sur ton téléphone. " +
                         "FASTEK ne les collecte pas, ne les reçoit pas et ne les partage avec personne."
                 ),
@@ -111,7 +111,7 @@ object TextesEnseignant {
                 SectionTexte(
                     "Don en ligne (facultatif)",
                     "C'est la seule fonction qui utilise internet. Le paiement est traité par FedaPay, notre prestataire de " +
-                        "paiement, dans son propre formulaire : c'est FedaPay, et non Notea, qui reçoit les informations " +
+                        "paiement, dans son propre formulaire : c'est FedaPay, et non NoteaTrick, qui reçoit les informations " +
                         "nécessaires au paiement (nom, numéro de téléphone Mobile Money ou données de carte bancaire). Notea ne " +
                         "voit, ne collecte et ne conserve aucune information de paiement ; elle est seulement informée du " +
                         "résultat (réussi ou échoué). Le don ne demande aucun compte. FedaPay applique sa propre politique de " +
@@ -119,17 +119,17 @@ object TextesEnseignant {
                 ),
                 SectionTexte(
                     "Ni publicité ni suivi",
-                    "Notea Enseignant ne contient ni publicité ni outil de suivi."
+                    "NoteaTrick ne contient ni publicité ni outil de suivi."
                 ),
                 SectionTexte("Contact", "E-mail : $EMAIL")
             )
         )
         "conditions" -> PageTexte(
-            "Conditions d'utilisation", "En utilisant Notea Enseignant",
+            "Conditions d'utilisation", "En utilisant NoteaTrick",
             listOf(
                 SectionTexte(
                     null,
-                    "En utilisant Notea Enseignant, tu reconnais et acceptes que :\n\n" +
+                    "En utilisant NoteaTrick, tu reconnais et acceptes que :\n\n" +
                         "• L'application est fournie « en l'état », sans garantie de résultat.\n\n" +
                         "• Les calculs de moyennes, de rangs et de statistiques sont fournis à titre indicatif : en cas de " +
                         "différence, le bulletin officiel de ton établissement fait foi. Tu restes responsable de l'exactitude " +

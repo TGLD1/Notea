@@ -20,7 +20,7 @@ import com.fastek.notea.enseignant.export.PeriodeExport
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
-/** Accès aux données de Notea Enseignant : profil, classes, élèves, évaluations et notes. */
+/** Accès aux données de NoteaTrick : profil, classes, élèves, évaluations et notes. */
 class EnseignantRepository(private val db: EnseignantDatabase) {
 
     companion object {

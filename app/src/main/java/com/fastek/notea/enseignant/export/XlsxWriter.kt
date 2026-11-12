@@ -178,13 +178,13 @@ object XlsxWriter {
             "<fills count=\"4\">" +
             "<fill><patternFill patternType=\"none\"/></fill>" +
             "<fill><patternFill patternType=\"gray125\"/></fill>" +
-            "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF4C1D95\"/><bgColor indexed=\"64\"/></patternFill></fill>" +
-            "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFEDE9FE\"/><bgColor indexed=\"64\"/></patternFill></fill>" +
+            "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF1246B8\"/><bgColor indexed=\"64\"/></patternFill></fill>" +
+            "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFE3ECFF\"/><bgColor indexed=\"64\"/></patternFill></fill>" +
             "</fills>" +
             "<borders count=\"2\">" +
             "<border><left/><right/><top/><bottom/><diagonal/></border>" +
-            "<border><left style=\"thin\"><color rgb=\"FFB8B0D0\"/></left><right style=\"thin\"><color rgb=\"FFB8B0D0\"/></right>" +
-            "<top style=\"thin\"><color rgb=\"FFB8B0D0\"/></top><bottom style=\"thin\"><color rgb=\"FFB8B0D0\"/></bottom><diagonal/></border>" +
+            "<border><left style=\"thin\"><color rgb=\"FFAEBBD6\"/></left><right style=\"thin\"><color rgb=\"FFAEBBD6\"/></right>" +
+            "<top style=\"thin\"><color rgb=\"FFAEBBD6\"/></top><bottom style=\"thin\"><color rgb=\"FFAEBBD6\"/></bottom><diagonal/></border>" +
             "</borders>" +
             "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>" +
             "<cellXfs count=\"11\">" +
