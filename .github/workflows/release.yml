@@ -1,13 +1,19 @@
 name: Release signée
 
 # NoteaTrick (version enseignant), branche « enseignant ».
-# - Push d'une étiquette « trick-v1.0.0 » : construit l'APK et l'AAB signés, puis PUBLIE l'APK dans les Releases GitHub.
+# - Push sur la branche enseignant : construit l'APK et l'AAB signés (artifacts).
+# - Push d'une étiquette « trick-v1.0.0 » : construit, puis PUBLIE l'APK dans les Releases GitHub.
 #   Ces publications ne sont jamais marquées « dernière release » : le lien de téléchargement de FastNotea
 #   (releases/latest) ne change donc pas.
 # - Lancement manuel : construit, avec publication si la case « publier » est cochée.
 on:
   push:
+    branches: [enseignant]
     tags: ["trick-v*"]
+    paths-ignore:
+      - "docs/**"
+      - "site-apps/**"
+      - "*.md"
   workflow_dispatch:
     inputs:
       version_name:
